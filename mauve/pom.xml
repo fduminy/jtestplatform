@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+    
+    <groupId>com.redhat.sources</groupId>
+    <artifactId>mauve</artifactId>
+    <version>0.1</version>
+    <name>Mauve</name>
+
+    <licenses>
+        <license>
+            <name>GPL 2.0</name>
+            <url>http://www.gnu.org/licenses/gpl-2.0.html</url>
+        </license>
+    </licenses>
+    
+    <description>The Mauve Project is a collaborative effort to write a free test suite for the Java™ class libraries.</description>
+    <url>http://sources.redhat.com/mauve/</url>
+
+    <build>
+        <plugins>
+            <!-- fake out maven and install the binary artifact -->
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <tasks>
+                                <copy
+                                    file="${basedir}/src/main/jar/${project.artifactId}-${project.version}.jar"
+                                    tofile="${basedir}/target/${project.artifactId}-${project.version}.jar"
+                                    overwrite="true" />
+                                <unzip src="${basedir}/src/main/jar/${project.artifactId}-${project.version}.jar"
+                                    dest="${basedir}/target/classes"/>
+                                </tasks>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>  
+</project>

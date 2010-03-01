@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>jtestserver</groupId>
+	<artifactId>jtestserver</artifactId>
+	<packaging>pom</packaging>
+	<name>JTestServer</name>
+	<version>0.0.1-SNAPSHOT</version>
+
+    <licenses>
+        <license>
+            <name>GPL 3.0</name>
+            <url>http://www.gnu.org/licenses/gpl-3.0.html</url>
+        </license>
+    </licenses>
+
+	<developers>
+		<developer>
+			<id>fabien_duminy</id>
+			<name>Fabien DUMINY</name>
+			<email>fduminy at jnode dot org</email>
+			<url>http://www.duminy.fr/</url>
+			<roles>
+				<role>project-leader</role>
+				<role>developer</role>
+			</roles>
+			<timezone>+1</timezone>
+		</developer>
+	</developers>
+
+	<repositories>
+		<repository>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+				<checksumPolicy>warn</checksumPolicy>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+				<checksumPolicy>fail</checksumPolicy>
+			</snapshots>
+			<id>gridgain</id>
+			<name>GridGain Repository</name>
+			<url>http://www.gridgainsystems.com/maven2/</url>
+			<layout>default</layout>
+		</repository>
+		
+	    <repository>
+	      <id>jboss-repository</id> <!-- needed for jgroups library -->
+	      <url>http://repository.jboss.com/maven2</url>
+	    </repository>		
+	    
+		<repository>
+		  <id>maven2-repository.dev.java.net</id>
+		  <name>Java.net Repository for Maven</name>
+		  <url>http://download.java.net/maven/2/</url>
+		  <layout>default</layout>
+		</repository>	    
+	</repositories>
+
+	<modules>
+		<module>common</module>
+		<module>client</module>
+		<module>server</module>
+        <!-- module>mauve</module-->
+    <module>libvirt-model</module>
+  </modules>
+
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.7</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.14</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.gridgain</groupId>
+			<artifactId>gridgain</artifactId>
+			<version>2.1.1</version>
+			<scope>test</scope>
+
+			<exclusions>
+				<exclusion>
+					<groupId>javax.activation</groupId>
+					<artifactId>activation</artifactId>
+				</exclusion>
+		
+				<exclusion>
+					<groupId>org.aspectj</groupId>
+					<artifactId>aspectjrt</artifactId>
+				</exclusion>
+		
+				<exclusion>
+					<groupId>org.aspectj</groupId>
+					<artifactId>aspectjweaver</artifactId>
+				</exclusion>
+		
+				<exclusion>
+					<groupId>concurrent</groupId>
+					<artifactId>concurrent</artifactId>
+				</exclusion>
+				
+				<exclusion>
+					<groupId>com.enterprisedt</groupId>
+					<artifactId>edtFTPj</artifactId>
+				</exclusion>
+				
+				<exclusion>
+					<groupId>oro</groupId>
+					<artifactId>oro</artifactId>
+				</exclusion>
+				
+				<exclusion>
+					<groupId>jgroups</groupId>
+					<artifactId>jgroups</artifactId>
+				</exclusion>
+		
+				<exclusion>
+					<groupId>javax.jms</groupId>
+					<artifactId>jms</artifactId>
+				</exclusion>
+		
+				<exclusion>
+					<groupId>junit</groupId>
+					<artifactId>junit</artifactId>
+				</exclusion>
+				
+				<exclusion>
+					<groupId>javax.mail</groupId>
+					<artifactId>mail</artifactId>
+				</exclusion>
+			</exclusions>		
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<inherited>true</inherited>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.1.1</version>
+				<configuration>
+<!--				
+		          <includeProjectDependencies>true</includeProjectDependencies>
+		          <includePluginDependencies>true</includePluginDependencies>
+		          <executableDependency>
+		            <groupId>jtestserver</groupId>
+		            <artifactId>jtestserver-client</artifactId>
+		          </executableDependency>				
+		          <mainClass>org.jtestserver.client.TestDriver</mainClass>
+		          <systemProperties>
+		            <systemProperty>
+		              <key>vmware.server.username</key>
+		              <value>fabien</value>
+		            </systemProperty>
+                    <systemProperty>
+                      <key>vmware.server.password</key>
+                      <value>fabien</value>
+                    </systemProperty>
+                    <systemProperty>
+                      <key>jtestserver.home</key>
+                      <value>client/src/main/resources/home</value>
+                    </systemProperty>
+                    <systemProperty>
+                      <key>java.net.preferIPv4Stack</key>
+                      <value>true</value>
+                    </systemProperty>
+		          </systemProperties>				
+-->
+		          <executable>java</executable>
+		          <arguments>
+                    <argument>-Dvmware.server.username=fabien</argument>
+                    <argument>-Dvmware.server.password=fabien</argument>
+                    <argument>-Djtestserver.home=client/src/main/resources/home</argument>
+                    <argument>-Djava.net.preferIPv4Stack=true</argument>
+		            <argument>-classpath</argument>
+                    <argument>client/target/classes:common/target/classes:/home/fabien/.m2/repository/gnu-classpath/mauve/0.1/mauve-0.1.jar:/home/fabien/.m2/repository/javagroups/jgroups-all/2.8.Beta2/jgroups-all-2.8.Beta2.jar</argument>
+		            <argument>org.jtestserver.client.TestDriver</argument>
+		          </arguments>		          
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>com.google.code.maven-license-plugin</groupId>
+				<artifactId>maven-license-plugin</artifactId>
+				<version>1.4.0</version>
+				<configuration>
+					<header>src/etc/header.txt</header>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>process-sources</phase>
+						<goals>
+							<goal>format</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>	
+</project>
