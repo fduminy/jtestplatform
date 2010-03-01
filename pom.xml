@@ -201,6 +201,11 @@
 				<version>1.4.0</version>
 				<configuration>
 					<header>src/etc/header.txt</header>
+			        <excludes>
+			            <exclude>LICENSE.txt</exclude>
+			            <exclude>**/src/test/resources/**</exclude>
+			            <exclude>**/.git/**</exclude>
+			        </excludes>
 				</configuration>
 				<executions>
 					<execution>
