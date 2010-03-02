@@ -37,5 +37,5 @@ public interface DomainConfig {
      * Get the factory for this VM.
      * @return factory for this VM.
      */
-    DomainFactory<?> getFactory();
+    DomainFactory getFactory();
 }

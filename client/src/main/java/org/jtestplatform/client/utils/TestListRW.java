@@ -37,7 +37,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.codehaus.plexus.util.IOUtil;
-import org.jtestplatform.client.Config;
+import org.jtestplatform.configuration.Configuration;
 
 /**
  * Utility class used to read from a text file and also to write it.
@@ -54,13 +54,13 @@ public class TestListRW {
     /**
      * Configuration used to filter the list of lines.
      */
-    private final Config config;
+    private final Configuration config;
     
     /**
      * Create an instance from the given configuration.
      * @param config
      */
-    public TestListRW(Config config) {
+    public TestListRW(Configuration config) {
         this.config = config;
     }
     
@@ -119,7 +119,7 @@ public class TestListRW {
     public boolean acceptTest(String test) {
         boolean accept = true;
         
-        for (String exclude : config.getExcludingFilters()) {
+        for (String exclude : config.getExcludingFilters().split(",")) {
             if (test.contains(exclude)) {
                 accept = false;
                 break;

@@ -77,7 +77,6 @@ public class TestManagerTest {
     
     @Before
     public void setUp() {
-        Config config = new Config();
         transportProvider = mock(TransportProvider.class);
         
         testManager = new DefaultTestManager(corePoolSize,

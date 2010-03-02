@@ -47,6 +47,7 @@ import org.jtestplatform.client.domain.DomainManager;
 import org.jtestplatform.client.utils.TestListRW;
 import org.jtestplatform.common.message.Message;
 import org.jtestplatform.common.transport.TransportProvider;
+import org.jtestplatform.configuration.Configuration;
 
 public class TestDriver {
     private static final Logger LOGGER = Logger.getLogger(TestDriver.class);
@@ -56,7 +57,7 @@ public class TestDriver {
         
         try {
             ConfigReader reader = new ConfigReader();
-            Config config = reader.read();
+            Configuration config = reader.read();
             testDriver = new TestDriver(config);
             
             testDriver.start();
@@ -65,20 +66,18 @@ public class TestDriver {
         }
     }
     
-    private final Config config;
+    private final Configuration config;
     private final TestListRW testListRW;
     private final TestManager testManager;
     private final DomainManager domainManager;
-    private final String vmType;
     
-    private TestDriver(Config config) throws Exception {
+    private TestDriver(Configuration config) throws Exception {
         this.config = config;
         testListRW = new TestListRW(config);
         domainManager = new DomainManager(config);
         TransportProvider transportProvider = domainManager;
         
         testManager = new DefaultTestManager(1, 1, 0L, TimeUnit.MILLISECONDS, transportProvider);
-        vmType = config.getVMConfigs().get(0).getFactory().getType(); //TODO there might be multiple VMs (and so multiple types)
     }
     
     public void start() throws Exception {
@@ -91,7 +90,7 @@ public class TestDriver {
             TestHandler testHandler = new MauveTestHandler();
             
             RunResult runResult = runTests(null, newRun.getTimestampString(), testHandler);
-            runResult.setSystemProperty("jtestserver.domain.type", vmType);
+            //runResult.setSystemProperty("jtestplatform.domain.type", vmType); //TODO add system properties (virtualization type, ...)
             
             writeReports(runResult, newRun.getReportXml());
             

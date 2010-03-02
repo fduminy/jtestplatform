@@ -28,8 +28,8 @@ import java.util.Map;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
-import org.jtestplatform.client.Config;
 import org.jtestplatform.client.domain.Domain;
+import org.jtestplatform.configuration.Configuration;
 
 /**
  * That utility class is used to watch a list of {@link Domain} and 
@@ -55,7 +55,7 @@ public class WatchDog {
     /**
      * Configuration of the WatchDog.
      */
-    private final Config config;
+    private final Configuration config;
     
     /**
      * Is the WatchDog actually watching the {@link Domain}s ? 
@@ -79,7 +79,7 @@ public class WatchDog {
      * with the provided configuration.
      * @param config
      */
-    public WatchDog(Config config) {
+    public WatchDog(Configuration config) {
         this(config, null);
     }
     
@@ -88,7 +88,7 @@ public class WatchDog {
      * @param config
      * @param strategy
      */
-    public WatchDog(Config config, WatchDogStrategy strategy) {
+    public WatchDog(Configuration config, WatchDogStrategy strategy) {
         this.strategy = (strategy == null) ? new DefaultWatchDogStrategy(MAX_ZOMBIE_TIME_MILLIS) : strategy;                       
         this.config = config;
         thread.setDaemon(true);

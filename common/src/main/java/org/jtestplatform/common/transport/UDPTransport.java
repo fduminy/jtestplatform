@@ -87,7 +87,7 @@ public class UDPTransport implements Transport {
     }
 
     /* (non-Javadoc)
-     * @see org.jtestserver.common.transport.Transport#receive()
+     * @see org.jtestplatform.common.transport.Transport#receive()
      */
     @Override
     public String receive() throws TransportException {

@@ -30,25 +30,27 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.jtestplatform.client.Config;
+import org.jtestplatform.client.domain.libvirt.LibVirtDomainFactory;
 import org.jtestplatform.client.domain.watchdog.WatchDog;
 import org.jtestplatform.client.domain.watchdog.WatchDogListener;
 import org.jtestplatform.common.transport.Transport;
 import org.jtestplatform.common.transport.TransportException;
 import org.jtestplatform.common.transport.TransportProvider;
 import org.jtestplatform.common.transport.UDPTransport;
+import org.jtestplatform.configuration.Configuration;
+import org.jtestplatform.configuration.Factory;
 
 public class DomainManager implements TransportProvider {
     private static final Logger LOGGER = Logger.getLogger(DomainManager.class);
     
-    private final Map<DomainFactory<? extends DomainConfig>, DomainConfig> factories;
+    private final Map<DomainFactory<? extends Domain>, DomainConfig> factories;
     private final WatchDog watchDog;
     private final int minNbDomains;
     private final List<Domain> domains;
     
     @SuppressWarnings("unchecked")
-    public DomainManager(Config config) throws ConfigurationException {
-        factories = new HashMap<DomainFactory<? extends DomainConfig>, DomainConfig>();
+    public DomainManager(Configuration config) throws ConfigurationException {
+        factories = new HashMap<DomainFactory<? extends Domain>, DomainConfig>();
         watchDog = new WatchDog(config);
         
         watchDog.addWatchDogListener(new WatchDogListener() {
@@ -58,13 +60,8 @@ public class DomainManager implements TransportProvider {
             }
         });
         
-        domains = new ArrayList<Domain>();
-        
-        minNbDomains = 1; //TODO get it from config
-    }
-    
-    public void addFactory(DomainFactory<? extends DomainConfig> factory, DomainConfig config) {
-        factories.put(factory, config);
+        minNbDomains = config.getDomains().getMin();
+        domains = new ArrayList<Domain>(minNbDomains);        
     }
 
     private void domainDied(Domain domain) {
@@ -78,7 +75,7 @@ public class DomainManager implements TransportProvider {
         
         if ((domains.size() < minNbDomains) && !factories.isEmpty()) {
             try {
-                DomainFactory<? extends DomainConfig> factory = factories.keySet().iterator().next();
+                DomainFactory<? extends Domain> factory = factories.keySet().iterator().next();
                 DomainConfig config = factories.get(factory);
                 Domain domain = factory.createDomain(config);
                 domains.add(domain);

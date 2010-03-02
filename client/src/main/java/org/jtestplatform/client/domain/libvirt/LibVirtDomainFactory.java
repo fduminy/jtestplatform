@@ -50,7 +50,7 @@ import org.libvirt.DomainInfo.DomainState;
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
  */
-public class LibVirtDomainFactory implements DomainFactory<LibVirtDomainConfig> {
+public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
     private static final Logger LOGGER = Logger.getLogger(LibVirtDomainFactory.class);
 
     private static final String NETWORK_NAME = "default";
@@ -62,20 +62,6 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomainConfig> 
     @Override
     public String getType() {
         return "libvirt";
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public LibVirtDomainConfig readConfig(Properties properties, Reader reader) throws ConfigurationException {
-        LibVirtDomainConfig config = new LibVirtDomainConfig();
-        config.setFactory(this);
-        //TODO read from file
-        config.setType("kvm");
-        config.setVmName("test");
-        config.setCdrom(ConfigurationUtils.expandValue(properties, "${config.dir}/microcore_2.7.iso"));
-        return config;
     }
 
     public LibVirtDomain createDomain(DomainConfig config) throws ConfigurationException {

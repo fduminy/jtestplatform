@@ -44,7 +44,7 @@ public class MauveTestHandler implements TestHandler {
     private static final Logger LOGGER = Logger.getLogger(DefaultTestManager.class);
 
     /* (non-Javadoc)
-     * @see org.jtestserver.client.TestHandler#createRequest(java.lang.String)
+     * @see org.jtestplatform.client.TestHandler#createRequest(java.lang.String)
      */
     @Override
     public Message createRequest(String test) {
@@ -52,7 +52,7 @@ public class MauveTestHandler implements TestHandler {
     }
 
     /* (non-Javadoc)
-     * @see org.jtestserver.client.TestHandler#parseResult(org.jtestserver.common.message.Message)
+     * @see org.jtestplatform.client.TestHandler#parseResult(org.jtestplatform.common.message.Message)
      */
     @Override
     public Result parseResult(Message reply) {

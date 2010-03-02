@@ -22,15 +22,12 @@
  */
 package org.jtestplatform.client.domain;
 
-import java.io.Reader;
-import java.util.Properties;
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
  */
-public interface DomainFactory<C extends DomainConfig> {
+public interface DomainFactory<D extends Domain> {
     String getType();
-    C readConfig(Properties properties, Reader reader) throws ConfigurationException;
-    Domain createDomain(DomainConfig config) throws ConfigurationException;
+    D createDomain(DomainConfig config) throws ConfigurationException;
 }

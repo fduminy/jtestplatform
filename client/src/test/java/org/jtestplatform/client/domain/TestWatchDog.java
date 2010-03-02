@@ -37,10 +37,10 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.jtestplatform.client.Config;
 import org.jtestplatform.client.domain.watchdog.DefaultWatchDogStrategy;
 import org.jtestplatform.client.domain.watchdog.WatchDog;
 import org.jtestplatform.client.domain.watchdog.WatchDogListener;
+import org.jtestplatform.configuration.Configuration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -85,7 +85,7 @@ public class TestWatchDog {
     
     @Before
     public void setUp() {
-        Config config = new Config();
+        Configuration config = new Configuration();
         DefaultWatchDogStrategy strategy = new DefaultWatchDogStrategy(maxZombieTimeMillis); 
         config.setWatchDogPollInterval(pollInterval);
         watchDog = new WatchDog(config, strategy);
@@ -262,7 +262,7 @@ public class TestWatchDog {
         }
         
         /* (non-Javadoc)
-         * @see org.jtestserver.client.domain.Domain#getIPAddress()
+         * @see org.jtestplatform.client.domain.Domain#getIPAddress()
          */
         @Override
         public String getIPAddress() {

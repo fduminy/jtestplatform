@@ -28,7 +28,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 /**
- * This is a utility class to manage directory hierarchy of JTestServer.
+ * This is a utility class for configuration.
  * 
  * @author Fabien DUMINY (fduminy@jnode.org)
  *

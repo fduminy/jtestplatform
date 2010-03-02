@@ -27,6 +27,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.jtestplatform.configuration.Configuration;
+
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
@@ -36,9 +38,10 @@ public class Run {
     
     private static final DateFormat TIMESTAMP_FORMAT = new SimpleDateFormat("yyyyMMdd_HHmmss_SSS");
     
-    public static Run getLatest(Config config) {
-        config.getWorkDir().mkdirs();
-        String[] runs = config.getWorkDir().list(new FilenameFilter() {
+    public static Run getLatest(Configuration config) {
+        File workDir = new File(config.getWorkDir()); 
+        workDir.mkdirs();
+        String[] runs = workDir.list(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
                 return name.startsWith(ROOT_WORK_DIR_PREFIX);
@@ -67,7 +70,7 @@ public class Run {
         return result;
     }    
     
-    public static Run create(Config config) {
+    public static Run create(Configuration config) {
         Date timestamp = Calendar.getInstance().getTime();
         String run = ROOT_WORK_DIR_PREFIX + TIMESTAMP_FORMAT.format(timestamp);
         File rootWorkDir = new File(config.getWorkDir(), run);

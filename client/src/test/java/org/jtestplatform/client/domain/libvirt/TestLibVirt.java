@@ -29,9 +29,6 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.List;
 
-import org.jtestplatform.client.Config;
-import org.jtestplatform.client.ConfigReader;
-import org.jtestplatform.client.CustomConfigReader;
 import org.jtestplatform.client.domain.ConfigurationException;
 import org.jtestplatform.client.domain.Domain;
 import org.junit.Before;
@@ -49,12 +46,10 @@ import org.libvirt.DomainInfo.DomainState;
  */
 public class TestLibVirt {
     private LibVirtDomainFactory factory;
-    private Config config;
     private Domain p;
     
     @Before
     public void setUp() throws ConfigurationException {
-        config = new CustomConfigReader(ConfigReader.LIBVIRT_TYPE, "microcore-libvirt.xml").read();
         factory = new LibVirtDomainFactory();
     }
     
@@ -117,7 +112,7 @@ public class TestLibVirt {
 //            }
             
 //            String networkName = "default";
-//            //String networkName = "jtestserver-network";
+//            //String networkName = "jtestplatform-network";
 //            Network network = networkLookupByName(connect, networkName);
 //            if (network != null) {
 //                try {
@@ -235,6 +230,14 @@ public class TestLibVirt {
      * @return
      */
     private LibVirtDomainConfig getVMConfig() {
-        return (LibVirtDomainConfig) config.getVMConfigs().get(0);        
+        LibVirtDomainConfig config = new LibVirtDomainConfig();
+        LibVirtDomainFactory factory = new LibVirtDomainFactory();
+        config.setFactory(factory);
+        config.setType(factory.getType());
+        
+        config.setType("kvm");
+        config.setVmName("test");
+        //config.setCdrom(ConfigurationUtils.expandValue(properties, "${config.dir}/microcore_2.7.iso"));
+        return config;
     }    
 }

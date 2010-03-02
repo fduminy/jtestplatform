@@ -31,10 +31,13 @@
         <platform cpu="phenom" smp="4" bits="64"/>
         <platform cpu="core2duo" smp="4" bits="64"/>
     </platforms>
+    excluding.filters=awt,swing,Thread,java.net,Object.oom
+
+watchDogPollInterval=30000
     
     <domains min="1", max="2">
         <factories>
-            <factory type="libvirt" min="1", max="2">
+            <factory type="libvirt">
                 <connection uri="qemu:///system"/>
                 <connection uri="qemu:///session"/>
             </factory>
