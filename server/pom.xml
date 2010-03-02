@@ -1,14 +1,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<parent>
-		<artifactId>jtestserver</artifactId>
-		<groupId>jtestserver</groupId>
+		<artifactId>jtestplatform</artifactId>
+		<groupId>jtestplatform</groupId>
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>jtestserver</groupId>
-	<artifactId>jtestserver-server</artifactId>
-	<name>JTestServer Server</name>
+	<groupId>jtestplatform</groupId>
+	<artifactId>jtestplatform-server</artifactId>
+	<name>JTestPlatform Server</name>
 	<version>0.0.1-SNAPSHOT</version>
 	
     <licenses>
@@ -20,8 +20,8 @@
 	
 	<dependencies>
 		<dependency>
-			<groupId>jtestserver</groupId>
-			<artifactId>jtestserver-common</artifactId>
+			<groupId>jtestplatform</groupId>
+			<artifactId>jtestplatform-common</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
