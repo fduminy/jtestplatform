@@ -160,10 +160,10 @@
 		          <includeProjectDependencies>true</includeProjectDependencies>
 		          <includePluginDependencies>true</includePluginDependencies>
 		          <executableDependency>
-		            <groupId>jtestserver</groupId>
-		            <artifactId>jtestserver-client</artifactId>
+		            <groupId>jtestplatform</groupId>
+		            <artifactId>jtestplatform-client</artifactId>
 		          </executableDependency>				
-		          <mainClass>org.jtestserver.client.TestDriver</mainClass>
+		          <mainClass>org.jtestplatform.client.TestDriver</mainClass>
 		          <systemProperties>
 		            <systemProperty>
 		              <key>vmware.server.username</key>
@@ -174,7 +174,7 @@
                       <value>fabien</value>
                     </systemProperty>
                     <systemProperty>
-                      <key>jtestserver.home</key>
+                      <key>jtestplatform.home</key>
                       <value>client/src/main/resources/home</value>
                     </systemProperty>
                     <systemProperty>
@@ -187,11 +187,11 @@
 		          <arguments>
                     <argument>-Dvmware.server.username=fabien</argument>
                     <argument>-Dvmware.server.password=fabien</argument>
-                    <argument>-Djtestserver.home=client/src/main/resources/home</argument>
+                    <argument>-Djtestplatform.home=client/src/main/resources/home</argument>
                     <argument>-Djava.net.preferIPv4Stack=true</argument>
 		            <argument>-classpath</argument>
                     <argument>client/target/classes:common/target/classes:/home/fabien/.m2/repository/gnu-classpath/mauve/0.1/mauve-0.1.jar:/home/fabien/.m2/repository/javagroups/jgroups-all/2.8.Beta2/jgroups-all-2.8.Beta2.jar</argument>
-		            <argument>org.jtestserver.client.TestDriver</argument>
+		            <argument>org.jtestplatform.client.TestDriver</argument>
 		          </arguments>		          
 				</configuration>
 			</plugin>
