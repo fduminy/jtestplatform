@@ -17,10 +17,10 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.jtestserver.tests;
+package org.jtestplatform.tests;
 
-import org.jtestserver.common.protocol.ProtocolException;
-import org.jtestserver.common.protocol.TimeoutException;
+import org.jtestplatform.common.protocol.ProtocolException;
+import org.jtestplatform.common.protocol.TimeoutException;
 import org.junit.Ignore;
 import org.junit.Test;
 

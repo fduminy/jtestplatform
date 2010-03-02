@@ -17,17 +17,17 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.jtestserver.tests;
+package org.jtestplatform.tests;
 
 import java.net.InetAddress;
 import java.net.SocketAddress;
 
-import org.jtestserver.common.protocol.Client;
-import org.jtestserver.common.protocol.Protocol;
-import org.jtestserver.common.protocol.ProtocolException;
-import org.jtestserver.common.protocol.ReceivedMessage;
-import org.jtestserver.common.protocol.Server;
-import org.jtestserver.common.protocol.TimeoutException;
+import org.jtestplatform.common.protocol.Client;
+import org.jtestplatform.common.protocol.Protocol;
+import org.jtestplatform.common.protocol.ProtocolException;
+import org.jtestplatform.common.protocol.ReceivedMessage;
+import org.jtestplatform.common.protocol.Server;
+import org.jtestplatform.common.protocol.TimeoutException;
 import org.junit.Ignore;
 
 
@@ -52,7 +52,7 @@ public class TestInputMessage {
         }
 
         /* (non-Javadoc)
-         * @see org.jtestserver.common.protocol.Protocol#createClient(java.net.InetAddress, int)
+         * @see org.jtestplatform.common.protocol.Protocol#createClient(java.net.InetAddress, int)
          */
         @Override
         public Client<Object, ? extends Protocol<Object>> createClient(InetAddress serverIp,
@@ -62,7 +62,7 @@ public class TestInputMessage {
         }
 
         /* (non-Javadoc)
-         * @see org.jtestserver.common.protocol.Protocol#createServer(int)
+         * @see org.jtestplatform.common.protocol.Protocol#createServer(int)
          */
         @Override
         public Server<Object, ? extends Protocol<Object>> createServer(int localPort)

@@ -17,22 +17,22 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.jtestserver.tests;
+package org.jtestplatform.tests;
 
-import static org.jtestserver.tests.TestUtils.IP;
-import static org.jtestserver.tests.TestUtils.PORT;
+import static org.jtestplatform.tests.TestUtils.IP;
+import static org.jtestplatform.tests.TestUtils.PORT;
 
 import java.util.Arrays;
 import java.util.List;
 
 import junit.framework.Assert;
 
-import org.jtestserver.common.protocol.Client;
-import org.jtestserver.common.protocol.Protocol;
-import org.jtestserver.common.protocol.ProtocolException;
-import org.jtestserver.common.protocol.Server;
-import org.jtestserver.common.protocol.TimeoutException;
-import org.jtestserver.common.protocol.udp.UDPProtocol;
+import org.jtestplatform.common.protocol.Client;
+import org.jtestplatform.common.protocol.Protocol;
+import org.jtestplatform.common.protocol.ProtocolException;
+import org.jtestplatform.common.protocol.Server;
+import org.jtestplatform.common.protocol.TimeoutException;
+import org.jtestplatform.common.protocol.udp.UDPProtocol;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

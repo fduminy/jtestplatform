@@ -17,16 +17,16 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.jtestserver.tests;
+package org.jtestplatform.tests;
 
 import static org.junit.Assert.assertEquals;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import org.jtestserver.common.protocol.Client;
-import org.jtestserver.common.protocol.MessageProcessor;
-import org.jtestserver.common.protocol.Server;
+import org.jtestplatform.common.protocol.Client;
+import org.jtestplatform.common.protocol.MessageProcessor;
+import org.jtestplatform.common.protocol.Server;
 
 class TestUtils {
     static final int PORT = 11000; // use a different port than default one
@@ -114,7 +114,7 @@ class TestUtils {
         }
         
         /* (non-Javadoc)
-         * @see org.jtestserver.common.protocol.MessageProcessor#process(java.lang.String)
+         * @see org.jtestplatform.common.protocol.MessageProcessor#process(java.lang.String)
          */
         @Override
         public String process(String message) {

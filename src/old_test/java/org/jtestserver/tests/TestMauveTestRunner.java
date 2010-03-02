@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.jtestserver.tests;
+package org.jtestplatform.tests;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -25,8 +25,8 @@ import gnu.testlet.runner.RunResult;
 
 import java.io.IOException;
 
-import org.jtestserver.server.TestFailureException;
-import org.jtestserver.server.commands.MauveTestRunner;
+import org.jtestplatform.server.TestFailureException;
+import org.jtestplatform.server.commands.MauveTestRunner;
 import org.junit.Test;
 
 public class TestMauveTestRunner {
