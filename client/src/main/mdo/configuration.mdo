@@ -1,0 +1,137 @@
+<model>
+  <id>configuration</id>
+  <name>Configuration</name>
+  <description>Configuration Data Model</description>
+  
+  <defaults>
+    <default>
+      <key>package</key>
+      <value>org.jtestplatform.configuration</value>
+    </default>
+  </defaults>
+  
+  <classes>
+        <class rootElement="true" xml.tagName="configuration">
+         <name>Configuration</name>
+         <version>1.0</version>
+         <fields>
+            <field>
+              <name>workDir</name>
+              <type>String</type>
+              <defaultValue>workdir</defaultValue>
+              <version>1.0</version>
+            </field>
+            <field>
+              <name>watchDogPollInterval</name>
+              <type>int</type>
+              <defaultValue>10000</defaultValue>
+              <version>1.0</version>
+            </field>
+            <field>
+              <name>excludingFilters</name>
+              <type>String</type>
+              <defaultValue></defaultValue>
+              <version>1.0</version>
+            </field>
+            <field>
+              <name>serverPort</name>
+              <type>int</type>
+              <defaultValue>10000</defaultValue>
+              <version>1.0</version>
+            </field>
+        
+            <field>
+              <name>platforms</name>
+              <version>1.0</version>
+              <association xml.itemsStyle="wrapped">
+                <type>Platform</type>
+                <multiplicity>*</multiplicity>
+              </association>
+            </field>
+            <field>
+              <name>domains</name>
+              <version>1.0</version>
+              <association xml.itemsStyle="wrapped">
+                <type>Domains</type>
+                <multiplicity>1</multiplicity>
+              </association>
+            </field>            
+         </fields>
+        </class>
+        
+        <class>
+          <name>Platform</name>
+          <version>1.0</version>
+          <fields>
+            <field>
+              <name>cdrom</name>
+              <type>String</type>
+            </field>
+            <field>
+              <name>cpu</name>
+              <type>String</type>
+            </field>
+            <field>
+              <name>nbCores</name>
+              <type>int</type>
+              <defaultValue>1</defaultValue>
+            </field>
+            <field>
+              <name>wordSize</name>
+              <type>int</type>
+              <defaultValue>32</defaultValue>
+            </field>
+          </fields>
+        </class>
+
+        <class>
+          <name>Domains</name>
+          <version>1.0</version>
+          <fields>
+            <field>
+              <name>max</name>
+              <type>int</type>
+              <defaultValue>5</defaultValue>
+            </field>
+            <field>
+              <name>factories</name>
+              <version>1.0</version>
+              <association xml.itemsStyle="wrapped">
+                <type>Factory</type>
+                <multiplicity>*</multiplicity>
+              </association>
+            </field>
+          </fields>
+        </class>
+        
+        <class>
+          <name>Factory</name>
+          <version>1.0</version>
+          <fields>
+            <field>
+              <name>type</name>
+              <type>String</type>
+            </field>
+            <field>
+              <name>connections</name>
+              <version>1.0</version>
+              <association xml.itemsStyle="wrapped">
+                <type>Connection</type>
+                <multiplicity>*</multiplicity>
+              </association>
+            </field>
+          </fields>
+        </class>
+        
+        <class>
+          <name>Connection</name>
+          <version>1.0</version>
+          <fields>
+            <field>
+              <name>uri</name>
+              <type>String</type>
+            </field>
+          </fields>
+        </class>
+  </classes>
+</model>

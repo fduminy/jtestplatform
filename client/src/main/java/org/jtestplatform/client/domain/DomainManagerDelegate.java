@@ -1,0 +1,60 @@
+/**
+ * JTestPlatform is a client/server framework for testing any JVM implementation.
+ *
+ * Copyright (C) 2008-2010  Fabien DUMINY (fduminy at jnode dot org)
+ *
+ * JTestPlatform is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 3
+ * of the License, or (at your option) any later version.
+ *
+ * JTestPlatform is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
+/**
+ * 
+ */
+package org.jtestplatform.client.domain;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.jtestplatform.configuration.Configuration;
+import org.jtestplatform.configuration.Connection;
+import org.libvirt.Connect;
+import org.libvirt.LibvirtException;
+
+/**
+ * @author Fabien DUMINY (fduminy@jnode.org)
+ *
+ */
+class DomainManagerDelegate {
+    private final DomainFactory<? extends Domain> domainFactory;
+    private final LoadBalancer<Connection> connections;
+    
+    /**
+     * @param domainFactory
+     * @param connections
+     */
+    public DomainManagerDelegate(DomainFactory<? extends Domain> domainFactory,
+            List<Connection> connections) {
+        this.domainFactory = domainFactory;
+        this.connections = new LoadBalancer<Connection>(connections);
+    }
+
+    /**
+     * @param config
+     * @return
+     * @throws ConfigurationException 
+     */
+    public Domain createDomain(DomainConfig config) throws ConfigurationException {
+        return domainFactory.createDomain(config, connections.getNext());
+    }    
+}
