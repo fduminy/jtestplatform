@@ -53,7 +53,16 @@ public class ConfigReader {
             PropertyConfigurator.configure(logConfigFile.getAbsolutePath());
             
             ConfigurationDom4jReader reader = new ConfigurationDom4jReader();
-            return reader.read(new FileReader(configFile));
+            
+            Configuration config = reader.read(new FileReader(configFile));
+            
+            File workDir = new File(config.getWorkDir());
+            if (!workDir.isAbsolute()) {
+                workDir = new File(homeDirectory, config.getWorkDir());
+            }
+            config.setWorkDir(workDir.getAbsolutePath());
+            
+            return config;
         } catch (IOException e) {
             throw new ConfigurationException("can't read config", e);
         } catch (DocumentException e) {
