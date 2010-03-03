@@ -37,6 +37,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.jtestplatform.client.ConfigReader;
 import org.jtestplatform.client.domain.watchdog.DefaultWatchDogStrategy;
 import org.jtestplatform.client.domain.watchdog.WatchDog;
 import org.jtestplatform.client.domain.watchdog.WatchDogListener;
@@ -84,7 +85,9 @@ public class TestWatchDog {
     }
     
     @Before
-    public void setUp() {
+    public void setUp() throws ConfigurationException {
+        new ConfigReader().read(); // will initialize log4j
+                
         Configuration config = new Configuration();
         DefaultWatchDogStrategy strategy = new DefaultWatchDogStrategy(maxZombieTimeMillis); 
         config.setWatchDogPollInterval(pollInterval);
