@@ -23,20 +23,15 @@
 package org.jtestplatform.client.domain.libvirt;
 
 import java.io.IOException;
-import java.io.Reader;
 import java.net.UnknownHostException;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.jtestplatform.client.domain.ConfigurationException;
 import org.jtestplatform.client.domain.DomainConfig;
 import org.jtestplatform.client.domain.DomainFactory;
-import org.jtestplatform.client.utils.ConfigurationUtils;
+import org.jtestplatform.configuration.Connection;
 import org.libvirt.Connect;
 import org.libvirt.Domain;
 import org.libvirt.DomainInfo;
@@ -64,8 +59,11 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
         return "libvirt";
     }
 
-    public LibVirtDomain createDomain(DomainConfig config) throws ConfigurationException {
-        return new LibVirtDomain((LibVirtDomainConfig) config, this); 
+    /**
+     * {@inheritDoc}
+     */
+    public LibVirtDomain createDomain(DomainConfig config, Connection connection) throws ConfigurationException {
+        return new LibVirtDomain(config, this, connection); 
     }
 
     /**
@@ -122,7 +120,7 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
         }
     }
     
-    private void ensureNetworkExist(Connect connect) throws LibvirtException {
+    void ensureNetworkExist(Connect connect) throws LibvirtException {
         //TODO create our own network
         
         Network network = networkLookupByName(connect, NETWORK_NAME);
@@ -151,48 +149,14 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
         return network;
     }
     
-    //TODO get it from config :
-    //private List<String> uris = Collections.singletonList("qemu:///session"); // doesn't allow creation of a network
-    private List<String> uris = Collections.singletonList("qemu:///system"); 
-    
-    private Map<String, Connect> connections = new HashMap<String, Connect>(uris.size());
-    private int nextConnect = 0;
-    private Connect getNextConnect() throws LibvirtException {
-        //TODO implement pluggable strategy
-        
-        // simple round robin
-        String uri = uris.get(nextConnect);       
-        Connect connect = connections.get(uri);
-        if (connect == null) {
-            connect = new Connect(uri, false);
-            connections.put(uri, connect);
-            
-            ensureNetworkExist(connect);
-        }
-                
-        return connect;
-    }
-    
-    protected void finalize() {
-        for (Connect connect : connections.values()) {
-            try {
-                connect.close();
-            } catch (LibvirtException e) {
-                LOGGER.error(e);
-            }
-        }
-    }
-
     /**
-     * @param type
      * @param config
      * @return
      * @throws ConfigurationException 
      */
-    Domain defineDomain(String type, LibVirtDomainConfig config) throws ConfigurationException {
+    Domain defineDomain(Connect connect, DomainConfig config) throws ConfigurationException {
         try {
-            Connect connect = getNextConnect();
-            String xml = XMLGenerator.generate(type, config.getVmName(), config.getCdrom(), NETWORK_NAME);
+            String xml = XMLGenerator.generate(config.getVmName(), config.getCdrom(), NETWORK_NAME);
             return connect.domainDefineXML(xml);
         } catch (LibvirtException e) {
             throw new ConfigurationException(e);

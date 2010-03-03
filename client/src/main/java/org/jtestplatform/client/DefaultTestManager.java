@@ -36,6 +36,7 @@ import org.jtestplatform.common.message.Message;
 import org.jtestplatform.common.transport.Transport;
 import org.jtestplatform.common.transport.TransportHelper;
 import org.jtestplatform.common.transport.TransportProvider;
+import org.jtestplatform.configuration.Configuration;
 
 public class DefaultTestManager implements TestManager {
     private static final Logger LOGGER = Logger.getLogger(DefaultTestManager.class);
@@ -43,14 +44,11 @@ public class DefaultTestManager implements TestManager {
     private final ThreadLocal<Transport> transports = new ThreadLocal<Transport>();
     
     private final ExecutorService executor;
-    private final TransportProvider transportProvider;
     private final TransportHelper transportHelper;
     private final ThreadGroup threadGroup;
     
     public DefaultTestManager(int corePoolSize, int maximumPoolSize, 
-            long keepAliveTime, TimeUnit unit, 
-            TransportProvider transportProvider) {
-        this.transportProvider = transportProvider;
+            long keepAliveTime, TimeUnit unit) {
         transportHelper = new TransportHelper();
         
         threadGroup = new ThreadGroup("DefaultTestManager threads");
@@ -72,10 +70,10 @@ public class DefaultTestManager implements TestManager {
      * {@inheritDoc}
      */
     @Override
-    public List<Future<Message>> runTests(List<Message> messages) throws Exception {
+    public List<Future<Message>> runTests(List<Message> messages, TransportProvider provider) throws Exception {
         Collection<TestCallable> tests = new ArrayList<TestCallable>(messages.size());
         for (Message message : messages) {
-            tests.add(new TestCallable(message));
+            tests.add(new TestCallable(message, provider));
         }
         
         return executor.invokeAll(tests);
@@ -107,14 +105,16 @@ public class DefaultTestManager implements TestManager {
     
     private class TestCallable implements Callable<Message> {
         private final Message message;
+        private final TransportProvider transportProvider;
         
-        public TestCallable(Message message) {
+        public TestCallable(Message message, TransportProvider transportProvider) {
             this.message = message;
+            this.transportProvider = transportProvider;
         }
         
         @Override
         public Message call() throws Exception {
-            Transport transport = DefaultTestManager.this.transports.get();
+            Transport transport = transportProvider.get();
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("call: transport=" + transport);
             }
@@ -126,31 +126,6 @@ public class DefaultTestManager implements TestManager {
     private class TestManagerThread extends Thread {
         private TestManagerThread(Runnable r) {
             super(threadGroup, r);            
-        }
-        
-        @Override
-        public void run() {
-            try {
-                Transport transport = transportProvider.get();
-                transports.set(transport);
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("run: transport=" + transport);
-                }
-                
-                super.run();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            } finally {
-                Transport transport = transports.get(); 
-                transports.remove();
-                if (transport != null) {
-                    try {
-                        transportHelper.stop(transport);
-                    } catch (IOException e) {
-                        LOGGER.error(e);
-                    }
-                }
-            }
         }
     }
 }

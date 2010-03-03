@@ -28,8 +28,8 @@ package org.jtestplatform.client.domain.libvirt;
  *
  */
 public class XMLGenerator {
-    public static String generate(String type, String name, String cdromFile, String networkName) {
-        return generate(type, name, "1557e204-10f8-3c1f-ac60-3dc6f46e85f9", cdromFile, 0, networkName);
+    public static String generate(String name, String cdromFile, String networkName) {
+        return generate(name, "1557e204-10f8-3c1f-ac60-3dc6f46e85f9", cdromFile, 0, networkName);
     }
     
     private static String baseMacAddress = "54:52:00:77:58:";
@@ -88,7 +88,7 @@ public class XMLGenerator {
       return sb.toString();
     }
     
-    public static String generate(String type, String name, String uuid, String cdromFile, int netDevId, String networkName) {
+    public static String generate(String name, String uuid, String cdromFile, int netDevId, String networkName) {
         StringBuilder sb = new StringBuilder(4096);
 /*        
         sb.append("<domain type='").append(type).append("'>");

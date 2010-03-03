@@ -38,8 +38,7 @@ public class Run {
     
     private static final DateFormat TIMESTAMP_FORMAT = new SimpleDateFormat("yyyyMMdd_HHmmss_SSS");
     
-    public static Run getLatest(Configuration config) {
-        File workDir = new File(config.getWorkDir()); 
+    public static Run getLatest(File workDir) { 
         workDir.mkdirs();
         String[] runs = workDir.list(new FilenameFilter() {
             @Override
@@ -65,15 +64,15 @@ public class Run {
         
         Run result = null;
         if (latest != null) {
-            result = new Run(new File(config.getWorkDir(), latestRun), latest);
+            result = new Run(new File(workDir, latestRun), latest);
         }
         return result;
     }    
     
-    public static Run create(Configuration config) {
+    public static Run create(File workDir) {
         Date timestamp = Calendar.getInstance().getTime();
         String run = ROOT_WORK_DIR_PREFIX + TIMESTAMP_FORMAT.format(timestamp);
-        File rootWorkDir = new File(config.getWorkDir(), run);
+        File rootWorkDir = new File(workDir, run);
         rootWorkDir.mkdirs();
         return new Run(rootWorkDir, timestamp);
     }

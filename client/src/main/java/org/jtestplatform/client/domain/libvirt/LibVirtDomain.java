@@ -24,8 +24,13 @@ package org.jtestplatform.client.domain.libvirt;
 
 import java.io.IOException;
 
+import org.apache.log4j.Logger;
 import org.jtestplatform.client.domain.ConfigurationException;
 import org.jtestplatform.client.domain.Domain;
+import org.jtestplatform.client.domain.DomainConfig;
+import org.jtestplatform.configuration.Connection;
+import org.libvirt.Connect;
+import org.libvirt.LibvirtException;
 import org.libvirt.DomainInfo.DomainState;
 
 /**
@@ -35,15 +40,19 @@ import org.libvirt.DomainInfo.DomainState;
  *
  */
 class LibVirtDomain implements Domain {
+    private static final Logger LOGGER = Logger.getLogger(LibVirtDomain.class);
+    
     /**
      * Configuration of machine to run with libvirt.
      */
-    private final LibVirtDomainConfig config;
+    private final DomainConfig config;
+
+    private final LibVirtDomainFactory factory;
+    private final Connection connection;
     
     private org.libvirt.Domain domain;
-
-    private final String type;
-    private final LibVirtDomainFactory factory;
+    private Connect connect;
+    
     private String ipAddress;
     
     /**
@@ -52,24 +61,37 @@ class LibVirtDomain implements Domain {
      * @param connect1
      * @throws ConfigurationException 
      */
-    LibVirtDomain(LibVirtDomainConfig config, LibVirtDomainFactory factory) {
+    LibVirtDomain(DomainConfig config, LibVirtDomainFactory factory, Connection connection) {
         this.config = config;        
-        this.type = config.getType();
         this.factory = factory;
+        this.connection = connection;
     }
-    
+        
     /**
      * {@inheritDoc}
      * @throws ConfigurationException 
      */
     @Override
-    public synchronized String start() throws IOException, ConfigurationException {
-        if (!isAlive()) {
-            domain = factory.defineDomain(type, config);
-            if (!isAlive()) {
-                ipAddress = factory.start(domain);
+    public synchronized String start() throws ConfigurationException {
+        try {
+            if (connect == null) {
+                connect = new Connect(connection.getUri(), false);
+                factory.ensureNetworkExist(connect);
             }
+                            
+            if (!isAlive()) {
+                ipAddress = null;
+                domain = factory.defineDomain(connect, config);
+                if (!isAlive()) {
+                    ipAddress = factory.start(domain);
+                }
+            }
+        } catch (LibvirtException lve) {
+            throw new ConfigurationException("failed to start", lve);
+        } catch (IOException e) {
+            throw new ConfigurationException("failed to start", e);
         }
+        
         return ipAddress;
     }
     
@@ -86,6 +108,17 @@ class LibVirtDomain implements Domain {
         }
     }
 
+    @Override
+    protected void finalize() throws Throwable {
+        if (connect != null) {
+            try {
+                connect.close();
+            } catch (LibvirtException e) {
+                LOGGER.error(e);
+            }
+        }
+    }
+    
     /**
      * {@inheritDoc}
      */

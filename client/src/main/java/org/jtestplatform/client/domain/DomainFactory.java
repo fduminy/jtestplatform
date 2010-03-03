@@ -22,6 +22,8 @@
  */
 package org.jtestplatform.client.domain;
 
+import org.jtestplatform.configuration.Connection;
+
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)
@@ -29,5 +31,5 @@ package org.jtestplatform.client.domain;
  */
 public interface DomainFactory<D extends Domain> {
     String getType();
-    D createDomain(DomainConfig config) throws ConfigurationException;
+    D createDomain(DomainConfig config, Connection connection) throws ConfigurationException;
 }

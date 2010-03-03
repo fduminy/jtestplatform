@@ -25,16 +25,20 @@ package org.jtestplatform.client;
 import gnu.testlet.runner.RunResult;
 import gnu.testlet.runner.XMLReportParser;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.List;
 
 import net.sourceforge.nanoxml.XMLParseException;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.jtestplatform.client.utils.TestListRW;
 import org.jtestplatform.common.message.MauveReport;
 import org.jtestplatform.common.message.Message;
 import org.jtestplatform.common.message.RunMauveTest;
+import org.jtestplatform.configuration.Configuration;
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)
@@ -43,6 +47,12 @@ import org.jtestplatform.common.message.RunMauveTest;
 public class MauveTestHandler implements TestHandler {
     private static final Logger LOGGER = Logger.getLogger(DefaultTestManager.class);
 
+    private final TestListRW testListRW;
+    
+    public MauveTestHandler(Configuration config) {
+        testListRW = new TestListRW(config);
+    }
+    
     /* (non-Javadoc)
      * @see org.jtestplatform.client.TestHandler#createRequest(java.lang.String)
      */
@@ -84,5 +94,19 @@ public class MauveTestHandler implements TestHandler {
             LOGGER.error("I/O error", e);
         }
         return result;
+    }
+
+    /* (non-Javadoc)
+     * @see org.jtestplatform.client.TestHandler#readTests(java.io.File)
+     */
+    @Override
+    public List<String> readTests(File listFile) throws IOException {
+        List<String> list;
+        if ((listFile != null) && listFile.exists()) {
+            list = testListRW.readList(listFile);
+        } else {
+            list = testListRW.readCompleteList();
+        }
+        return list;
     }    
 }

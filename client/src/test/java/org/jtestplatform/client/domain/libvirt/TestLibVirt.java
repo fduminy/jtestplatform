@@ -31,6 +31,8 @@ import java.util.List;
 
 import org.jtestplatform.client.domain.ConfigurationException;
 import org.jtestplatform.client.domain.Domain;
+import org.jtestplatform.client.domain.DomainConfig;
+import org.jtestplatform.configuration.Connection;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -45,12 +47,16 @@ import org.libvirt.DomainInfo.DomainState;
  *
  */
 public class TestLibVirt {
+    private Connection connection;
+    
     private LibVirtDomainFactory factory;
     private Domain p;
     
     @Before
     public void setUp() throws ConfigurationException {
         factory = new LibVirtDomainFactory();
+        connection = new Connection();
+        connection.setUri("qemu:///system");
     }
     
     public void tearDown() throws IOException, ConfigurationException {
@@ -61,13 +67,13 @@ public class TestLibVirt {
     
     @Test
     public void testStart() throws ConfigurationException, IOException {
-        p = factory.createDomain(getVMConfig());
+        p = factory.createDomain(getVMConfig(), connection);
         p.start();
     }
     
     @Test
     public void testStop() throws ConfigurationException, IOException {
-        p = factory.createDomain(getVMConfig());
+        p = factory.createDomain(getVMConfig(), connection);
         p.start();
         p.stop();
     }
@@ -169,7 +175,7 @@ public class TestLibVirt {
             //assertNotNull(n);
             //Network n = connection.networkLookupByUUIDString("50d17ad3-3c52-045e-9513-c75455f3a78d");
             
-            LibVirtDomainConfig cfg = getVMConfig();
+            DomainConfig cfg = getVMConfig();
                             
             String domainName = "testFabien" + id;
             domain = domainLookupByName(connect, domainName);            
@@ -182,7 +188,7 @@ public class TestLibVirt {
             }
             
             String networkName = network.getName();
-            String xml = XMLGenerator.generate(cfg.getType(), domainName, "1557e204-10f8-3c1f-ac60-3dc6f46e85f" + id, cfg.getCdrom(), id, networkName);            
+            String xml = XMLGenerator.generate(domainName, "1557e204-10f8-3c1f-ac60-3dc6f46e85f" + id, cfg.getCdrom(), id, networkName);            
             domain = connect.domainDefineXML(xml);
             //domain.destroy();
             if (domain.getInfo().state == DomainState.VIR_DOMAIN_RUNNING) {
@@ -229,15 +235,10 @@ public class TestLibVirt {
     /**
      * @return
      */
-    private LibVirtDomainConfig getVMConfig() {
-        LibVirtDomainConfig config = new LibVirtDomainConfig();
-        LibVirtDomainFactory factory = new LibVirtDomainFactory();
-        config.setFactory(factory);
-        config.setType(factory.getType());
-        
-        config.setType("kvm");
+    private DomainConfig getVMConfig() {
+        DomainConfig config = new DomainConfig();
         config.setVmName("test");
         //config.setCdrom(ConfigurationUtils.expandValue(properties, "${config.dir}/microcore_2.7.iso"));
         return config;
-    }    
+    }
 }

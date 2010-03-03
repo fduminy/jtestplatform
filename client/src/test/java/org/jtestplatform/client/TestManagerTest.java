@@ -80,7 +80,7 @@ public class TestManagerTest {
         transportProvider = mock(TransportProvider.class);
         
         testManager = new DefaultTestManager(corePoolSize,
-                maximumPoolSize, keepAliveTime, unit, transportProvider);
+                maximumPoolSize, keepAliveTime, unit);
     }
     
     @After
@@ -103,7 +103,7 @@ public class TestManagerTest {
             messages.add(message);
         }
         
-        List<Future<Message>> results = testManager.runTests(messages);
+        List<Future<Message>> results = testManager.runTests(messages, transportProvider);
         assertNotNull(results);
         assertEquals(messages.size(), results.size());
     }

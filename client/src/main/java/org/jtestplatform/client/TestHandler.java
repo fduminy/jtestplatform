@@ -22,6 +22,10 @@
  */
 package org.jtestplatform.client;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+
 import org.jtestplatform.common.message.Message;
 
 
@@ -33,4 +37,11 @@ public interface TestHandler {
     Message createRequest(String test);
     
     Result parseResult(Message reply);
+
+    /**
+     * @param object
+     * @return
+     * @throws IOException 
+     */
+    List<String> readTests(File file) throws IOException;
 }

@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.concurrent.Future;
 
 import org.jtestplatform.common.message.Message;
+import org.jtestplatform.common.transport.TransportProvider;
 
 
 /**
@@ -36,10 +37,12 @@ import org.jtestplatform.common.message.Message;
 public interface TestManager {
     /**
      * @param messages
+     * @param transportProvider 
      * @return
      * @throws Exception
      */
-    List<Future<Message>> runTests(List<Message> messages) throws Exception;
+    List<Future<Message>> runTests(List<Message> messages,
+            TransportProvider transportProvider) throws Exception;
     
     void shutdown();
 

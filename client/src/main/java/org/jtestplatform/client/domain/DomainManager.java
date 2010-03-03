@@ -39,20 +39,34 @@ import org.jtestplatform.common.transport.TransportProvider;
 import org.jtestplatform.common.transport.UDPTransport;
 import org.jtestplatform.configuration.Configuration;
 import org.jtestplatform.configuration.Factory;
+import org.jtestplatform.configuration.Platform;
+import org.libvirt.Connect;
+import org.libvirt.LibvirtException;
 
 public class DomainManager implements TransportProvider {
     private static final Logger LOGGER = Logger.getLogger(DomainManager.class);
     
-    private final Map<DomainFactory<? extends Domain>, DomainConfig> factories;
+    private final Map<String, DomainFactory<? extends Domain>> knownFactories;
+    private final LoadBalancer<DomainManagerDelegate> delegates;
     private final WatchDog watchDog;
-    private final int minNbDomains;
-    private final List<Domain> domains;
+    private final LoadBalancer<Domain> domains;
+    private final DomainConfig domainConfig;
+    private final int maxNumberOfDomains;
+    private final int serverPort;
     
     @SuppressWarnings("unchecked")
-    public DomainManager(Configuration config) throws ConfigurationException {
-        factories = new HashMap<DomainFactory<? extends Domain>, DomainConfig>();
-        watchDog = new WatchDog(config);
+    public DomainManager(Configuration config, Platform platform) throws ConfigurationException {
+        domainConfig = createDomainConfig(platform);        
+        maxNumberOfDomains = Math.max(1, config.getDomains().getMax());
+        serverPort = config.getServerPort();
         
+        //TODO get it from ServiceLoader
+        knownFactories = new HashMap<String, DomainFactory<? extends Domain>>();
+        LibVirtDomainFactory f = new LibVirtDomainFactory(); 
+        knownFactories.put(f.getType(), f);
+        //
+        
+        watchDog = new WatchDog(config);        
         watchDog.addWatchDogListener(new WatchDogListener() {
             @Override
             public void domainDied(Domain domain) {
@@ -60,50 +74,45 @@ public class DomainManager implements TransportProvider {
             }
         });
         
-        minNbDomains = config.getDomains().getMin();
-        domains = new ArrayList<Domain>(minNbDomains);        
+        domains = new LoadBalancer<Domain>();
+        
+        List<DomainManagerDelegate> dmDelegates = new ArrayList<DomainManagerDelegate>();
+        for (Factory factory : config.getDomains().getFactories()) {
+            DomainFactory<? extends Domain> domainFactory = knownFactories.get(factory.getType());
+            if (domainFactory == null) {
+                LOGGER.error("no DomainFactory for type " + factory.getType());
+                continue;
+            }
+            
+            DomainManagerDelegate data = new DomainManagerDelegate(domainFactory, factory.getConnections());
+            dmDelegates.add(data);
+        }
+        delegates = new LoadBalancer<DomainManagerDelegate>(dmDelegates);
+    }
+
+    /**
+     * @param platform
+     * @return
+     */
+    private DomainConfig createDomainConfig(Platform platform) {
+        DomainConfig domainConfig = new DomainConfig();
+        domainConfig.setCdrom(platform.getCdrom());
+        domainConfig.setVmName("JTestPlatform_" + System.currentTimeMillis());
+        return domainConfig;
     }
 
     private void domainDied(Domain domain) {
-        if (domains.remove(domain)) {
-            maybeStartNewProcess();
-        }
+        domains.remove(domain);
     }
     
-    private boolean maybeStartNewProcess() throws RuntimeException {
-        boolean started = false;
-        
-        if ((domains.size() < minNbDomains) && !factories.isEmpty()) {
-            try {
-                DomainFactory<? extends Domain> factory = factories.keySet().iterator().next();
-                DomainConfig config = factories.get(factory);
-                Domain domain = factory.createDomain(config);
-                domains.add(domain);
-                watchDog.watch(domain);
-                started = true;
-            } catch (ConfigurationException ce) {
-                throw new RuntimeException(ce);
-            }
-        } else {
-            started = true;
-        }
-        
-        return started;
-    }
-
     public void start() {
         watchDog.startWatching();
-        
-        boolean started = false;
-        do {
-            started = maybeStartNewProcess();
-        } while (!started);
     }
 
     public void stop() {
         watchDog.stopWatching();
         
-        for (Domain domain : domains) {
+        for (Domain domain : domains.clear()) {
             // stop the watch dog before actually stop the domain
             watchDog.unwatch(domain);
     
@@ -116,8 +125,6 @@ public class DomainManager implements TransportProvider {
                 LOGGER.error("an error happened while stopping", e);
             }
         }
-        
-        domains.clear();
     }
 
     /**
@@ -128,8 +135,8 @@ public class DomainManager implements TransportProvider {
         try {
             DatagramSocket socket = new DatagramSocket();
             String host = getNextIP();
-            int port = 0; //TODO get port        
-            socket.connect(InetAddress.getByName(host), port);
+               
+            socket.connect(InetAddress.getByName(host), serverPort);
             return new UDPTransport(socket);
         } catch (SocketException e) {
             throw new TransportException("failed to create socket", e);
@@ -138,22 +145,21 @@ public class DomainManager implements TransportProvider {
         }
     }
     
-    private int nextIP = 0;
     private synchronized String getNextIP() throws TransportException {
-        //TODO use a pluggable strategy
-        
-        // simple round robin
-        if (domains.isEmpty()) {
-            nextIP = 0;
-            boolean started = maybeStartNewProcess(); 
-            if (!started) {
-                throw new TransportException("unable to start a new domain");
+        if ((domains.size() == 0) || (domains.size() < maxNumberOfDomains)) {
+            // create a domain if there is none or if there is less than maximum
+            
+            try {
+                DomainManagerDelegate delegate = delegates.getNext();
+                                    
+                Domain domain = delegate.createDomain(domainConfig);
+                domains.add(domain);
+                watchDog.watch(domain);
+            } catch (ConfigurationException ce) {
+                throw new RuntimeException(ce);
             }
         }
-
-        String ipAddress = domains.get(nextIP++).getIPAddress();
-        int nbDomains = domains.size();
-        nextIP = (nbDomains == 0) ? 0 : (nextIP % nbDomains);
-        return ipAddress;
+        
+        return domains.getNext().getIPAddress();
     }
 }

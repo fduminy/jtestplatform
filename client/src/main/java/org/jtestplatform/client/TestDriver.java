@@ -35,8 +35,10 @@ import gnu.testlet.runner.compare.TextComparisonWriter;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -44,10 +46,10 @@ import net.sourceforge.nanoxml.XMLParseException;
 
 import org.apache.log4j.Logger;
 import org.jtestplatform.client.domain.DomainManager;
-import org.jtestplatform.client.utils.TestListRW;
 import org.jtestplatform.common.message.Message;
 import org.jtestplatform.common.transport.TransportProvider;
 import org.jtestplatform.configuration.Configuration;
+import org.jtestplatform.configuration.Platform;
 
 public class TestDriver {
     private static final Logger LOGGER = Logger.getLogger(TestDriver.class);
@@ -67,38 +69,45 @@ public class TestDriver {
     }
     
     private final Configuration config;
-    private final TestListRW testListRW;
     private final TestManager testManager;
-    private final DomainManager domainManager;
     
     private TestDriver(Configuration config) throws Exception {
-        this.config = config;
-        testListRW = new TestListRW(config);
-        domainManager = new DomainManager(config);
-        TransportProvider transportProvider = domainManager;
-        
-        testManager = new DefaultTestManager(1, 1, 0L, TimeUnit.MILLISECONDS, transportProvider);
+        this.config = config;        
+        testManager = new DefaultTestManager(1, 1, 0L, TimeUnit.MILLISECONDS);
     }
     
     public void start() throws Exception {
-        domainManager.start();
- 
-        try {
-            Run latestRun = Run.getLatest(config);
-            Run newRun = Run.create(config);
-            
-            TestHandler testHandler = new MauveTestHandler();
-            
-            RunResult runResult = runTests(null, newRun.getTimestampString(), testHandler);
-            //runResult.setSystemProperty("jtestplatform.domain.type", vmType); //TODO add system properties (virtualization type, ...)
-            
-            writeReports(runResult, newRun.getReportXml());
-            
-            compareRuns(latestRun, newRun, runResult);
+        try {            
+            for (Platform platform : config.getPlatforms()) {
+                //TODO run domain managers in parallel 
+                DomainManager domainManager = new DomainManager(config, platform);
+                domainManager.start();
+         
+                try {
+                    File workDir = new File(config.getWorkDir(), toString(platform));
+                    Run latestRun = Run.getLatest(workDir);
+                    Run newRun = Run.create(workDir);
+                    
+                    TestHandler testHandler = new MauveTestHandler(config);
+        
+                    List<Future<Message>> replies = runTests(testHandler, domainManager);
+                    RunResult runResult = mergeResults(newRun.getTimestampString(), testHandler, replies);
+                    //runResult.setSystemProperty("jtestplatform.domain.type", vmType); //TODO add system properties (virtualization type, ...)
+                    
+                    writeReports(runResult, newRun.getReportXml());
+                    
+                    compareRuns(latestRun, newRun, runResult);
+                } finally {        
+                    domainManager.stop();
+                }
+            }
         } finally {        
-            domainManager.stop();
             testManager.shutdown();
         }
+    }
+    
+    private String toString(Platform platform) {
+        return platform.getCpu() + '_' + platform.getWordSize() + "bits_x" + platform.getNbCores(); 
     }
     
     private void compareRuns(Run latestRun, Run newRun, RunResult newRunResult) throws XMLParseException, IOException {
@@ -127,23 +136,15 @@ public class TestDriver {
         HTMLGenerator.createReport(result, reportXml.getParentFile());
     }
     
-    private List<Future<Message>> runTestsImpl(List<String> list, TestHandler testHandler) throws Exception {
+    private List<Future<Message>> runTests(TestHandler testHandler, TransportProvider transportProvider) throws Exception {
+        final List<String> list = testHandler.readTests(null);
+
         List<Message> messages = new ArrayList<Message>(list.size());
         for (String test : list) {
             messages.add(testHandler.createRequest(test));
         }
         
-        return testManager.runTests(messages);
-    }
-
-    private List<String> readTests(File listFile) throws Exception {
-        List<String> list;
-        if ((listFile != null) && listFile.exists()) {
-            list = testListRW.readList(listFile);
-        } else {
-            list = testListRW.readCompleteList();
-        }
-        return list;
+        return testManager.runTests(messages, transportProvider);
     }
     
     private RunResult mergeResults(String timestamp, TestHandler testHandler,
@@ -165,13 +166,6 @@ public class TestDriver {
         }
 
         return result;
-    }
-    
-    private RunResult runTests(File listFile, String timestamp, TestHandler testHandler)
-        throws Exception {
-        List<String> list = readTests(listFile);
-        List<Future<Message>> replies = runTestsImpl(list, testHandler);
-        return mergeResults(timestamp, testHandler, replies);
     }
     
     private void mergeResults(RunResult target, RunResult source) {

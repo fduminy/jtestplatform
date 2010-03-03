@@ -25,17 +25,26 @@ package org.jtestplatform.client.domain;
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
  */
-public interface DomainConfig {
-    /**
-     * Get the name of this VM.
-     * 
-     * @return name of this VM
-     */
-    String getVmName();
+public class DomainConfig {
+    private String cdrom;
+    private String name;
     
+    public String getVmName() {
+        return name;
+    }
+
     /**
-     * Get the factory for this VM.
-     * @return factory for this VM.
+     * @return
      */
-    DomainFactory getFactory();
+    public String getCdrom() {
+        return cdrom;
+    }
+
+    public void setCdrom(String cdrom) {
+        this.cdrom = cdrom;
+    }
+
+    public void setVmName(String name) {
+        this.name = name;
+    }
 }
