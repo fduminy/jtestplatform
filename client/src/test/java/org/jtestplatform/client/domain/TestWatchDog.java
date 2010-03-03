@@ -25,11 +25,8 @@ package org.jtestplatform.client.domain;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.doCallRealMethod;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -38,6 +35,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.jtestplatform.client.ConfigReader;
+import org.jtestplatform.client.domain.DomainUtils.CustomDomain;
 import org.jtestplatform.client.domain.watchdog.DefaultWatchDogStrategy;
 import org.jtestplatform.client.domain.watchdog.WatchDog;
 import org.jtestplatform.client.domain.watchdog.WatchDogListener;
@@ -48,8 +46,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)
@@ -190,41 +186,10 @@ public class TestWatchDog {
             watchDog.addWatchDogListener(listener);
         }
         
-        Domain[] p = new Domain[nbDomains];
-        for (int i = 0; i < nbDomains; i++) {
-            p[i] = mock(Domain.class);
-            when(p[i].isAlive()).thenAnswer(new Answer<Boolean>() {
-
-                @Override
-                public Boolean answer(InvocationOnMock invocation) throws Throwable {
-                    return fixedState;                
-                }                
-            });
-            
-            watchDog.watch(p[i]);
-        }
+        Domain[] p = DomainUtils.createFixedStateProcesses(fixedState, watchDog, nbDomains);
         waitNextPoll(5);
         return p;
     }
-    
-    private CustomDomain[] createCustomDomain(long multiple, WatchDogListener listener) {
-        if (listener != null) {
-            watchDog.addWatchDogListener(listener);
-        }
-        
-        CustomDomain[] p = new CustomDomain[nbDomains];
-        for (int i = 0; i < nbDomains; i++) {
-            p[i] = mock(CustomDomain.class);
-            p[i].setUnexpectedDeadDelay((int) (multiple * pollInterval));
-            doCallRealMethod().when(p[i]).isAlive();
-            doCallRealMethod().when(p[i]).start();
-            doCallRealMethod().when(p[i]).stop();
-            
-            watchDog.watch(p[i]);
-        }
-        waitNextPoll(10);
-        return p;
-    }        
     
     private void waitNextPoll(int multiple) {
         try {
@@ -233,44 +198,15 @@ public class TestWatchDog {
             // ignore
         }
     }
-    
-    private class CustomDomain implements Domain {
-        private boolean alive = false;
         
-        public CustomDomain() {
-        }
-        public void setUnexpectedDeadDelay(final int unexpectedDeadDelay) {
-            if (unexpectedDeadDelay > 0) {
-                new Thread() {
-                    public void run() {
-                        try {
-                            Thread.sleep(unexpectedDeadDelay);
-                        } catch (InterruptedException e) {
-                            // ignore
-                        }
-                        alive = false;
-                    }
-                }.start();
-            }
-        }
-        public void stop() {
-            alive = false;                
-        }
-        public String start() {
-            alive = true;
-            return null;
-        }
-        public boolean isAlive() {
-            return alive;
+    private CustomDomain[] createCustomDomain(long multiple, WatchDogListener listener) {
+        if (listener != null) {
+            watchDog.addWatchDogListener(listener);
         }
         
-        /* (non-Javadoc)
-         * @see org.jtestplatform.client.domain.Domain#getIPAddress()
-         */
-        @Override
-        public String getIPAddress() {
-            // TODO Auto-generated method stub
-            return null;
-        }
-    }
+        CustomDomain[] result = DomainUtils.createCustomDomain(multiple, nbDomains, watchDog, pollInterval);
+        
+        waitNextPoll(10);
+        return result;
+    }    
 }

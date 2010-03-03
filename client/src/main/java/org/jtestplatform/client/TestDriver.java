@@ -45,7 +45,10 @@ import java.util.concurrent.TimeUnit;
 import net.sourceforge.nanoxml.XMLParseException;
 
 import org.apache.log4j.Logger;
+import org.jtestplatform.client.domain.Domain;
+import org.jtestplatform.client.domain.DomainFactory;
 import org.jtestplatform.client.domain.DomainManager;
+import org.jtestplatform.client.domain.libvirt.LibVirtDomainFactory;
 import org.jtestplatform.common.message.Message;
 import org.jtestplatform.common.transport.TransportProvider;
 import org.jtestplatform.configuration.Configuration;
@@ -80,7 +83,7 @@ public class TestDriver {
         try {            
             for (Platform platform : config.getPlatforms()) {
                 //TODO run domain managers in parallel 
-                DomainManager domainManager = new DomainManager(config, platform);
+                DomainManager domainManager = new DomainManager(config, platform, findKnownFactories());
                 domainManager.start();
          
                 try {
@@ -104,6 +107,14 @@ public class TestDriver {
         } finally {        
             testManager.shutdown();
         }
+    }
+    
+    private Map<String, DomainFactory<? extends Domain>> findKnownFactories() {
+        //TODO get it from ServiceLoader
+        Map<String, DomainFactory<? extends Domain>> result = new HashMap<String, DomainFactory<? extends Domain>>();
+        LibVirtDomainFactory f = new LibVirtDomainFactory(); 
+        result.put(f.getType(), f);
+        return result;
     }
     
     private String toString(Platform platform) {

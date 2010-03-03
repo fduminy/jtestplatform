@@ -25,12 +25,10 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.jtestplatform.client.domain.libvirt.LibVirtDomainFactory;
 import org.jtestplatform.client.domain.watchdog.WatchDog;
 import org.jtestplatform.client.domain.watchdog.WatchDogListener;
 import org.jtestplatform.common.transport.Transport;
@@ -40,8 +38,6 @@ import org.jtestplatform.common.transport.UDPTransport;
 import org.jtestplatform.configuration.Configuration;
 import org.jtestplatform.configuration.Factory;
 import org.jtestplatform.configuration.Platform;
-import org.libvirt.Connect;
-import org.libvirt.LibvirtException;
 
 public class DomainManager implements TransportProvider {
     private static final Logger LOGGER = Logger.getLogger(DomainManager.class);
@@ -55,16 +51,13 @@ public class DomainManager implements TransportProvider {
     private final int serverPort;
     
     @SuppressWarnings("unchecked")
-    public DomainManager(Configuration config, Platform platform) throws ConfigurationException {
+    public DomainManager(Configuration config, Platform platform, Map<String, DomainFactory<? extends Domain>> knownFactories) throws ConfigurationException {
+        checkValid(knownFactories, config);
+        
         domainConfig = createDomainConfig(platform);        
         maxNumberOfDomains = Math.max(1, config.getDomains().getMax());
         serverPort = config.getServerPort();
-        
-        //TODO get it from ServiceLoader
-        knownFactories = new HashMap<String, DomainFactory<? extends Domain>>();
-        LibVirtDomainFactory f = new LibVirtDomainFactory(); 
-        knownFactories.put(f.getType(), f);
-        //
+        this.knownFactories = knownFactories;
         
         watchDog = new WatchDog(config);        
         watchDog.addWatchDogListener(new WatchDogListener() {
@@ -79,17 +72,13 @@ public class DomainManager implements TransportProvider {
         List<DomainManagerDelegate> dmDelegates = new ArrayList<DomainManagerDelegate>();
         for (Factory factory : config.getDomains().getFactories()) {
             DomainFactory<? extends Domain> domainFactory = knownFactories.get(factory.getType());
-            if (domainFactory == null) {
-                LOGGER.error("no DomainFactory for type " + factory.getType());
-                continue;
-            }
-            
             DomainManagerDelegate data = new DomainManagerDelegate(domainFactory, factory.getConnections());
             dmDelegates.add(data);
         }
+        
         delegates = new LoadBalancer<DomainManagerDelegate>(dmDelegates);
     }
-
+    
     /**
      * @param platform
      * @return
@@ -161,5 +150,55 @@ public class DomainManager implements TransportProvider {
         }
         
         return domains.getNext().getIPAddress();
+    }
+    
+    private void checkValid(Map<String, DomainFactory<? extends Domain>> knownFactories, Configuration config) throws ConfigurationException {
+        if ((knownFactories == null) || knownFactories.isEmpty()) {
+            throw new ConfigurationException("no known factory");
+        }
+        if (config.getDomains() == null) {
+            throw new ConfigurationException("domains is not defined");
+        }
+        if ((config.getDomains().getFactories() == null) || config.getDomains().getFactories().isEmpty()) {
+            throw new ConfigurationException("no factory has been defined");
+        }
+                
+        StringBuilder wrongTypes = new StringBuilder();
+        StringBuilder typesWithoutConnection = new StringBuilder();
+        for (Factory factory : config.getDomains().getFactories()) {
+            DomainFactory<? extends Domain> domainFactory = knownFactories.get(factory.getType());
+            if (domainFactory == null) {
+                LOGGER.error("no DomainFactory for type " + factory.getType());
+                
+                if (wrongTypes.length() != 0) {
+                    wrongTypes.append(", ");
+                }
+                wrongTypes.append(factory.getType());
+                continue;
+            }
+            
+            if ((factory.getConnections() == null) || factory.getConnections().isEmpty()) {
+                LOGGER.error("no connection for type " + factory.getType());
+                
+                if (typesWithoutConnection.length() != 0) {
+                    typesWithoutConnection.append(", ");
+                }
+                typesWithoutConnection.append(factory.getType());
+                continue;
+            }
+        }
+        if ((wrongTypes.length() != 0) || (typesWithoutConnection.length() != 0)) {
+            StringBuilder message = new StringBuilder("Invalid configuration:\n");
+            
+            if (wrongTypes.length() != 0) {
+                message.append("\tno DomainFactory for types ").append(wrongTypes).append('\n');
+            }
+            
+            if (typesWithoutConnection.length() != 0) {
+                message.append("\tno connection for types ").append(typesWithoutConnection);
+            }
+            
+            throw new ConfigurationException(wrongTypes.toString());
+        }
     }
 }
