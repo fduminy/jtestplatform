@@ -78,7 +78,7 @@ public class TestLibVirt {
      */
     private DomainConfig createDomainConfig() {
         DomainConfig cfg = new DomainConfig();
-        cfg.setVmName("test");
+        cfg.setDomainName("test");
         cfg.setCdrom(new File(config.getWorkDir()).getParent() + File.separatorChar + "config" + File.separatorChar + "microcore_2.7.iso");
         return cfg;
     }

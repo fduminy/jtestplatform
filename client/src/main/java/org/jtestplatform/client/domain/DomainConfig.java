@@ -27,10 +27,10 @@ package org.jtestplatform.client.domain;
  */
 public class DomainConfig {
     private String cdrom;
-    private String name;
+    private String domainName;
     
-    public String getVmName() {
-        return name;
+    public String getDomainName() {
+        return domainName;
     }
 
     /**
@@ -44,7 +44,7 @@ public class DomainConfig {
         this.cdrom = cdrom;
     }
 
-    public void setVmName(String name) {
-        this.name = name;
+    public void setDomainName(String name) {
+        this.domainName = name;
     }
 }

@@ -174,7 +174,7 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
      */
     Domain defineDomain(Connect connect, DomainConfig config) throws ConfigurationException {
         try {
-            String xml = XMLGenerator.generate(config.getVmName(), config.getCdrom(), NETWORK_NAME);
+            String xml = XMLGenerator.generate(config.getDomainName(), config.getCdrom(), NETWORK_NAME);
             return connect.domainDefineXML(xml);
         } catch (LibvirtException e) {
             throw new ConfigurationException(e);
