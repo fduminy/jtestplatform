@@ -5,6 +5,9 @@
   <classpathentry kind="src" path="target/generated-sources/modello" including="**/*.java"/>
   <classpathentry kind="src" path="src/main/resources" excluding="**/*.java"/>
   <classpathentry kind="output" path="target/classes"/>
+  <classpathentry kind="var" path="M2_REPO/javax/activation/activation/1.1/activation-1.1.jar"/>
+  <classpathentry kind="var" path="M2_REPO/javax/xml/bind/jaxb-api/2.1/jaxb-api-2.1.jar"/>
+  <classpathentry kind="var" path="M2_REPO/javax/xml/stream/stax-api/1.0-2/stax-api-1.0-2.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/apache/bcel/bcel/5.1/bcel-5.1.jar"/>
   <classpathentry kind="var" path="M2_REPO/cglib/cglib-nodep/2.1_3/cglib-nodep-2.1_3.jar"/>
   <classpathentry kind="var" path="M2_REPO/commons-jexl/commons-jexl/1.1/commons-jexl-1.1.jar"/>
@@ -18,6 +21,7 @@
   <classpathentry kind="var" path="M2_REPO/jtidy/jtidy/4aug2000r7-dev/jtidy-4aug2000r7-dev.jar"/>
   <classpathentry kind="var" path="M2_REPO/junit/junit/4.7/junit-4.7.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/libvirt/libvirt/0.4.2/libvirt-0.4.2.jar"/>
+  <classpathentry kind="src" path="/libvirt-model"/>
   <classpathentry kind="var" path="M2_REPO/log4j/log4j/1.2.14/log4j-1.2.14.jar"/>
   <classpathentry kind="var" path="M2_REPO/com/redhat/sources/mauve/0.1/mauve-0.1.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/mockito/mockito-all/1.8.2/mockito-all-1.8.2.jar"/>

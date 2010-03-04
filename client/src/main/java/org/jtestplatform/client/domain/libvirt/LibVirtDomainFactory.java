@@ -137,7 +137,7 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
         }
     }
     
-    void ensureNetworkExist(Connect connect) throws LibvirtException {
+    void ensureNetworkExist(Connect connect) throws LibvirtException, ConfigurationException {
         //TODO create our own network
         
         Network network = networkLookupByName(connect, NETWORK_NAME);
@@ -163,7 +163,7 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
         Network network = null;
         if (Arrays.asList(connect.listDefinedNetworks()).contains(networkName) || Arrays.asList(connect.listNetworks()).contains(networkName)) {
             network = connect.networkLookupByName(networkName);        
-        }
+        }        
         return network;
     }
     
@@ -174,7 +174,7 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
      */
     Domain defineDomain(Connect connect, DomainConfig config) throws ConfigurationException {
         try {
-            String xml = XMLGenerator.generate(config.getDomainName(), config.getCdrom(), NETWORK_NAME);
+            String xml = XMLGenerator.generate(config.getDomainName(), "1557e204-10f8-3c1f-ac60-3dc6f46e85f9", config.getCdrom(), 0, NETWORK_NAME);
             return connect.domainDefineXML(xml);
         } catch (LibvirtException e) {
             throw new ConfigurationException(e);

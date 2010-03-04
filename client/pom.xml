@@ -67,6 +67,13 @@
 			<version>1.8.2</version>
 			<scope>test</scope>
 		</dependency>
+
+		<dependency>
+		  <groupId>org.libvirt</groupId>
+		  <artifactId>libvirt-model</artifactId>
+		  <version>0.4.2</version>
+        </dependency>
+		
 	</dependencies>
 
 	<build>

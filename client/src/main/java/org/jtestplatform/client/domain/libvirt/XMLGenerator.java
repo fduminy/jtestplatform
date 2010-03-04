@@ -22,7 +22,19 @@
  */
 package org.jtestplatform.client.domain.libvirt;
 
+import java.io.IOException;
+import java.io.StringWriter;
+
 import org.apache.log4j.Logger;
+import org.jtestplatform.client.domain.ConfigurationException;
+import org.libvirt.model.Bridge;
+import org.libvirt.model.DHCP;
+import org.libvirt.model.Forward;
+import org.libvirt.model.Host;
+import org.libvirt.model.IP;
+import org.libvirt.model.Network;
+import org.libvirt.model.Range;
+import org.libvirt.model.io.dom4j.NetworkDom4jWriter;
 
 
 /**
@@ -31,10 +43,6 @@ import org.apache.log4j.Logger;
  */
 public class XMLGenerator {
     private static final Logger LOGGER = Logger.getLogger(XMLGenerator.class);
-    
-    public static String generate(String name, String cdromFile, String networkName) {
-        return generate(name, "1557e204-10f8-3c1f-ac60-3dc6f46e85f9", cdromFile, 0, networkName);
-    }
     
     private static String baseMacAddress = "54:52:00:77:58:";
     static String baseIPAddress = "192.168.121.";
@@ -45,7 +53,7 @@ public class XMLGenerator {
 //    private static String baseMacAddress = "54:52:00:77:FF:";
 //    static String baseIPAddress = "192.168.50.";
     
-    public static String generateNetwork(String networkName) {
+    public static String generateNetwork(String networkName) throws ConfigurationException {
         return generateDefaultNetwork();
 /*        
         StringBuilder sb = new StringBuilder(4096);
@@ -82,24 +90,51 @@ public class XMLGenerator {
 */        
     }
     
-    private static String generateDefaultNetwork() {
-        StringBuilder sb = new StringBuilder(4096);
-        
-        sb.append("<network>");
-        sb.append("<name>default</name>");
-        sb.append("<uuid>ec6f8ce7-ad0f-eea7-d9ed-dc460cf47023</uuid>");
-        sb.append("<forward mode='nat'/>");
-        sb.append("<bridge name='virbr1' stp='on' forwardDelay='0' />");
-        sb.append("<ip address='").append(baseIPAddress).append("1' netmask='255.255.255.0'>");
-        sb.append("<dhcp>");
-        sb.append("<range start='").append(baseIPAddress).append(min).append("' end='").append(baseIPAddress).append(max).append("' />");        
-        //sb.append("<range start='192.168.122.2' end='192.168.122.3' />");
-        sb.append("</dhcp>");
-        sb.append("</ip>");
-        sb.append("</network>");        
+    private static String generateDefaultNetwork() throws ConfigurationException {
+        Network network = new Network();
+        network.setName("default");
+        network.setUuid("ec6f8ce7-ad0f-eea7-d9ed-dc460cf47023");
 
-        LOGGER.debug("generateDefaultNetwork:\n" + sb.toString());
-      return sb.toString();
+        Forward forward = new Forward();
+        forward.setMode("nat");
+        network.setForward(forward);
+
+        Bridge bridge = new Bridge();
+        bridge.setName("virbr1");
+        bridge.setStp("on");
+        bridge.setForwardDelay(1);
+        network.setBridge(bridge);
+
+        IP ip = new IP();
+        ip.setAddress(baseIPAddress + '1');
+        ip.setNetmask("255.255.255.0");
+        network.setIp(ip);
+
+        DHCP dhcp = new DHCP();
+        ip.setDhcp(dhcp);
+
+        Range range = new Range();
+        range.setStart(baseIPAddress + min);
+        range.setEnd(baseIPAddress + max);
+        dhcp.setRange(range);
+
+        for (int i = min; i <= max; i++) {
+            Host host = new Host();
+            host.setMac(baseMacAddress + Integer.toHexString(i));
+            host.setIp(baseIPAddress + i);
+            dhcp.addHost(host);
+        }
+
+        StringWriter writer = new StringWriter();
+        try {
+            new NetworkDom4jWriter().write(writer, network);
+        } catch (IOException e) {
+            throw new ConfigurationException(e);
+        }
+        String result = writer.toString();
+
+        LOGGER.debug("generateDefaultNetwork:\n" + result);
+        return result;
     }
         
     public static String generate(String name, String uuid, String cdromFile, int netDevId, String networkName) {
