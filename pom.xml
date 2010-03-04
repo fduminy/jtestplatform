@@ -28,6 +28,10 @@
 		</developer>
 	</developers>
 
+    <properties>
+	   <project.root>${basedir}</project.root>
+	</properties>
+
 	<repositories>
 		<repository>
 			<releases>
@@ -200,7 +204,7 @@
 				<artifactId>maven-license-plugin</artifactId>
 				<version>1.4.0</version>
 				<configuration>
-					<header>src/etc/header.txt</header>
+					<header>${project.root}/src/etc/header.txt</header>
 			        <excludes>
 			            <exclude>LICENSE.txt</exclude>
 			            <exclude>**/src/test/resources/**</exclude>

@@ -18,6 +18,10 @@
 		</license>
 	</licenses>
 
+    <properties>
+       <project.root>${project.parent.basedir}</project.root>
+    </properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>jtestplatform</groupId>

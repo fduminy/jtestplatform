@@ -21,6 +21,10 @@
             <url>http://www.gnu.org/licenses/gpl-3.0.html</url>
         </license>
     </licenses>
+    
+    <properties>
+       <project.root>${project.parent.basedir}</project.root>
+    </properties>
   
   <dependencies>
     <dependency>
@@ -116,7 +120,7 @@
                     </configuration>
                 </execution>
             </executions>
-        </plugin>                         
+        </plugin>
     </plugins>
   </build>
   
