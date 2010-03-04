@@ -75,6 +75,10 @@ class LibVirtDomain implements Domain {
     public synchronized String start() throws ConfigurationException {
         try {
             if (connect == null) {
+                if ((connection.getUri() == null) || connection.getUri().trim().isEmpty()) {
+                    throw new ConfigurationException("connection's URI not specified");
+                }
+                
                 connect = new Connect(connection.getUri(), false);
                 factory.ensureNetworkExist(connect);
             }
