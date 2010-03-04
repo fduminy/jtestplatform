@@ -22,18 +22,22 @@
  */
 package org.jtestplatform.client.domain.libvirt;
 
+import org.apache.log4j.Logger;
+
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
  */
 public class XMLGenerator {
+    private static final Logger LOGGER = Logger.getLogger(XMLGenerator.class);
+    
     public static String generate(String name, String cdromFile, String networkName) {
         return generate(name, "1557e204-10f8-3c1f-ac60-3dc6f46e85f9", cdromFile, 0, networkName);
     }
     
     private static String baseMacAddress = "54:52:00:77:58:";
-    static String baseIPAddress = "192.168.122.";
+    static String baseIPAddress = "192.168.121.";
     static int min = 2;
     static int max = 254;
     static IPScanner IP_SCANNER = new IPScanner(baseIPAddress, min, max);
@@ -42,6 +46,8 @@ public class XMLGenerator {
 //    static String baseIPAddress = "192.168.50.";
     
     public static String generateNetwork(String networkName) {
+        return generateDefaultNetwork();
+/*        
         StringBuilder sb = new StringBuilder(4096);
 
         sb.append("<network>");
@@ -66,10 +72,17 @@ public class XMLGenerator {
         sb.append("</network>");
         
         
-        return sb.toString();
+        String result = sb.toString();
+        
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("generateNetwork: networkName=" + networkName + " Result=\n" + result);
+        }
+                
+        return result;
+*/        
     }
     
-    public static String generateDefaultNetwork() {
+    private static String generateDefaultNetwork() {
         StringBuilder sb = new StringBuilder(4096);
         
         sb.append("<network>");
@@ -84,10 +97,11 @@ public class XMLGenerator {
         sb.append("</dhcp>");
         sb.append("</ip>");
         sb.append("</network>");        
-            
+
+        LOGGER.debug("generateDefaultNetwork:\n" + sb.toString());
       return sb.toString();
     }
-    
+        
     public static String generate(String name, String uuid, String cdromFile, int netDevId, String networkName) {
         StringBuilder sb = new StringBuilder(4096);
 /*        
@@ -118,19 +132,19 @@ public class XMLGenerator {
 */
         
         sb.append("<domain type='kvm' id='1'>");                                
-        sb.append("        <name>").append(name).append("</name>");                                       
-        sb.append("<uuid>").append(uuid).append("</uuid>");       
-        sb.append("<memory>524288</memory>                             ");    
-        sb.append("<currentMemory>524288</currentMemory>                  "); 
-        sb.append("<vcpu>1</vcpu>                                          ");
-        sb.append("<os>                                                    ");
-        sb.append("<type arch='x86_64' machine='pc-0.11'>hvm</type>      ");
-        sb.append("<boot dev='cdrom'/>                                   ");
-        sb.append("</os>                                                   ");
+        sb.append("  <name>").append(name).append("</name>");                                       
+        sb.append("  <uuid>").append(uuid).append("</uuid>");       
+        sb.append("  <memory>524288</memory>");    
+        sb.append("  <currentMemory>524288</currentMemory>"); 
+        sb.append("  <vcpu>1</vcpu>");
+        sb.append("  <os>");
+        sb.append("    <type arch='x86_64' machine='pc-0.11'>hvm</type>");
+        sb.append("    <boot dev='cdrom'/>                                   ");
+        sb.append("  </os>                                                   ");
         sb.append("<features>                                              ");
         sb.append("<acpi/>                                               ");
         sb.append("<apic/>                                               ");
-        sb.append("          <pae/>                                                ");
+        sb.append("<pae/>                                                ");
         sb.append("</features>                                             ");
         sb.append("<clock offset='utc'/>                                   ");
         sb.append("<on_poweroff>destroy</on_poweroff>                      ");
@@ -139,46 +153,44 @@ public class XMLGenerator {
         sb.append("<devices>                                               ");
         sb.append("<emulator>/usr/bin/kvm</emulator>                     ");
         sb.append("<disk type='file' device='cdrom'>                     ");
-        sb.append("<source file='/home/fabien/data/Projets/jtestplatform/client/src/test/resources/home/config/microcore_2.7.iso'/>");                                                                                        
-        sb.append(" <target dev='hdc' bus='ide'/>                                                                   ");
-        sb.append("<readonly/>                                                                                     ");
+        sb.append("  <source file='").append(cdromFile).append("'/>");                                                                                        
+        sb.append("  <target dev='hdc' bus='ide'/>                                                                   ");
+        sb.append("  <readonly/>                                                                                     ");
         sb.append("</disk>                                                                                           ");
-//        sb.append("<interface type='network'>                                                                        ");
-//        sb.append("<mac address='54:52:00:77:58:88'/>                                                              ");
-//        sb.append("<source network='default'/>                                                                     ");
-//        sb.append("<target dev='vnet0'/>                                                                           ");
-//        sb.append("</interface>");
-//        if (network != null) {
-//            sb.append(network);
-//        }
 
-        sb.append("        <interface type='network'>");
-        sb.append("        <mac address='").append(baseMacAddress).append(Integer.toHexString(netDevId)).append("'/>");
-        sb.append("<source network='").append(networkName).append("'/>");
-        sb.append("<target dev='vnet0'/>");
+        sb.append("<interface type='network'>");
+        sb.append("  <mac address='").append(baseMacAddress).append(Integer.toHexString(netDevId)).append("'/>");
+        sb.append("  <source network='").append(networkName).append("'/>");
+        sb.append("  <target dev='vnet0'/>");
         sb.append("</interface>");
         
-                sb.append("<serial type='pty'>");
-                sb.append("<source path='/dev/pts/7'/>");
-                sb.append("<target port='0'/>");
-                sb.append("</serial>");
-                sb.append("<console type='pty' tty='/dev/pts/7'>");
-                sb.append("<source path='/dev/pts/7'/>");
-                sb.append("<target port='0'/>");
-                sb.append("</console>");
-                sb.append("<input type='mouse' bus='ps2'/>");
-                sb.append("<graphics type='vnc' port='5900' autoport='yes' keymap='fr'/>");
-                sb.append("<sound model='es1370'/>");
-                sb.append("<video>");
-                sb.append("<model type='cirrus' vram='9216' heads='1'/>");
-                sb.append("</video>");
-                sb.append("</devices>");
-                sb.append("<seclabel type='dynamic' model='apparmor'>");
-                sb.append("<label>libvirt-1557e204-10f8-3c1f-ac60-3dc6f46e85f5</label>");
-                sb.append("<imagelabel>libvirt-1557e204-10f8-3c1f-ac60-3dc6f46e85f5</imagelabel>");
-                sb.append("</seclabel>");
-                sb.append("</domain>");
+        sb.append("<serial type='pty'>");
+        sb.append("<source path='/dev/pts/7'/>");
+        sb.append("<target port='0'/>");
+        sb.append("</serial>");
+        sb.append("<console type='pty' tty='/dev/pts/7'>");
+        sb.append("<source path='/dev/pts/7'/>");
+        sb.append("<target port='0'/>");
+        sb.append("</console>");
+        sb.append("<input type='mouse' bus='ps2'/>");
+        sb.append("<graphics type='vnc' port='5900' autoport='yes' keymap='fr'/>");
+        sb.append("<sound model='es1370'/>");
+        sb.append("<video>");
+        sb.append("<model type='cirrus' vram='9216' heads='1'/>");
+        sb.append("</video>");
+        sb.append("</devices>");
+        sb.append("<seclabel type='dynamic' model='apparmor'>");
+        sb.append("<label>libvirt-1557e204-10f8-3c1f-ac60-3dc6f46e85f5</label>");
+        sb.append("<imagelabel>libvirt-1557e204-10f8-3c1f-ac60-3dc6f46e85f5</imagelabel>");
+        sb.append("</seclabel>");
+        sb.append("</domain>");
         
-        return sb.toString();        
+        String result = sb.toString();
+        
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("generate: name=" + name + " cdrom=" + cdromFile + " networkName=" + networkName + " Result=\n" + result);
+        }
+        
+        return result;
     }
 }

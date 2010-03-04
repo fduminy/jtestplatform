@@ -63,20 +63,20 @@
           <name>Platform</name>
           <version>1.0</version>
           <fields>
-            <field>
+            <field xml.attribute="true">
               <name>cdrom</name>
               <type>String</type>
             </field>
-            <field>
+            <field xml.attribute="true">
               <name>cpu</name>
               <type>String</type>
             </field>
-            <field>
+            <field xml.attribute="true">
               <name>nbCores</name>
               <type>int</type>
               <defaultValue>1</defaultValue>
             </field>
-            <field>
+            <field xml.attribute="true">
               <name>wordSize</name>
               <type>int</type>
               <defaultValue>32</defaultValue>
@@ -108,7 +108,7 @@
           <name>Factory</name>
           <version>1.0</version>
           <fields>
-            <field>
+            <field xml.attribute="true">
               <name>type</name>
               <type>String</type>
             </field>
@@ -127,7 +127,7 @@
           <name>Connection</name>
           <version>1.0</version>
           <fields>
-            <field>
+            <field xml.attribute="true">
               <name>uri</name>
               <type>String</type>
             </field>

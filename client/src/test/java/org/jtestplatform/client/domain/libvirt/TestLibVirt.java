@@ -22,24 +22,17 @@
  */
 package org.jtestplatform.client.domain.libvirt;
 
-import static org.junit.Assert.assertTrue;
-
+import java.io.File;
 import java.io.IOException;
-import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.List;
 
+import org.jtestplatform.client.ConfigReader;
 import org.jtestplatform.client.domain.ConfigurationException;
 import org.jtestplatform.client.domain.Domain;
 import org.jtestplatform.client.domain.DomainConfig;
+import org.jtestplatform.configuration.Configuration;
 import org.jtestplatform.configuration.Connection;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.libvirt.Connect;
-import org.libvirt.LibvirtException;
-import org.libvirt.Network;
-import org.libvirt.DomainInfo.DomainState;
 
 
 /**
@@ -50,195 +43,43 @@ public class TestLibVirt {
     private Connection connection;
     
     private LibVirtDomainFactory factory;
-    private Domain p;
+    private Domain domain;
+    private Configuration config;
     
     @Before
     public void setUp() throws ConfigurationException {
+        config = new ConfigReader().read(); // will initialize log4j
+        
         factory = new LibVirtDomainFactory();
-        connection = new Connection();
-        connection.setUri("qemu:///system");
+        connection = config.getDomains().getFactories().get(0).getConnections().get(0);
     }
     
     public void tearDown() throws IOException, ConfigurationException {
-        if (p != null) {
-            p.stop();
+        if (domain != null) {
+            domain.stop();
         }
     }
     
     @Test
     public void testStart() throws ConfigurationException, IOException {
-        p = factory.createDomain(getVMConfig(), connection);
-        p.start();
+        domain = factory.createDomain(createDomainConfig(), connection);
+        domain.start();
     }
     
     @Test
     public void testStop() throws ConfigurationException, IOException {
-        p = factory.createDomain(getVMConfig(), connection);
-        p.start();
-        p.stop();
+        domain = factory.createDomain(createDomainConfig(), connection);
+        domain.start();
+        domain.stop();
     }
-    
-    @Test
-    public void testNodeInfo() throws LibvirtException {
-        String uri = "qemu:///session"; 
-        Connect connection = new Connect(uri, false);
-        System.out.println("infos=" + connection.nodeInfo().toString());
-        System.out.println("cores=" + connection.nodeInfo().cores);
-        System.out.println("cpus=" + connection.nodeInfo().cpus);
-        System.out.println("memory=" + connection.nodeInfo().memory);
-        System.out.println("mhz=" + connection.nodeInfo().mhz);
-        System.out.println("model=" + connection.nodeInfo().model);
-        System.out.println("nodes=" + connection.nodeInfo().nodes);
-        System.out.println("sockets=" + connection.nodeInfo().sockets);
-        System.out.println("threads=" + connection.nodeInfo().threads);
-    }
-
-    @Ignore
-    public void testXMLGenerator() throws ConfigurationException, UnknownHostException, IOException {
-        String ipBase = XMLGenerator.baseIPAddress;        
-        //int begin = 19;
-        int begin = 3;
-
-        //pingAll(ipBase);
-        IPScanner scanner = new IPScanner(ipBase, 2, 254);
-        scanner.computeDelta();
-        
-        try {
-            String uri = "qemu:///system"; // for system wide domains
-            //String uri = "qemu:///session"; // for user wide domains
-            Connect connect = new Connect(uri, false);
-
-//            for (String net : connect.listDefinedNetworks()) {
-//                System.out.println("destroying network " + net);
-//                connect.networkLookupByName(net).undefine();
-//            }
-//            for (String itf : connect.listDefinedInterfaces()) {
-//                System.out.println("destroying interface " + itf);
-//                connect.interfaceLookupByName(itf).destroy();
-//            }
-            
-//            String networkName = "default";
-//            //String networkName = "jtestplatform-network";
-//            Network network = networkLookupByName(connect, networkName);
-//            if (network != null) {
-//                try {
-//                    network.destroy();
-//                } catch (LibvirtException lve) {
-//                    // ignore
-//                }
-//                network.undefine();
-//                System.out.println("destroyed network " + networkName);
-//                
-//                String net = XMLGenerator.generateDefaultNetwork();
-//                network = connect.networkDefineXML(net);
-//                network.create();
-//                System.out.println("created network " + networkName);
-//            }
-                        
-            Network network = null; //TODO get it
-            org.libvirt.Domain d1 = createDomain(connect, ipBase + begin, 1, network);
-            System.out.println("created domain 1");
-            org.libvirt.Domain d2 = createDomain(connect, ipBase + (begin + 1), 2, network);
-            System.out.println("created domain 2");
-        } catch (LibvirtException e) {
-            System.err.println(e.getMessage());            
-            throw new ConfigurationException("failed to connect with libvirt", e);
-        }
-
-        // wait a bit because tinycore is waiting for boot options
-        System.out.println("waiting start");
-        try {
-            Thread.sleep(40000);
-        } catch (InterruptedException e) {
-            // ignore
-        }
-        
-        System.out.println("pinging domains");
-        List<String> delta = scanner.computeDelta();
-        for (String ip : delta) {
-            System.out.println("new domain at " + ip);
-        }
-    }
-
-    private org.libvirt.Domain createDomain(Connect connect, String ipAddress, int id, Network network) throws ConfigurationException {
-        org.libvirt.Domain domain = null;
-        try {
-            //Network n = null;
-            
-//            try {
-//                //n = connect.networkLookupByName("default");
-//                //n.create();
-//            } catch (LibvirtException lve) {
-//                //n = connect.networkCreateXML(XMLGenerator.generateNetwork(networkName, "virbr2", ipAddress));
-//            }
-            
-            //assertNotNull(n);
-            //Network n = connection.networkLookupByUUIDString("50d17ad3-3c52-045e-9513-c75455f3a78d");
-            
-            DomainConfig cfg = getVMConfig();
-                            
-            String domainName = "testFabien" + id;
-            domain = domainLookupByName(connect, domainName);            
-            if (domain != null) {
-                if (DomainState.VIR_DOMAIN_RUNNING.equals(domain.getInfo().state)) {
-                    domain.shutdown();
-                    domain.destroy();
-                    domain.free();
-                }
-            }
-            
-            String networkName = network.getName();
-            String xml = XMLGenerator.generate(domainName, "1557e204-10f8-3c1f-ac60-3dc6f46e85f" + id, cfg.getCdrom(), id, networkName);            
-            domain = connect.domainDefineXML(xml);
-            //domain.destroy();
-            if (domain.getInfo().state == DomainState.VIR_DOMAIN_RUNNING) {
-                domain.destroy();
-            }
-            domain.create();
-            
-            assertTrue(domain.getInfo().state == DomainState.VIR_DOMAIN_RUNNING);            
-        } catch (LibvirtException e) {
-            System.err.println(e.getMessage());
-            throw new ConfigurationException("failed to connect with libvirt", e);
-        }
-        return domain;
-    }
-    
-    private static org.libvirt.Domain domainLookupByName(Connect connect, String domainName) throws LibvirtException {
-        org.libvirt.Domain domain = null;
-        if (Arrays.asList(connect.listDefinedDomains()).contains(domainName) || Arrays.asList(connect.listDomains()).contains(domainName)) {
-            domain = connect.domainLookupByName(domainName);
-        }
-        return domain;
-    }
-
-//    private static Network getOrCreateNetwork(Connect connect, String name, String ip) throws LibvirtException {        
-//        Network network = null;
-//        for (String n : connect.listDefinedNetworks()) {
-//            System.out.println(n);
-//            if (n.equals(name)) {
-//                network = connect.networkLookupByName(name);
-//                network.undefine();
-//                //network.destroy();
-//                network = null;
-//            }
-//        }
-//        
-//        if (network == null) {
-//            network = connect.networkDefineXML(XMLGenerator.generateNetwork(name, name, ip));
-//        }
-//        
-//        System.out.println(network.getXMLDesc(0));
-//        return network;
-//    }
 
     /**
      * @return
      */
-    private DomainConfig getVMConfig() {
-        DomainConfig config = new DomainConfig();
-        config.setVmName("test");
-        //config.setCdrom(ConfigurationUtils.expandValue(properties, "${config.dir}/microcore_2.7.iso"));
-        return config;
+    private DomainConfig createDomainConfig() {
+        DomainConfig cfg = new DomainConfig();
+        cfg.setVmName("test");
+        cfg.setCdrom(new File(config.getWorkDir()).getParent() + File.separatorChar + "config" + File.separatorChar + "microcore_2.7.iso");
+        return cfg;
     }
 }

@@ -38,6 +38,10 @@ import org.libvirt.DomainInfo;
 import org.libvirt.LibvirtException;
 import org.libvirt.Network;
 import org.libvirt.DomainInfo.DomainState;
+import org.libvirt.jna.virError;
+import org.libvirt.jna.Libvirt.VirErrorCallback;
+
+import com.sun.jna.Pointer;
 
 /**
  * Implementation of {@link DomainFactory} for <a href="http://libvirt.org/">libvirt</a>
@@ -50,6 +54,19 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
 
     private static final String NETWORK_NAME = "default";
     //private static final String NETWORK_NAME = "jtestplatform-network";
+    
+    static {
+        try {
+            Connect.setErrorCallback(new VirErrorCallback() {           
+                @Override
+                public void errorCallback(Pointer pointer, virError error) {
+                    LOGGER.error("pointer=" + pointer + " error=" + error);
+                }
+            });
+        } catch (LibvirtException e) {
+            LOGGER.error("failed to initialize error callback", e);
+        }
+    }
     
     /**
      * {@inheritDoc}
@@ -131,13 +148,14 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
             } catch (LibvirtException lve) {
                 // ignore
             }
-            network.undefine();
+            //network.undefine();
             LOGGER.debug("destroyed network " + NETWORK_NAME);
         }
         
-        String net = XMLGenerator.generateDefaultNetwork();
-        network = connect.networkDefineXML(net);
-        network.create();
+        String net = XMLGenerator.generateNetwork(NETWORK_NAME);
+        network = connect.networkCreateXML(net);
+        //network = connect.networkDefineXML(net);
+        //network.create();
         LOGGER.debug("created network " + NETWORK_NAME);
     }
     
