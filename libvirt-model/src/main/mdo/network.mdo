@@ -1,0 +1,147 @@
+<model>
+  <id>network</id>
+  <name>Network</name>
+  <description>Network Data Model</description>
+  
+  <defaults>
+    <default>
+      <key>package</key>
+      <value>org.libvirt.model</value>
+    </default>
+  </defaults>
+  
+  <classes>
+        <class rootElement="true" xml.tagName="network">
+         <name>Network</name>
+         <fields>
+            <field>
+              <name>name</name>
+              <type>String</type>
+            </field>
+            <field>
+              <name>uuid</name>
+              <type>String</type>
+            </field>
+            <field>
+              <name>forward</name>
+              <association xml.itemsStyle="wrapped">
+                <type>Forward</type>
+                <multiplicity>1</multiplicity>
+              </association>
+            </field>            
+            <field>
+              <name>bridge</name>
+              <association xml.itemsStyle="wrapped">
+                <type>Bridge</type>
+                <multiplicity>1</multiplicity>
+              </association>
+            </field>            
+            <field>
+              <name>ip</name>
+              <association xml.itemsStyle="wrapped">
+                <type>IP</type>
+                <multiplicity>1</multiplicity>
+              </association>
+            </field>            
+         </fields>
+        </class>
+        
+        <class>
+          <name>Forward</name>
+          <fields>
+            <field xml.attribute="true">
+              <name>mode</name>
+              <type>String</type>
+            </field>
+          </fields>
+        </class>
+        
+        <class>
+          <name>Bridge</name>
+          <fields>
+            <field xml.attribute="true">
+              <name>name</name>
+              <type>String</type>
+            </field>
+            <field xml.attribute="true">
+              <name>stp</name>
+              <type>String</type>
+            </field>
+            <field xml.attribute="true">
+              <name>forwardDelay</name>
+              <type>int</type>
+            </field>
+          </fields>
+        </class>
+        
+        <class>
+          <name>IP</name>
+          <fields>
+            <field xml.attribute="true">
+              <name>address</name>
+              <type>String</type>
+            </field>
+            <field xml.attribute="true">
+              <name>netmask</name>
+              <type>String</type>
+            </field>
+            <field>
+              <name>dhcp</name>
+              <association xml.itemsStyle="wrapped">
+                <type>DHCP</type>
+                <multiplicity>1</multiplicity>
+              </association>
+            </field>            
+          </fields>
+        </class>
+        
+        <class>
+          <name>DHCP</name>
+          <fields>
+            <field>
+              <name>range</name>
+              <association xml.itemsStyle="wrapped">
+                <type>Range</type>
+                <multiplicity>1</multiplicity>
+              </association>
+            </field>            
+            <field>
+              <name>host</name>
+              <association xml.itemsStyle="wrapped">
+                <type>Host</type>
+                <multiplicity>*</multiplicity>
+              </association>
+            </field>            
+          </fields>
+        </class>
+        
+        <class>
+          <name>Range</name>
+          <fields>
+            <field>
+              <name>start</name>
+              <type>String</type>
+            </field>            
+            <field>
+              <name>end</name>
+              <type>String</type>
+            </field>            
+          </fields>
+        </class>
+        
+        <class>
+          <name>Host</name>
+          <fields>
+            <field>
+              <name>mac</name>
+              <type>String</type>
+            </field>            
+            <field>
+              <name>ip</name>
+              <type>String</type>
+            </field>            
+          </fields>
+        </class>
+  </classes>
+</model>
+        
