@@ -28,6 +28,7 @@ import org.apache.log4j.Logger;
 import org.jtestplatform.client.domain.ConfigurationException;
 import org.jtestplatform.client.domain.Domain;
 import org.jtestplatform.client.domain.DomainConfig;
+import org.jtestplatform.common.ConfigUtils;
 import org.jtestplatform.configuration.Connection;
 import org.libvirt.Connect;
 import org.libvirt.LibvirtException;
@@ -75,7 +76,7 @@ class LibVirtDomain implements Domain {
     public synchronized String start() throws ConfigurationException {
         try {
             if (connect == null) {
-                if ((connection.getUri() == null) || connection.getUri().trim().isEmpty()) {
+                if (ConfigUtils.isBlank(connection.getUri())) {
                     throw new ConfigurationException("connection's URI not specified");
                 }
                 
