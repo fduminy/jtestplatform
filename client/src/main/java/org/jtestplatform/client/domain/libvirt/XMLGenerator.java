@@ -51,7 +51,7 @@ public class XMLGenerator {
         
     public static String generateNetwork(String networkName) throws ConfigurationException {
         Network network = new Network();
-        network.setName("default");
+        network.setName(networkName);
         network.setUuid("ec6f8ce7-ad0f-eea7-d9ed-dc460cf47023");
 
         Forward forward = new Forward();
