@@ -28,6 +28,7 @@ package org.jtestplatform.client.domain;
 public class DomainConfig {
     private String cdrom;
     private String domainName;
+    private long memory;
     
     public String getDomainName() {
         return domainName;
@@ -47,4 +48,14 @@ public class DomainConfig {
     public void setDomainName(String name) {
         this.domainName = name;
     }
+
+    public long getMemory() {
+        return memory;
+    }
+
+    public void setMemory(long memory) {
+        this.memory = memory;
+    }
+    
+    
 }

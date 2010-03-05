@@ -96,12 +96,12 @@ public class XMLGenerator {
         return result;
     }
         
-    public static String generateDomain(String name, String cdromFile, String macAddress, String networkName) {
+    public static String generateDomain(String name, String cdromFile, String macAddress, String networkName, long memory) {
         StringBuilder sb = new StringBuilder(4096);
         
         sb.append("<domain type='kvm' id='1'>");             
         sb.append("  <name>").append(name).append("</name>");
-        sb.append("  <memory>524288</memory>");    
+        sb.append("  <memory>").append(memory).append("</memory>");    
         sb.append("  <currentMemory>524288</currentMemory>"); 
         sb.append("  <vcpu>1</vcpu>");
         sb.append("  <os>");

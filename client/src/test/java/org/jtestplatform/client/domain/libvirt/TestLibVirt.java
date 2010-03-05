@@ -116,6 +116,7 @@ public class TestLibVirt {
     private DomainConfig createDomainConfig() {
         DomainConfig cfg = new DomainConfig();
         cfg.setDomainName(null); // null => will be defined automatically
+        cfg.setMemory(524288L);
         cfg.setCdrom(new File(config.getWorkDir()).getParent() + File.separatorChar + "config" + File.separatorChar + "microcore_2.7.iso");
         return cfg;
     }

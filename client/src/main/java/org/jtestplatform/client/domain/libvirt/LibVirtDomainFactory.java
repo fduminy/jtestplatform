@@ -194,7 +194,7 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
             }
             
             String macAddress = findUniqueMacAddress(domains);
-            String xml = XMLGenerator.generateDomain(config.getDomainName(), config.getCdrom(), macAddress, NETWORK_NAME);
+            String xml = XMLGenerator.generateDomain(config.getDomainName(), config.getCdrom(), macAddress, NETWORK_NAME, config.getMemory());
             return connect.domainDefineXML(xml);
         } catch (LibvirtException e) {
             throw new ConfigurationException(e);
