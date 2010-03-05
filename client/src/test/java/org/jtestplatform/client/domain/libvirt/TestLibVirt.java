@@ -31,6 +31,7 @@ import org.jtestplatform.client.domain.Domain;
 import org.jtestplatform.client.domain.DomainConfig;
 import org.jtestplatform.configuration.Configuration;
 import org.jtestplatform.configuration.Connection;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -54,6 +55,7 @@ public class TestLibVirt {
         connection = config.getDomains().getFactories().get(0).getConnections().get(0);
     }
     
+    @After
     public void tearDown() throws IOException, ConfigurationException {
         if (domain != null) {
             domain.stop();
@@ -78,7 +80,7 @@ public class TestLibVirt {
      */
     private DomainConfig createDomainConfig() {
         DomainConfig cfg = new DomainConfig();
-        cfg.setDomainName("test");
+        cfg.setDomainName(null); // null => will be defined automatically
         cfg.setCdrom(new File(config.getWorkDir()).getParent() + File.separatorChar + "config" + File.separatorChar + "microcore_2.7.iso");
         return cfg;
     }

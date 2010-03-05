@@ -86,7 +86,7 @@ public class DomainManager implements TransportProvider {
     private DomainConfig createDomainConfig(Platform platform) {
         DomainConfig domainConfig = new DomainConfig();
         domainConfig.setCdrom(platform.getCdrom());
-        domainConfig.setDomainName("JTestPlatform_" + System.currentTimeMillis());
+        domainConfig.setDomainName(null); // null => will be defined automatically
         return domainConfig;
     }
 
