@@ -234,9 +234,9 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
             }
         }
         
-        String prefix = XMLGenerator.baseMacAddress;
+        String prefix = XMLGenerator.BASE_MAC_ADDRESS;
         
-        return findUniqueValue(macAddresses, "mac address", prefix, XMLGenerator.min, XMLGenerator.max, 2);
+        return findUniqueValue(macAddresses, "mac address", prefix, XMLGenerator.MIN_SUBNET_IP_ADDRESS, XMLGenerator.MAX_SUBNET_IP_ADDRESS, 2);
     }
     
     private String getMacAddress(Domain domain) throws LibvirtException {

@@ -44,10 +44,10 @@ import org.libvirt.model.io.dom4j.NetworkDom4jWriter;
 public class XMLGenerator {
     private static final Logger LOGGER = Logger.getLogger(XMLGenerator.class);
     
-    static String baseMacAddress = "54:52:00:77:58:";
-    static String baseIPAddress = "192.168.121.";
-    static int min = 2;
-    static int max = 254;
+    static final String BASE_MAC_ADDRESS = "54:52:00:77:58:";
+    static final String BASE_IP_ADDRESS = "192.168.121.";
+    static final int MIN_SUBNET_IP_ADDRESS = 2;
+    static final int MAX_SUBNET_IP_ADDRESS = 254;
         
     public static String generateNetwork(String networkName) throws ConfigurationException {
         Network network = new Network();
@@ -65,7 +65,7 @@ public class XMLGenerator {
         network.setBridge(bridge);
 
         IP ip = new IP();
-        ip.setAddress(baseIPAddress + '1');
+        ip.setAddress(BASE_IP_ADDRESS + '1');
         ip.setNetmask("255.255.255.0");
         network.setIp(ip);
 
@@ -73,14 +73,14 @@ public class XMLGenerator {
         ip.setDhcp(dhcp);
 
         Range range = new Range();
-        range.setStart(baseIPAddress + min);
-        range.setEnd(baseIPAddress + max);
+        range.setStart(BASE_IP_ADDRESS + MIN_SUBNET_IP_ADDRESS);
+        range.setEnd(BASE_IP_ADDRESS + MAX_SUBNET_IP_ADDRESS);
         dhcp.setRange(range);
 
-        for (int i = min; i <= max; i++) {
+        for (int i = MIN_SUBNET_IP_ADDRESS; i <= MAX_SUBNET_IP_ADDRESS; i++) {
             Host host = new Host();
-            host.setMac(baseMacAddress + toHexString(i, 2));
-            host.setIp(baseIPAddress + i);
+            host.setMac(BASE_MAC_ADDRESS + toHexString(i, 2));
+            host.setIp(BASE_IP_ADDRESS + i);
             dhcp.addHost(host);
         }
 
