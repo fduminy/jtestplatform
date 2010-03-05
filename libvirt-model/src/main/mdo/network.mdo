@@ -107,7 +107,7 @@
             </field>            
             <field>
               <name>host</name>
-              <association xml.itemsStyle="wrapped">
+              <association xml.itemsStyle="flat">
                 <type>Host</type>
                 <multiplicity>*</multiplicity>
               </association>
@@ -118,11 +118,11 @@
         <class>
           <name>Range</name>
           <fields>
-            <field>
+            <field xml.attribute="true">
               <name>start</name>
               <type>String</type>
             </field>            
-            <field>
+            <field xml.attribute="true">
               <name>end</name>
               <type>String</type>
             </field>            
@@ -132,11 +132,11 @@
         <class>
           <name>Host</name>
           <fields>
-            <field>
+            <field xml.attribute="true">
               <name>mac</name>
               <type>String</type>
             </field>            
-            <field>
+            <field xml.attribute="true">
               <name>ip</name>
               <type>String</type>
             </field>            
