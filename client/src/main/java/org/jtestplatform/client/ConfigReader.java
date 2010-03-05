@@ -26,6 +26,7 @@ import java.io.IOException;
 import org.apache.log4j.PropertyConfigurator;
 import org.dom4j.DocumentException;
 import org.jtestplatform.client.domain.ConfigurationException;
+import org.jtestplatform.common.ConfigUtils;
 import org.jtestplatform.configuration.Configuration;
 import org.jtestplatform.configuration.io.dom4j.ConfigurationDom4jReader;
 
@@ -75,17 +76,12 @@ public class ConfigReader {
      * @throw RuntimeException if something is wrong (typically the home directory can't be found).
      */
     private File findHome() {
-        final File home;
-        
         // search home directory 
         String homeProperty = System.getProperty(HOME_DIRECTORY_PROPERTY);
-        if ((homeProperty != null) && !homeProperty.trim().isEmpty()) {
-            home = new File(homeProperty.trim());
-        } else {
-            home = null;
+        if (ConfigUtils.isBlank(homeProperty)) {
             throw new RuntimeException(HOME_DIRECTORY_PROPERTY + " system property not set");
         }
         
-        return home;
+        return new File(homeProperty.trim());
     }
 }

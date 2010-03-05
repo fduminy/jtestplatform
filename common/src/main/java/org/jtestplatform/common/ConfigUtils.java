@@ -24,11 +24,15 @@ import java.util.Properties;
 
 public class ConfigUtils {
 
+    public static boolean isBlank(String s) {
+        return (s == null) || s.trim().isEmpty();
+    }
+    
     public static int getInt(Properties properties, String name, int defaultValue) {
         String valueStr = properties.getProperty(name);
         int value = defaultValue;
 
-        if ((valueStr != null) && !valueStr.trim().isEmpty()) {
+        if (!isBlank(valueStr)) {
             try {
                 value = Integer.parseInt(valueStr);
             } catch (NumberFormatException e) {
@@ -43,7 +47,7 @@ public class ConfigUtils {
         String dirStr = properties.getProperty(name);
         File dir = defaultDir;
 
-        if ((dirStr != null) && !dirStr.trim().isEmpty()) {
+        if (!isBlank(dirStr)) {
             dir = new File(dirStr);
 
             if (!dir.exists()) {
@@ -60,7 +64,7 @@ public class ConfigUtils {
         String str = properties.getProperty(name);
         String[] array = null;
 
-        if ((str != null) && !str.trim().isEmpty()) {
+        if (!isBlank(str)) {
             array = str.split(",");
         }
 
@@ -71,7 +75,7 @@ public class ConfigUtils {
         String str = properties.getProperty(name);
         boolean value = defaultValue;
 
-        if ((str != null) && !str.trim().isEmpty()) {
+        if (!isBlank(str)) {
             value = "true".equals(str) || "1".equals(str) || "yes".equals(str) || "on".equals(str);
         }
 
@@ -90,7 +94,7 @@ public class ConfigUtils {
         String fileStr = properties.getProperty(name);
         File file = null;
         
-        if ((fileStr != null) && !fileStr.trim().isEmpty()) {
+        if (!isBlank(fileStr)) {
             file = new File(fileStr);
 
             boolean validType = (directory && file.isDirectory()) || (!directory && file.isFile()); 
@@ -115,7 +119,7 @@ public class ConfigUtils {
 
     public static String getString(Properties properties, String name) {
         String value = properties.getProperty(name, null);
-        if ((value == null) || value.trim().isEmpty()) {
+        if (isBlank(value)) {
             throw new IllegalArgumentException("property " + name + " must be specified");
         }
         
