@@ -81,6 +81,12 @@
               <type>int</type>
               <defaultValue>32</defaultValue>
             </field>
+            <field xml.attribute="true">
+              <name>memory</name>
+              <type>long</type>
+              <required>true</required>
+              <description>Domain's memory size in kilobytes.</description>                           
+            </field>
           </fields>
         </class>
 

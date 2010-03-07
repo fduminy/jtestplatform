@@ -86,7 +86,7 @@ public class DomainManager implements TransportProvider {
     private DomainConfig createDomainConfig(Platform platform) {
         DomainConfig domainConfig = new DomainConfig();
         domainConfig.setCdrom(platform.getCdrom());
-        domainConfig.setMemory(524288L); //TODO get it from platform
+        domainConfig.setMemory(platform.getMemory());
         domainConfig.setDomainName(null); // null => will be defined automatically
         return domainConfig;
     }
