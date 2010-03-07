@@ -87,7 +87,9 @@ public class TestDriver {
                 domainManager.start();
          
                 try {
-                    File workDir = new File(config.getWorkDir(), toString(platform));
+                    StringBuilder platformStr = new StringBuilder(); 
+                    Map<String, String> platformProperties = getPlatformProperties(platform, platformStr);                    
+                    File workDir = new File(config.getWorkDir(), platformStr.toString());
                     Run latestRun = Run.getLatest(workDir);
                     Run newRun = Run.create(workDir);
                     
@@ -95,7 +97,10 @@ public class TestDriver {
         
                     List<Future<Message>> replies = runTests(testHandler, domainManager);
                     RunResult runResult = mergeResults(newRun.getTimestampString(), testHandler, replies);
-                    //runResult.setSystemProperty("jtestplatform.domain.type", vmType); //TODO add system properties (virtualization type, ...)
+                    
+                    for (String property : platformProperties.keySet()) {
+                        runResult.setSystemProperty(property, platformProperties.get(property));
+                    }
                     
                     writeReports(runResult, newRun.getReportXml());
                     
@@ -117,9 +122,22 @@ public class TestDriver {
         return result;
     }
     
-    private String toString(Platform platform) {
-        return platform.getCpu() + '_' + platform.getWordSize() + "bits_x" + platform.getNbCores(); 
+    private Map<String, String> getPlatformProperties(Platform platform, StringBuilder asString) {
+        Map<String, String> result = new HashMap<String, String>();
+        String prefix = "jtestplatform.platform.";
+        
+        result.put(prefix + "cpu", platform.getCpu());
+        asString.append(platform.getCpu());
+         
+        asString.append('_').append(platform.getWordSize()).append("bits");
+        result.put(prefix + "wordSize", Integer.toString(platform.getWordSize()));
+        
+        asString.append('x').append(platform.getNbCores());
+        result.put(prefix + "nbCores", Integer.toString(platform.getNbCores()));
+            
+        return result; 
     }
+    
     
     private void compareRuns(Run latestRun, Run newRun, RunResult newRunResult) throws XMLParseException, IOException {
         if ((latestRun != null) && latestRun.getReportXml().exists()) {
