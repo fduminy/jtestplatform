@@ -20,9 +20,9 @@
 package org.jtestplatform.server.commands;
 
 import org.jtestplatform.common.message.Message;
+import org.jtestplatform.common.message.Shutdown;
 import org.jtestplatform.server.TestServer;
 import org.jtestplatform.server.TestServerCommand;
-import org.jtestplatform.common.message.Shutdown;
 
 public class ShutdownCommand implements TestServerCommand<Shutdown, Message> {
     private final TestServer<?> testServer;

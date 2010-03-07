@@ -19,7 +19,6 @@
  */
 package org.jtestplatform.client;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -36,7 +35,6 @@ import org.jtestplatform.common.message.Message;
 import org.jtestplatform.common.transport.Transport;
 import org.jtestplatform.common.transport.TransportHelper;
 import org.jtestplatform.common.transport.TransportProvider;
-import org.jtestplatform.configuration.Configuration;
 
 public class DefaultTestManager implements TestManager {
     private static final Logger LOGGER = Logger.getLogger(DefaultTestManager.class);

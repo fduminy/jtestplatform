@@ -22,6 +22,9 @@
  */
 package org.jtestplatform.client.domain.libvirt;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -46,7 +49,6 @@ import org.junit.experimental.theories.DataPoint;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
-import static org.junit.Assert.*;
 
 
 /**

@@ -22,14 +22,9 @@
  */
 package org.jtestplatform.client.domain;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import org.jtestplatform.configuration.Configuration;
 import org.jtestplatform.configuration.Connection;
-import org.libvirt.Connect;
-import org.libvirt.LibvirtException;
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)

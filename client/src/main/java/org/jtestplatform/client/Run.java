@@ -27,8 +27,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-import org.jtestplatform.configuration.Configuration;
-
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
