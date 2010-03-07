@@ -46,6 +46,7 @@ import org.junit.experimental.theories.DataPoint;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
+import static org.junit.Assert.*;
 
 
 /**
@@ -68,6 +69,7 @@ public class TestLibVirt {
     
     private LibVirtDomainFactory factory;
     private List<Domain> domains;
+    private List<String> IPs;
     private Configuration config;
     
     @Before
@@ -78,7 +80,8 @@ public class TestLibVirt {
         connection = config.getDomains().getFactories().get(0).getConnections().get(0);
         
         // must be a synchronized List since we run multiple threads
-        domains = new Vector<Domain>(); 
+        domains = new Vector<Domain>();
+        IPs = new Vector<String>();
     }
     
     @After
@@ -120,7 +123,8 @@ public class TestLibVirt {
                 org.junit.Assert.assertFalse("ip must not be null, empty or blank", ConfigUtils.isBlank(ip));
                 org.junit.Assert.assertEquals("domain must be pingable", NB_PINGS, ping(ip));
                 org.junit.Assert.assertEquals("domain.start() must return same ip address as domain.getIpAddress()", ip, domain.getIPAddress());
-    
+                IPs.add(ip);
+                
                 // stop
                 domain.stop();
                 org.junit.Assert.assertNull(domain.getIPAddress());
@@ -139,11 +143,23 @@ public class TestLibVirt {
         for (int i = 0; i < nbDomains; i++) {
             tests[i] = new TestStartAndStop(estimatedBootTime);
         }
-        
-        MultiThreadedTestRunner mttr = new MultiThreadedTestRunner(tests);
 
-        // kickstarts the MTTR & fires off threads
+        // run each test in its own thread
+        MultiThreadedTestRunner mttr = new MultiThreadedTestRunner(tests);
         mttr.runTestRunnables();
+        
+        // now assert that the list of IPs is valid
+        assertEquals("each domain must have an IP address", tests.length, IPs.size());
+        for (int i = 0; i < IPs.size(); i++) {
+            boolean unique = true;
+            for (int j = 0; j < IPs.size(); j++) {
+                if ((i != j) && IPs.get(i).equals(IPs.get(j))) {
+                    unique = false;
+                    break;
+                }
+            }
+            assertTrue("each domain must have a unique IP address", unique);
+        }
     }
 
     private void sleep(long timeMillis) {
