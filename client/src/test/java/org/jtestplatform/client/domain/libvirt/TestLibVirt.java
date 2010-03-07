@@ -22,14 +22,15 @@
  */
 package org.jtestplatform.client.domain.libvirt;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.List;
+import java.util.Vector;
+
+import net.sourceforge.groboutils.junit.v1.MultiThreadedTestRunner;
+import net.sourceforge.groboutils.junit.v1.TestRunnable;
 
 import org.apache.log4j.Logger;
 import org.jtestplatform.client.ConfigReader;
@@ -41,22 +42,32 @@ import org.jtestplatform.configuration.Configuration;
 import org.jtestplatform.configuration.Connection;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Test;
+import org.junit.experimental.theories.DataPoint;
+import org.junit.experimental.theories.Theories;
+import org.junit.experimental.theories.Theory;
+import org.junit.runner.RunWith;
 
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
  */
+@RunWith(Theories.class)
 public class TestLibVirt {
     private static final Logger LOGGER = Logger.getLogger(TestLibVirt.class);
     
     private static final int NB_PINGS = 5;
+
+    
+    @DataPoint
+    public static final Integer NB_DOMAINS1 = Integer.valueOf(1);
+    @DataPoint
+    public static final Integer NB_DOMAINS3 = Integer.valueOf(15);
     
     private Connection connection;
     
     private LibVirtDomainFactory factory;
-    private Domain domain;
+    private List<Domain> domains;
     private Configuration config;
     
     @Before
@@ -65,66 +76,99 @@ public class TestLibVirt {
         
         factory = new LibVirtDomainFactory();
         connection = config.getDomains().getFactories().get(0).getConnections().get(0);
+        
+        // must be a synchronized List since we run multiple threads
+        domains = new Vector<Domain>(); 
     }
     
     @After
     public void tearDown() throws IOException, ConfigurationException {
-        if (domain != null) {
-            domain.stop();
+        boolean error = false;
+        for (Domain domain : domains) {
+            try {
+                domain.stop();
+            } catch (Throwable t) {
+                LOGGER.error(t);
+                error = true;
+            }
+        }
+        if (error) {
+            throw new RuntimeException("at least one error happened. look at logs");
         }
     }
     
-    @Test
-    public void testStart() throws ConfigurationException, IOException {
-        domain = factory.createDomain(createDomainConfig(), connection);
-        start(domain);
+    private class TestStartAndStop extends TestRunnable {
+        private final int estimatedBootTime;
+        
+        public TestStartAndStop(int estimatedBootTime) {
+            this.estimatedBootTime = estimatedBootTime;
+        }
+        
+        @Override
+        public void runTest() throws Throwable {
+            try {
+                Domain domain = factory.createDomain(createDomainConfig(), connection);
+                String ip = domain.getIPAddress();
+                org.junit.Assert.assertNull(ip);
+                
+                domains.add(domain);
+                
+                // start
+                ip = domain.start();                
+                sleep(estimatedBootTime); // wait a bit that the system has started
+                
+                org.junit.Assert.assertFalse("ip must not be null, empty or blank", ConfigUtils.isBlank(ip));
+                org.junit.Assert.assertEquals("domain must be pingable", NB_PINGS, ping(ip));
+                org.junit.Assert.assertEquals("domain.start() must return same ip address as domain.getIpAddress()", ip, domain.getIPAddress());
+    
+                // stop
+                domain.stop();
+                org.junit.Assert.assertNull(domain.getIPAddress());
+                org.junit.Assert.assertEquals("after stop, domain must not be pingable", 0, ping(ip));
+            } catch (Throwable t) {
+                LOGGER.error(t);
+                throw t;
+            }
+        }
     }
     
-    @Test
-    public void testStop() throws ConfigurationException, IOException {
-        domain = factory.createDomain(createDomainConfig(), connection);
-        String ip = start(domain);
+    @Theory
+    public void testStartAndStop(Integer nbDomains) throws Throwable {
+        final int estimatedBootTime = 40000;
+        TestStartAndStop[] tests = new TestStartAndStop[nbDomains];
+        for (int i = 0; i < nbDomains; i++) {
+            tests[i] = new TestStartAndStop(estimatedBootTime);
+        }
         
-        domain.stop();
-        assertNull(domain.getIPAddress());
-        assertEquals("after stop, domain must not be pingable", 0, ping(ip));
+        MultiThreadedTestRunner mttr = new MultiThreadedTestRunner(tests);
+
+        // kickstarts the MTTR & fires off threads
+        mttr.runTestRunnables();
     }
-    
-    private String start(Domain domain) throws IOException, ConfigurationException {
-        String ip = domain.getIPAddress();
-        assertNull(ip);
-        
-        ip = domain.start();
-        
-        // wait a bit that the system has started
+
+    private void sleep(long timeMillis) {
         try {
-            Thread.sleep(40000);
+            Thread.sleep(timeMillis);
         } catch (InterruptedException e) {
             // ignore
         }
-        
-        assertFalse("ip must not be null, empty or blank", ConfigUtils.isBlank(ip));
-        assertEquals("domain must be pingable", NB_PINGS, ping(ip));
-        assertEquals("domain.start() must return same ip address as domain.getIpAddress()", ip, domain.getIPAddress());
-        
-        return ip;
     }
-
+    
     /**
      * @return
      */
     private DomainConfig createDomainConfig() {
         DomainConfig cfg = new DomainConfig();
         cfg.setDomainName(null); // null => will be defined automatically
-        cfg.setMemory(524288L);
+        cfg.setMemory(32L * 1024L);
         cfg.setCdrom(new File(config.getWorkDir()).getParent() + File.separatorChar + "config" + File.separatorChar + "microcore_2.7.iso");
         return cfg;
     }
     
-    private int ping(String host) throws UnknownHostException, IOException {
+    private static int ping(String host) throws UnknownHostException, IOException {
         LOGGER.debug("pinging " + host);
         
-        final int timeOut = 1000;
+        final int timeOut = 600000;
         final InetAddress addr = InetAddress.getByName(host);
         
         int counter = 0;
