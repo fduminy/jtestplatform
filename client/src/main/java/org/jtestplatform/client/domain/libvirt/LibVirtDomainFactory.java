@@ -43,7 +43,10 @@ import org.libvirt.Network;
 import org.libvirt.DomainInfo.DomainState;
 import org.libvirt.jna.virError;
 import org.libvirt.jna.Libvirt.VirErrorCallback;
+import org.libvirt.model.DHCP;
 import org.libvirt.model.Host;
+import org.libvirt.model.IP;
+import org.libvirt.model.Range;
 import org.libvirt.model.io.dom4j.NetworkDom4jReader;
 
 import com.sun.jna.Pointer;
@@ -150,24 +153,85 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
     
     void ensureNetworkExist(Connect connect) throws LibvirtException, ConfigurationException {
         //TODO create our own network
-        
-        Network network = networkLookupByName(connect, NETWORK_NAME);
-        if (network != null) {
-            try {
-                //TODO avoid destroying it if it has already the desired characteristics
-                network.destroy();
-            } catch (LibvirtException lve) {
-                // ignore
+
+        String wantedNetworkXML = XMLGenerator.generateNetwork(NETWORK_NAME);
+        org.libvirt.model.Network wantedNetwork = toNetwork(wantedNetworkXML);
+            
+        // synchronize because multiple threads might check/destroy/create the network concurrently
+        synchronized ((connect.getHostName() + "_ensureNetworkExist").intern()) {   
+            Network network = networkLookupByName(connect, NETWORK_NAME);
+            if (network != null) {
+                String actualNetworkXML = network.getXMLDesc(0);
+                org.libvirt.model.Network actualNetwork = toNetwork(actualNetworkXML);
+                
+                if (sameNetwork(wantedNetwork, actualNetwork)) {
+                    LOGGER.debug("network '" + NETWORK_NAME + "' already exists with proper characteristics");
+                } else {
+                    network.destroy();
+                    //network.undefine();
+                    LOGGER.debug("destroyed network '" + NETWORK_NAME + "'");
+                    network = null; 
+                }
             }
-            //network.undefine();
-            LOGGER.debug("destroyed network " + NETWORK_NAME);
+            
+            if (network == null) {
+                network = connect.networkCreateXML(wantedNetworkXML);
+                LOGGER.debug("created network '" + NETWORK_NAME + "'");            
+            }
+        }
+    }
+    
+    /**
+     * @param wantedNetwork
+     * @param actualNetwork
+     * @return
+     */
+    private boolean sameNetwork(org.libvirt.model.Network wantedNetwork,
+            org.libvirt.model.Network actualNetwork) {
+                
+        IP wantedIP = wantedNetwork.getIp();
+        IP actualIP = actualNetwork.getIp();
+        boolean sameNetwork = (wantedIP.getAddress().equals(actualIP.getAddress()));
+        sameNetwork &= (wantedIP.getNetmask().equals(actualIP.getNetmask()));
+
+        if (sameNetwork) {
+            DHCP wantedDHCP = wantedIP.getDhcp();
+            DHCP actualDHCP = actualIP.getDhcp();
+            for (Host wantedHost : wantedDHCP.getHost()) {
+                boolean sameHost = false;
+                for (Host actualHost : actualDHCP.getHost()) {
+                    if (wantedHost.getMac().equals(actualHost.getMac()) &&
+                            wantedHost.getIp().equals(actualHost.getIp())) {
+                        sameHost = true;
+                        break;
+                    }
+                }
+                sameNetwork &= sameHost;
+                
+                if (!sameNetwork) {
+                    break;
+                }
+            }
+            
+            if (sameNetwork) {
+                Range wantedRange = wantedDHCP.getRange();
+                Range actualRange = actualDHCP.getRange();
+                sameNetwork &= wantedRange.getStart().equals(actualRange.getStart());
+                sameNetwork &= wantedRange.getEnd().equals(actualRange.getEnd());
+            }            
         }
         
-        String net = XMLGenerator.generateNetwork(NETWORK_NAME);
-        network = connect.networkCreateXML(net);
-        //network = connect.networkDefineXML(net);
-        //network.create();
-        LOGGER.debug("created network " + NETWORK_NAME);
+        return sameNetwork;
+    }
+
+    private org.libvirt.model.Network toNetwork(String networkXML) throws ConfigurationException {
+        try {
+            return new NetworkDom4jReader().read(new StringReader(networkXML));
+        } catch (IOException e) {
+            throw new ConfigurationException(e);
+        } catch (DocumentException e) {
+            throw new ConfigurationException(e);
+        }
     }
     
     private static Network networkLookupByName(Connect connect, String networkName) throws LibvirtException {
@@ -185,17 +249,19 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
      */
     Domain defineDomain(Connect connect, DomainConfig config) throws ConfigurationException {
         try {
-            List<Domain> domains = listAllDomains(connect);
-            
-            if (ConfigUtils.isBlank(config.getDomainName())) {
-                // automatically define the domain name
-                // it must be unique for the connection
-                config.setDomainName(findUniqueDomainName(domains));
+            synchronized ((connect.getHostName() + "_defineDomain").intern()) {
+                List<Domain> domains = listAllDomains(connect);
+                
+                if (ConfigUtils.isBlank(config.getDomainName())) {
+                    // automatically define the domain name
+                    // it must be unique for the connection
+                    config.setDomainName(findUniqueDomainName(domains));
+                }
+                
+                String macAddress = findUniqueMacAddress(domains);
+                String xml = XMLGenerator.generateDomain(config.getDomainName(), config.getCdrom(), macAddress, NETWORK_NAME, config.getMemory());
+                return connect.domainDefineXML(xml);
             }
-            
-            String macAddress = findUniqueMacAddress(domains);
-            String xml = XMLGenerator.generateDomain(config.getDomainName(), config.getCdrom(), macAddress, NETWORK_NAME, config.getMemory());
-            return connect.domainDefineXML(xml);
         } catch (LibvirtException e) {
             throw new ConfigurationException(e);
         }
@@ -291,7 +357,12 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
     
         // get defined but inactive domains
         for (String name : connect.listDefinedDomains()) {
-            domains.add(connect.domainLookupByName(name));
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("name=" + name);
+            }
+            if (name != null) {
+                domains.add(connect.domainLookupByName(name));
+            }
         }
         
         // get active domains
