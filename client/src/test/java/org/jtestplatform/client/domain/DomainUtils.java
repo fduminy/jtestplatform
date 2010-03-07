@@ -73,23 +73,21 @@ public class DomainUtils {
                 }.start();
             }
         }
+        @Override
         public void stop() {
             alive = false;                
         }
+        @Override
         public String start() {
             alive = true;
             return null;
         }
+        @Override
         public boolean isAlive() {
             return alive;
         }
-        
-        /* (non-Javadoc)
-         * @see org.jtestplatform.client.domain.Domain#getIPAddress()
-         */
         @Override
         public String getIPAddress() {
-            // TODO Auto-generated method stub
             return null;
         }
     }
