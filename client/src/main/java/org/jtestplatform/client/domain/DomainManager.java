@@ -42,7 +42,6 @@ import org.jtestplatform.configuration.Platform;
 public class DomainManager implements TransportProvider {
     private static final Logger LOGGER = Logger.getLogger(DomainManager.class);
     
-    private final Map<String, DomainFactory<? extends Domain>> knownFactories;
     private final LoadBalancer<DomainManagerDelegate> delegates;
     private final WatchDog watchDog;
     private final LoadBalancer<Domain> domains;
@@ -57,7 +56,6 @@ public class DomainManager implements TransportProvider {
         domainConfig = createDomainConfig(platform);        
         maxNumberOfDomains = Math.max(1, config.getDomains().getMax());
         serverPort = config.getServerPort();
-        this.knownFactories = knownFactories;
         
         watchDog = new WatchDog(config);        
         watchDog.addWatchDogListener(new WatchDogListener() {
