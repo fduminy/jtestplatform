@@ -49,7 +49,6 @@ public class DomainManager implements TransportProvider {
     private final int maxNumberOfDomains;
     private final int serverPort;
     
-    @SuppressWarnings("unchecked")
     public DomainManager(Configuration config, Platform platform, Map<String, DomainFactory<? extends Domain>> knownFactories) throws ConfigurationException {
         checkValid(knownFactories, config);
         
