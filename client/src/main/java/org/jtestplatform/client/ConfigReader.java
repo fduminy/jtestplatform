@@ -43,7 +43,7 @@ public class ConfigReader {
      * @return the configuration.
      * @throws IOException
      */
-    public Configuration read() throws DomainException {
+    public Configuration read() throws ConfigurationException {
         try {
             File homeDirectory = findHome();
             File configurationDirectory = new File(homeDirectory, "config");            
@@ -65,9 +65,9 @@ public class ConfigReader {
             
             return config;
         } catch (IOException e) {
-            throw new DomainException("can't read config", e);
+            throw new ConfigurationException("can't read config", e);
         } catch (DocumentException e) {
-            throw new DomainException("can't read config", e);
+            throw new ConfigurationException("can't read config", e);
         }
     }
     

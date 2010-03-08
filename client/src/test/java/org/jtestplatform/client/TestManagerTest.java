@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import org.jtestplatform.client.domain.DomainException;
 import org.jtestplatform.common.message.Message;
 import org.jtestplatform.common.transport.Transport;
 import org.jtestplatform.common.transport.TransportProvider;
@@ -77,7 +76,7 @@ public class TestManagerTest {
     }
     
     @Before
-    public void setUp() throws DomainException {
+    public void setUp() throws ConfigurationException {
         new ConfigReader().read(); // will initialize log4j
                 
         transportProvider = mock(TransportProvider.class);

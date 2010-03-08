@@ -34,6 +34,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.jtestplatform.client.ConfigReader;
+import org.jtestplatform.client.ConfigurationException;
 import org.jtestplatform.client.domain.DomainUtils.CustomDomain;
 import org.jtestplatform.client.domain.watchdog.DefaultWatchDogStrategy;
 import org.jtestplatform.client.domain.watchdog.WatchDog;
@@ -81,7 +82,7 @@ public class TestWatchDog {
     private WatchDog watchDog;
     
     @Before
-    public void setUp() throws DomainException {
+    public void setUp() throws ConfigurationException {
         new ConfigReader().read(); // will initialize log4j
     }
     
