@@ -19,7 +19,6 @@
  */
 package org.jtestplatform.client.domain;
 
-import java.io.IOException;
 
 /**
  * Interface with a domain.
@@ -34,21 +33,20 @@ public interface Domain {
      * @return The IP address of the domain. 
      * @throws DomainException 
      */
-    String start() throws IOException, DomainException;
+    String start() throws DomainException;
     
     /**
      * Stop the VM.
-     * @throws IOException
      * @throws DomainException 
      */
-    void stop() throws IOException, DomainException;
+    void stop() throws DomainException;
     
     /**
      * Checks if the VM is alive.
      * @return true if the VM is alive.
-     * @throws IOException
+     * @throws DomainException
      */
-    boolean isAlive() throws IOException;
+    boolean isAlive() throws DomainException;
     
     /**
      * Get the IP address of the domain.

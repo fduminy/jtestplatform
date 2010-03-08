@@ -19,7 +19,6 @@
  */
 package org.jtestplatform.client.domain;
 
-import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
@@ -106,8 +105,6 @@ public class DomainManager implements TransportProvider {
             LOGGER.info("stopping domains");        
             try {
                 domain.stop();
-            } catch (IOException e) {
-                LOGGER.error("an error happened while stopping", e);
             } catch (DomainException e) {
                 LOGGER.error("an error happened while stopping", e);
             }

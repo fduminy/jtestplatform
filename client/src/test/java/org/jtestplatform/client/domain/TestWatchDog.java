@@ -149,13 +149,13 @@ public class TestWatchDog {
     }
     
     @Theory
-    public void testAddRemoveListener(NbDomains nbDomains, Integer pollInterval) throws IOException {
+    public void testAddRemoveListener(NbDomains nbDomains, Integer pollInterval) throws DomainException {
         watchDog = createWatchDog(pollInterval, Long.valueOf(pollInterval * 2));
         testAddRemoveListener(Boolean.FALSE, nbDomains, pollInterval);
         testAddRemoveListener(Boolean.TRUE, nbDomains, pollInterval);
     }
 
-    private void testAddRemoveListener(Boolean fixedState, NbDomains nbDomains, Integer pollInterval) throws IOException {
+    private void testAddRemoveListener(Boolean fixedState, NbDomains nbDomains, Integer pollInterval) throws DomainException {
         final Set<Domain> called = new HashSet<Domain>(); 
         WatchDogListener listener = new WatchDogListener() {
             public void domainDied(Domain domain) {
@@ -189,7 +189,7 @@ public class TestWatchDog {
         assertEquals("listener must never be called after removal", 0, nbCalled);
     }
     
-    private Domain[] createFixedStateProcesses(final Boolean fixedState, WatchDogListener listener, NbDomains nbDomains, Integer pollInterval) throws IOException {
+    private Domain[] createFixedStateProcesses(final Boolean fixedState, WatchDogListener listener, NbDomains nbDomains, Integer pollInterval) throws DomainException {
         if (listener != null) {
             watchDog.addWatchDogListener(listener);
         }

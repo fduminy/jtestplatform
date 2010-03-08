@@ -19,7 +19,6 @@
  */
 package org.jtestplatform.client.domain.watchdog;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -29,6 +28,7 @@ import java.util.Vector;
 
 import org.apache.log4j.Logger;
 import org.jtestplatform.client.domain.Domain;
+import org.jtestplatform.client.domain.DomainException;
 import org.jtestplatform.configuration.Configuration;
 
 /**
@@ -162,7 +162,7 @@ public class WatchDog {
     private boolean domainIsAlive(Domain domain) {
         try {
             return domain.isAlive();
-        } catch (IOException e) {
+        } catch (DomainException e) {
             LOGGER.error("error while checking if alive", e);
             return true;
         }

@@ -51,8 +51,6 @@ public class DefaultWatchDogStrategy implements WatchDogStrategy {
             LOGGER.warn("domain is dead. restarting it.");
             try {
                 domain.start();
-            } catch (IOException e) {
-                LOGGER.error("error while restarting", e);
             } catch (DomainException e) {
                 LOGGER.error("error while restarting", e);
             }

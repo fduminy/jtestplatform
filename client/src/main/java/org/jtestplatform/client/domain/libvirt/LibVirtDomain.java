@@ -60,7 +60,6 @@ class LibVirtDomain implements Domain {
      * 
      * @param config configuration of the machine to run with libvirt.
      * @param connect1
-     * @throws DomainException 
      */
     LibVirtDomain(DomainConfig config, LibVirtDomainFactory factory, Connection connection) {
         this.config = config;        
@@ -93,8 +92,6 @@ class LibVirtDomain implements Domain {
             }
         } catch (LibvirtException lve) {
             throw new DomainException("failed to start", lve);
-        } catch (IOException e) {
-            throw new DomainException("failed to start", e);
         }
         
         return ipAddress;
@@ -105,7 +102,7 @@ class LibVirtDomain implements Domain {
      * @throws DomainException 
      */
     @Override
-    public synchronized void stop() throws IOException, DomainException {
+    public synchronized void stop() throws DomainException {
         if (isAlive()) {
             factory.stop(domain, ipAddress);
             domain = null;
@@ -128,15 +125,15 @@ class LibVirtDomain implements Domain {
      * {@inheritDoc}
      */
     @Override
-    public boolean isAlive() throws IOException {
+    public boolean isAlive() throws DomainException {
         boolean isRunning = false;
         
         if (domain != null) {
             try {
                 DomainState state = domain.getInfo().state;
                 isRunning = DomainState.VIR_DOMAIN_RUNNING.equals(state);
-            } catch(Exception e) {
-                throw new IOException(e);
+            } catch(LibvirtException e) {
+                throw new DomainException(e);
             }
         }
         
