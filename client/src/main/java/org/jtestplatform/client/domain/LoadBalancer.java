@@ -31,7 +31,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)
- *
+ * @param <T>
  */
 public class LoadBalancer<T> {
     private final List<T> elements;

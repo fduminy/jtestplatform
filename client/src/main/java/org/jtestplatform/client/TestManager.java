@@ -35,18 +35,16 @@ import org.jtestplatform.common.transport.TransportProvider;
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
- * @param <T>
  */
 public interface TestManager {
     /**
      * @param messages
-     * @param transportProvider 
+     * @param transportProvider
      * @return
      * @throws Exception
      */
     List<Future<Message>> runTests(List<Message> messages,
             TransportProvider transportProvider) throws Exception;
-    
-    void shutdown();
 
+    void shutdown();
 }

@@ -33,5 +33,5 @@ import org.jtestplatform.common.message.Message;
  *
  */
 public interface TransportManagerListener {
-    public void messageReceived(Message message);
+    void messageReceived(Message message);
 }

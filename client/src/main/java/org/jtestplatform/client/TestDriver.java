@@ -45,8 +45,6 @@ import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import net.sourceforge.nanoxml.XMLParseException;
-
 import org.apache.log4j.Logger;
 import org.jtestplatform.client.domain.Domain;
 import org.jtestplatform.client.domain.DomainFactory;
@@ -142,7 +140,7 @@ public class TestDriver {
     }
     
     
-    private void compareRuns(Run latestRun, Run newRun, RunResult newRunResult) throws XMLParseException, IOException {
+    private void compareRuns(Run latestRun, Run newRun, RunResult newRunResult) throws IOException {
         if ((latestRun != null) && latestRun.getReportXml().exists()) {
             // there was a previous run, let do the comparison !
             

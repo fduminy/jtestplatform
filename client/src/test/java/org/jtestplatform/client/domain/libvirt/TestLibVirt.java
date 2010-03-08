@@ -31,7 +31,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Vector;
 
@@ -75,7 +74,7 @@ public class TestLibVirt {
     
     private LibVirtDomainFactory factory;
     private List<Domain> domains;
-    private List<String> IPs;
+    private List<String> ipList;
     private Configuration config;
     
     @Before
@@ -87,7 +86,7 @@ public class TestLibVirt {
         
         // must be a synchronized List since we run multiple threads
         domains = new Vector<Domain>();
-        IPs = new Vector<String>();
+        ipList = new Vector<String>();
     }
     
     @After
@@ -129,7 +128,7 @@ public class TestLibVirt {
                 org.junit.Assert.assertFalse("ip must not be null, empty or blank", ConfigUtils.isBlank(ip));
                 org.junit.Assert.assertEquals("domain must be pingable", NB_PINGS, ping(ip));
                 org.junit.Assert.assertEquals("domain.start() must return same ip address as domain.getIpAddress()", ip, domain.getIPAddress());
-                IPs.add(ip);
+                ipList.add(ip);
                 
                 // stop
                 domain.stop();
@@ -155,11 +154,11 @@ public class TestLibVirt {
         mttr.runTestRunnables();
         
         // now assert that the list of IPs is valid
-        assertEquals("each domain must have an IP address", tests.length, IPs.size());
-        for (int i = 0; i < IPs.size(); i++) {
+        assertEquals("each domain must have an IP address", tests.length, ipList.size());
+        for (int i = 0; i < ipList.size(); i++) {
             boolean unique = true;
-            for (int j = 0; j < IPs.size(); j++) {
-                if ((i != j) && IPs.get(i).equals(IPs.get(j))) {
+            for (int j = 0; j < ipList.size(); j++) {
+                if ((i != j) && ipList.get(i).equals(ipList.get(j))) {
                     unique = false;
                     break;
                 }
@@ -187,7 +186,7 @@ public class TestLibVirt {
         return cfg;
     }
     
-    private static int ping(String host) throws UnknownHostException, IOException {
+    private static int ping(String host) throws IOException {
         LOGGER.debug("pinging " + host);
         
         final int timeOut = 600000;

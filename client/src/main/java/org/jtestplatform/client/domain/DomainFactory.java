@@ -31,6 +31,7 @@ import org.jtestplatform.configuration.Connection;
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
+ * @param <D>
  */
 public interface DomainFactory<D extends Domain> {
     String getType();

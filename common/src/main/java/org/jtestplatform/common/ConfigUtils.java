@@ -26,11 +26,13 @@ import java.io.File;
 import java.util.Properties;
 
 public class ConfigUtils {
+    private ConfigUtils() {        
+    }
 
     public static boolean isBlank(String s) {
         return (s == null) || s.trim().isEmpty();
     }
-    
+
     public static int getInt(Properties properties, String name, int defaultValue) {
         String valueStr = properties.getProperty(name);
         int value = defaultValue;
@@ -92,11 +94,11 @@ public class ConfigUtils {
     public static File getFile(Properties properties, String name, boolean mustExist) {
         return getFile(properties, name, mustExist, false); // directory=false (aka we want a file)
     }
-    
+
     private static File getFile(Properties properties, String name, boolean mustExist, boolean directory) {
         String fileStr = properties.getProperty(name);
         File file = null;
-        
+
         if (!isBlank(fileStr)) {
             file = new File(fileStr);
 
@@ -105,7 +107,7 @@ public class ConfigUtils {
                 file = null;
             }
         }
-        
+
         if (file == null) {
             final String type = directory ? "directory" : "file";
             final String msg;
@@ -125,7 +127,7 @@ public class ConfigUtils {
         if (isBlank(value)) {
             throw new IllegalArgumentException("property " + name + " must be specified");
         }
-        
+
         return value;
     }
 
@@ -137,17 +139,17 @@ public class ConfigUtils {
      */
     public static String getClasspath(Properties properties, String name, boolean mustExist) {
         String classpath;
-        
+
         if (mustExist) {
             classpath = getString(properties, name);
         } else {
             classpath = properties.getProperty(name, null);
         }
-        
+
         if (classpath != null) {
             classpath = classpath.replace(',', File.pathSeparatorChar);
         }
-        
+
         return classpath;
     }
 }

@@ -36,7 +36,7 @@ import org.libvirt.LibvirtException;
 import org.libvirt.DomainInfo.DomainState;
 
 /**
- * Implementation of {@link ServerProcess} for <a href="http://www.virtualbox.org/">VirtualBox</a>
+ * Implementation of {@link ServerProcess} for <a href="http://www.virtualbox.org/">VirtualBox</a>.
  * 
  * @author Fabien DUMINY (fduminy@jnode.org)
  *

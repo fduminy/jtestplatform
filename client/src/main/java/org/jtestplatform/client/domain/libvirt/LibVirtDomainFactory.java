@@ -55,7 +55,7 @@ import org.libvirt.model.io.dom4j.NetworkDom4jReader;
 import com.sun.jna.Pointer;
 
 /**
- * Implementation of {@link DomainFactory} for <a href="http://libvirt.org/">libvirt</a>
+ * Implementation of {@link DomainFactory} for <a href="http://libvirt.org/">libvirt</a>.
  * 
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
@@ -191,7 +191,7 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
      */
     private boolean sameNetwork(org.libvirt.model.Network wantedNetwork,
             org.libvirt.model.Network actualNetwork) {
-                
+
         IP wantedIP = wantedNetwork.getIp();
         IP actualIP = actualNetwork.getIp();
         boolean sameNetwork = (wantedIP.getAddress().equals(actualIP.getAddress()));
@@ -203,14 +203,14 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
             for (Host wantedHost : wantedDHCP.getHost()) {
                 boolean sameHost = false;
                 for (Host actualHost : actualDHCP.getHost()) {
-                    if (wantedHost.getMac().equals(actualHost.getMac()) &&
-                            wantedHost.getIp().equals(actualHost.getIp())) {
+                    if (wantedHost.getMac().equals(actualHost.getMac()) 
+                            && wantedHost.getIp().equals(actualHost.getIp())) {
                         sameHost = true;
                         break;
                     }
                 }
                 sameNetwork &= sameHost;
-                
+
                 if (!sameNetwork) {
                     break;
                 }

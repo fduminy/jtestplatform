@@ -57,7 +57,7 @@ import org.junit.runner.RunWith;
 @RunWith(Theories.class)
 public class TestWatchDog {
     @DataPoint
-    public static final Long MAX_ZOMBIE_TIME = Long.valueOf(60000l);
+    public static final Long MAX_ZOMBIE_TIME = Long.valueOf(60000L);
     
     public static class NbDomains {
         private final int value;

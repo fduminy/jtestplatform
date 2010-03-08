@@ -37,13 +37,16 @@ import java.util.Properties;
  *
  */
 public class ConfigurationUtils {
-    
+
     private static final String BEGIN_VARIABLE_REF = "${";
     private static final String END_VARIABLE_REF = "}";
+
+    private ConfigurationUtils() {        
+    }
     
     /**
      * Read a properties file.
-     * 
+     *
      * @param configFile File where configuration is stored.
      * @return the properties file.
      * @throws IOException
@@ -73,26 +76,29 @@ public class ConfigurationUtils {
 
     public static String expandValue(Properties properties, String value) {
         if (value != null) {
-            boolean replaced;        
+            boolean replaced;
             do {
                 replaced = false;
                 int begin = value.indexOf(BEGIN_VARIABLE_REF);
                 if (begin >= 0) {
                     int beginVariable = begin + BEGIN_VARIABLE_REF.length();
-                    int endVariable = value.indexOf(END_VARIABLE_REF, beginVariable + 1);
+                    int endVariable = value.indexOf(END_VARIABLE_REF,
+                            beginVariable + 1);
                     if (endVariable >= 0) {
-                        String variable = value.substring(beginVariable, endVariable);
+                        String variable = value.substring(beginVariable,
+                                endVariable);
                         String variableValue = properties.getProperty(variable);
                         if (variableValue != null) {
-                            value = value.substring(0, begin) + variableValue + 
-                                value.substring(endVariable + END_VARIABLE_REF.length());                        
+                            value = value.substring(0, begin) + variableValue
+                                + value.substring(endVariable
+                                        + END_VARIABLE_REF.length());
                             replaced = true;
                         }
                     }
                 }
             } while (replaced);
         }
-        
+
         return value;
-    }    
+    }
 }

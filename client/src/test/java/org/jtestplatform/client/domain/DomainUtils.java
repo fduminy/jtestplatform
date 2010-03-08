@@ -38,7 +38,9 @@ import org.mockito.stubbing.Answer;
  *
  */
 public class DomainUtils {
-    
+    private DomainUtils() {        
+    }
+
     public static CustomDomain[] createCustomDomain(long multiple, int nbDomains, WatchDog watchDog, int pollInterval) {
         CustomDomain[] p = new CustomDomain[nbDomains];
         for (int i = 0; i < nbDomains; i++) {
@@ -47,17 +49,17 @@ public class DomainUtils {
             doCallRealMethod().when(p[i]).isAlive();
             doCallRealMethod().when(p[i]).start();
             doCallRealMethod().when(p[i]).stop();
-            
+
             if (watchDog != null) {
                 watchDog.watch(p[i]);
             }
         }
         return p;
     }
-    
+
     public static class CustomDomain implements Domain {
         private boolean alive = false;
-        
+
         public CustomDomain() {
         }
         public void setUnexpectedDeadDelay(final int unexpectedDeadDelay) {
@@ -76,7 +78,7 @@ public class DomainUtils {
         }
         @Override
         public void stop() {
-            alive = false;                
+            alive = false;
         }
         @Override
         public String start() {
@@ -92,7 +94,7 @@ public class DomainUtils {
             return null;
         }
     }
-    
+
     public static Domain[] createFixedStateProcesses(final Boolean fixedState, WatchDog watchDog, int nbDomains) throws DomainException {
         Domain[] p = new Domain[nbDomains];
         for (int i = 0; i < nbDomains; i++) {
@@ -101,14 +103,14 @@ public class DomainUtils {
 
                 @Override
                 public Boolean answer(InvocationOnMock invocation) throws Throwable {
-                    return fixedState;                
-                }                
+                    return fixedState;
+                }
             });
-            
+
             if (watchDog != null) {
                 watchDog.watch(p[i]);
             }
         }
         return p;
-    }    
+    }
 }

@@ -131,21 +131,21 @@ public class WatchDog {
     public void unwatch(Domain domain) {
         runningDomains.remove(domain);
     }
-    
+
     /**
-     * Start watching the {@link Domain}
+     * Start watching the {@link Domain}.
      */
     public void startWatching() {
         watch = true;
     }
 
     /**
-     * Stop watching the {@link Domain}
+     * Stop watching the {@link Domain}.
      */
     public void stopWatching() {
         watch = false;
     }
-        
+
     /**
      * Sleep for the amount of time specified in the configuration.
      */
@@ -156,7 +156,7 @@ public class WatchDog {
             // ignore
         }
     }
-    
+
     /**
      * Checks if the given domain is alive.
      * @param domain The domain to check.
@@ -170,23 +170,23 @@ public class WatchDog {
             return true;
         }
     }
-    
+
     private void notifyDomainDied(Domain domain) {
         for (WatchDogListener l : listeners) {
             l.domainDied(domain);
         }
     }
-    
+
     private Long getZombieStartTime(Domain domain) {
         Long startTime = zombieStartTime.get(domain);
         if (startTime == null) {
-            // the domain was alive at previous verification 
+            // the domain was alive at previous verification
             startTime = Long.valueOf(System.currentTimeMillis());
             zombieStartTime.put(domain, startTime);
         }
         return startTime;
     }
-    
+
     private List<Domain> watchProcesses() {
         // copy the list to avoid ConcurrentModification while iterating over it.
         List<Domain> domainList = new ArrayList<Domain>(runningDomains);
@@ -196,7 +196,7 @@ public class WatchDog {
         for (Domain domain : domainList) {
             if (domainIsAlive(domain)) {
                 zombieStartTime.remove(domain);
-            } else {                            
+            } else {
                 if (watch) {
                     // should try to resurrect the domain
                     boolean isReallyDead = strategy.domainDead(domain, getZombieStartTime(domain));
@@ -205,15 +205,15 @@ public class WatchDog {
                     }
                 }
             }
-            
+
             if (!watch) {
                 break;
             }
         }
-        
+
         return deadProcesses;
     }
-    
+
     /**
      * Thread class used to watch a list of domains.
      * @author Fabien DUMINY (fduminy@jnode.org)
@@ -223,7 +223,7 @@ public class WatchDog {
         private WatchDogThread() {
             super("WatchDogThread");
         }
-        
+
         /**
          * Manage the activity of the WatchDog and notify when a domain is dead.
          */
@@ -232,15 +232,15 @@ public class WatchDog {
             while (true) {
                 if (watch) {
                     List<Domain> deadProcesses = watchProcesses();
-                    
+
                     runningDomains.removeAll(deadProcesses);
                     for (Domain deadProcess : deadProcesses) {
                         notifyDomainDied(deadProcess);
                     }
                 }
-                
+
                 goSleep();
             }
         }
-    }    
+    }
 }

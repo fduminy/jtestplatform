@@ -44,21 +44,21 @@ import org.jtestplatform.configuration.Configuration;
 
 /**
  * Utility class used to read from a text file and also to write it.
- *  
+ *
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
  */
 public class TestListRW {
     /**
-     * My logger
+     * My logger.
      */
     private static final Logger LOGGER = Logger.getLogger(TestListRW.class);
-    
+
     /**
      * Configuration used to filter the list of lines.
      */
     private final Configuration config;
-    
+
     /**
      * Create an instance from the given configuration.
      * @param config
@@ -66,7 +66,7 @@ public class TestListRW {
     public TestListRW(Configuration config) {
         this.config = config;
     }
-    
+
     /**
      * Read the mauve tests list but don't take lines containing '[' 
      * and also apply additional filters specified in configuration. 
@@ -85,11 +85,11 @@ public class TestListRW {
                     list.add(line);
                 }
             }
-            
+
         });
         return list;
     }
-    
+
     /**
      * Read a list from the given file but don't take lines starting with '#' (comments) 
      * and also apply additional filters specified in configuration.

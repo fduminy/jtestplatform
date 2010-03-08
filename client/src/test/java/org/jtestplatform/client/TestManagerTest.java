@@ -60,7 +60,7 @@ public class TestManagerTest {
             {0, 1, 0L, 1},
         });
     }
-    
+
     private final int corePoolSize;
     private final int maximumPoolSize;
     private final long keepAliveTime;
@@ -77,37 +77,37 @@ public class TestManagerTest {
         this.keepAliveTime = keepAliveTime;
         this.nbMessages = nbMessages;
     }
-    
+
     @Before
     public void setUp() throws ConfigurationException {
         new ConfigReader().read(); // will initialize log4j
-                
+
         transportProvider = mock(TransportProvider.class);
-        
+
         testManager = new DefaultTestManager(corePoolSize,
                 maximumPoolSize, keepAliveTime, unit);
     }
-    
+
     @After
     public void tearDown() {
         testManager.shutdown();
     }
-    
+
     @Test
     public void testRunTests() throws Exception {
         List<Message> messages = new ArrayList<Message>();
-        
+
         Transport transport = mock(Transport.class);
         when(transportProvider.get()).thenReturn(transport);
-        
+
         for (int i = 0; i < nbMessages; i++) {
             Message message = mock(Message.class);
 //            doReturn(null).when(message).sendWith((Transport) any());
 //    
-//            doReturn(null).when(message).sendWith(any());        
+//            doReturn(null).when(message).sendWith(any());
             messages.add(message);
         }
-        
+
         List<Future<Message>> results = testManager.runTests(messages, transportProvider);
         assertNotNull(results);
         assertEquals(messages.size(), results.size());

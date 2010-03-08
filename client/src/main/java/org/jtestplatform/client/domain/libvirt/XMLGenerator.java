@@ -51,7 +51,10 @@ public class XMLGenerator {
     static final String BASE_IP_ADDRESS = "192.168.121.";
     static final int MIN_SUBNET_IP_ADDRESS = 2;
     static final int MAX_SUBNET_IP_ADDRESS = 254;
-        
+
+    private XMLGenerator() {        
+    }
+    
     public static String generateNetwork(String networkName) throws DomainException {
         Network network = new Network();
         network.setName(networkName);
