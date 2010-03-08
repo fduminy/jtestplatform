@@ -145,14 +145,12 @@ public class TestDomainManager {
     }
     
     private DomainManager createDomainManager(Configuration config, boolean withKnownFactories) throws DomainException {        
-        Platform platform = new Platform();
-        
         Map<String, DomainFactory<? extends Domain>> knownFactories = new HashMap<String, DomainFactory<? extends Domain>>();
         if (withKnownFactories) {
             knownFactories.put(CustomDomainFactory.TYPE, new CustomDomainFactory());
         }
         
-        return new DomainManager(config, platform, knownFactories);                    
+        return new DomainManager(config, knownFactories);                    
     }
     
     private static class CustomDomainFactory implements DomainFactory<Domain> {

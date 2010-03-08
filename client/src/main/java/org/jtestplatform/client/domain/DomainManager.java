@@ -36,7 +36,6 @@ import org.jtestplatform.client.domain.watchdog.WatchDog;
 import org.jtestplatform.client.domain.watchdog.WatchDogListener;
 import org.jtestplatform.common.transport.Transport;
 import org.jtestplatform.common.transport.TransportException;
-import org.jtestplatform.common.transport.TransportFactory;
 import org.jtestplatform.common.transport.UDPTransport;
 import org.jtestplatform.configuration.Configuration;
 import org.jtestplatform.configuration.Factory;
@@ -48,15 +47,12 @@ public class DomainManager implements TransportProvider {
     private final LoadBalancer<DomainManagerDelegate> delegates;
     private final WatchDog watchDog;
     private final LoadBalancer<Domain> domains;
-    private final DomainConfig domainConfig;
     private final int maxNumberOfDomains;
     private final int serverPort;
-    private final DomainManagerTransportFactory transportFactory;
 
-    public DomainManager(Configuration config, Platform platform, Map<String, DomainFactory<? extends Domain>> knownFactories) throws DomainException {
+    public DomainManager(Configuration config, Map<String, DomainFactory<? extends Domain>> knownFactories) throws DomainException {
         checkValid(knownFactories, config);
 
-        domainConfig = createDomainConfig(platform);
         maxNumberOfDomains = Math.max(1, config.getDomains().getMax());
         serverPort = config.getServerPort();
         
@@ -78,8 +74,6 @@ public class DomainManager implements TransportProvider {
         }
 
         delegates = new LoadBalancer<DomainManagerDelegate>(dmDelegates);
-        
-        transportFactory = new DomainManagerTransportFactory();
     }
 
     /**
@@ -124,33 +118,22 @@ public class DomainManager implements TransportProvider {
      */
     @Override
     public Transport get(Platform platform) throws TransportException {
-        //TODO use the provided platform
-        Transport transport = transportFactory.create();
-        return transport;
-    }
-    
-    private class DomainManagerTransportFactory implements TransportFactory {
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public Transport create() throws TransportException {
-            try {
-                //TODO put the connection/transport in cache and remove it when the domain stop/die
-                DatagramSocket socket = new DatagramSocket();
-                String host = getNextIP();
+        try {
+            //TODO put the connection/transport in cache and remove it when the domain stop/die
+            DomainConfig domainConfig = createDomainConfig(platform);
+            String host = getNextIP(domainConfig);
 
-                socket.connect(InetAddress.getByName(host), serverPort);
-                return new UDPTransport(socket);
-            } catch (SocketException e) {
-                throw new TransportException("failed to create socket", e);
-            } catch (UnknownHostException e) {
-                throw new TransportException("failed to find host", e);
-            }
+            DatagramSocket socket = new DatagramSocket();
+            socket.connect(InetAddress.getByName(host), serverPort);
+            return new UDPTransport(socket);
+        } catch (SocketException e) {
+            throw new TransportException("failed to create socket", e);
+        } catch (UnknownHostException e) {
+            throw new TransportException("failed to find host", e);
         }
     }
 
-    private synchronized String getNextIP() throws TransportException {
+    private synchronized String getNextIP(DomainConfig domainConfig) throws TransportException {
         if ((domains.size() == 0) || (domains.size() < maxNumberOfDomains)) {
             // create a domain if there is none or if there is less than maximum
 
@@ -165,6 +148,7 @@ public class DomainManager implements TransportProvider {
             }
         }
 
+        // TODO ensure that the ip address correspond to a domain with the appropriate platform
         return domains.getNext().getIPAddress();
     }
 
