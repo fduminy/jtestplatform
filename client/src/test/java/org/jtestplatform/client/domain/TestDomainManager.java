@@ -1,5 +1,6 @@
 /**
- * JTestPlatform is a client/server framework for testing any JVM implementation.
+ * JTestPlatform is a client/server framework for testing any JVM
+ * implementation.
  *
  * Copyright (C) 2008-2010  Fabien DUMINY (fduminy at jnode dot org)
  *
@@ -15,18 +16,20 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ * -
  */
 package org.jtestplatform.client.domain;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.jtestplatform.client.ConfigReader;
+import org.jtestplatform.client.ConfigurationException;
 import org.jtestplatform.common.transport.Transport;
 import org.jtestplatform.common.transport.TransportException;
 import org.jtestplatform.configuration.Configuration;
@@ -54,7 +57,7 @@ public class TestDomainManager {
             
             createDomainManager(config, true);
             fail("must throw an exception");
-        } catch (ConfigurationException ce) {
+        } catch (DomainException ce) {
             // success
         }
     }
@@ -66,7 +69,7 @@ public class TestDomainManager {
             
             createDomainManager(config, false);
             fail("must throw an exception");
-        } catch (ConfigurationException ce) {
+        } catch (DomainException ce) {
             // success
         }
     }
@@ -79,7 +82,7 @@ public class TestDomainManager {
             
             createDomainManager(config, true);
             fail("must throw an exception");
-        } catch (ConfigurationException ce) {
+        } catch (DomainException ce) {
             // success
         }
     }
@@ -97,7 +100,7 @@ public class TestDomainManager {
             
             createDomainManager(config, true);
             fail("must throw an exception");
-        } catch (ConfigurationException ce) {
+        } catch (DomainException ce) {
             // success
         }
     }
@@ -115,13 +118,13 @@ public class TestDomainManager {
             
             createDomainManager(config, true);
             fail("must throw an exception");
-        } catch (ConfigurationException ce) {
+        } catch (DomainException ce) {
             // success
         }
     }
     
     @Test
-    public void testGetTransport() throws TransportException, ConfigurationException {
+    public void testGetTransport() throws TransportException, DomainException {
         Connection connection = new Connection();
         connection.setUri("anURI");
         
@@ -140,7 +143,7 @@ public class TestDomainManager {
         assertNotNull(transport);
     }
     
-    private DomainManager createDomainManager(Configuration config, boolean withKnownFactories) throws ConfigurationException {        
+    private DomainManager createDomainManager(Configuration config, boolean withKnownFactories) throws DomainException {        
         Platform platform = new Platform();
         
         Map<String, DomainFactory<? extends Domain>> knownFactories = new HashMap<String, DomainFactory<? extends Domain>>();
@@ -160,12 +163,8 @@ public class TestDomainManager {
 
         @Override
         public Domain createDomain(DomainConfig config, Connection connection)
-            throws ConfigurationException {
-            try {
-                return DomainUtils.createFixedStateProcesses(Boolean.TRUE, null, 1)[0];
-            } catch (IOException e) {
-                throw new ConfigurationException("failed to create a domain", e);
-            }
+            throws DomainException {
+            return DomainUtils.createFixedStateProcesses(Boolean.TRUE, null, 1)[0];
         }        
     }
 }

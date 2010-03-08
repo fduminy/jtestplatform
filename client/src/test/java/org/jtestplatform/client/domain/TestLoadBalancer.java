@@ -59,13 +59,13 @@ public class TestLoadBalancer {
     }
     
     @Theory
-    public void testGetNextWithEmptyList(Integer nbThreads) {
+    public void testGetNextWithEmptyList(Integer nbElements) {
         final LoadBalancer<String> loadBalancer = new LoadBalancer<String>();
-        Thread[] threads = createThreads(loadBalancer, nbThreads);
+        Thread[] threads = createThreads(loadBalancer, nbElements);
         
         assertEquals("must block when the list is empty", 0, countGotValue(threads));
 
-        for (int i = 0; i < nbThreads; i++) {
+        for (int i = 0; i < nbElements; i++) {
             loadBalancer.add("str");
             sleep(100);
             assertEquals("must be unblocked when the list become non empty", i + 1, countGotValue(threads));
@@ -73,14 +73,14 @@ public class TestLoadBalancer {
     }
 
     @Theory
-    public void testGetNextWithNonEmptyList(Integer nbThreads) {
-        String[] elements = new String[nbThreads];
+    public void testGetNextWithNonEmptyList(Integer nbElements) {
+        String[] elements = new String[nbElements];
         Arrays.fill(elements, "str");
         final LoadBalancer<String> loadBalancer = createLoadBalancer(elements);
-        Thread[] threads = createThreads(loadBalancer, nbThreads);
+        Thread[] threads = createThreads(loadBalancer, nbElements);
         
         sleep(100);
-        assertEquals("must not block when the list is not empty", nbThreads.intValue(), countGotValue(threads));
+        assertEquals("must not block when the list is not empty", nbElements.intValue(), countGotValue(threads));
     }
     
     @Theory
