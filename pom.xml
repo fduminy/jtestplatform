@@ -29,7 +29,8 @@
 	</developers>
 
     <properties>
-	   <project.root>${basedir}</project.root>
+        <project.root>${basedir}</project.root>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
 	<repositories>
