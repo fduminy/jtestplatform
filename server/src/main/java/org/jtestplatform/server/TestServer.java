@@ -36,7 +36,7 @@ import org.jtestplatform.common.message.Shutdown;
 import org.jtestplatform.common.transport.Transport;
 import org.jtestplatform.common.transport.TransportException;
 import org.jtestplatform.common.transport.TransportHelper;
-import org.jtestplatform.common.transport.TransportProvider;
+import org.jtestplatform.common.transport.TransportFactory;
 import org.jtestplatform.common.transport.UDPTransport;
 import org.jtestplatform.server.commands.GetStatusCommand;
 import org.jtestplatform.server.commands.MauveTestRunner;
@@ -62,7 +62,7 @@ public class TestServer<T extends Message> {
     private final Map<Class<? extends Message>, TestServerCommand<? extends Message, ? extends Message>> messageClassToCommand;
     private final Config config;
     private final TransportHelper transportManager;
-    private final TransportProvider transportProvider;
+    private final TransportFactory transportFactory;
     private Transport transport;
     
     public TestServer() throws Exception {
@@ -74,9 +74,9 @@ public class TestServer<T extends Message> {
         
         config = Config.read();
         MauveTestRunner.getInstance().setConfig(config);
-        transportProvider = new TransportProvider() {
+        transportFactory = new TransportFactory() {
             @Override
-            public Transport get() throws TransportException {
+            public Transport create() throws TransportException {
                 try {
                     return new UDPTransport(new DatagramSocket(config.getPort()));
                 } catch (SocketException e) {
@@ -94,7 +94,7 @@ public class TestServer<T extends Message> {
     public void start() throws Exception {
         LOGGER.info("server started");
 
-        transport = transportProvider.get();
+        transport = transportFactory.create();
         while (true) {
             Message message = transportManager.receive(transport);
             TestServerCommand<T, ?> command = (TestServerCommand<T, ?>) messageClassToCommand.get(message.getClass());

@@ -37,7 +37,7 @@ import org.apache.log4j.Logger;
 import org.jtestplatform.common.message.Message;
 import org.jtestplatform.common.transport.Transport;
 import org.jtestplatform.common.transport.TransportHelper;
-import org.jtestplatform.common.transport.TransportProvider;
+import org.jtestplatform.common.transport.TransportFactory;
 
 public class DefaultTestManager implements TestManager {
     private static final Logger LOGGER = Logger.getLogger(DefaultTestManager.class);
@@ -69,10 +69,10 @@ public class DefaultTestManager implements TestManager {
      * {@inheritDoc}
      */
     @Override
-    public List<Future<Message>> runTests(List<Message> messages, TransportProvider provider) throws Exception {
+    public List<Future<Message>> runTests(List<Message> messages, TransportFactory transportFactory) throws Exception {
         Collection<TestCallable> tests = new ArrayList<TestCallable>(messages.size());
         for (Message message : messages) {
-            tests.add(new TestCallable(message, provider));
+            tests.add(new TestCallable(message, transportFactory));
         }
         
         return executor.invokeAll(tests);
@@ -104,16 +104,16 @@ public class DefaultTestManager implements TestManager {
     
     private class TestCallable implements Callable<Message> {
         private final Message message;
-        private final TransportProvider transportProvider;
+        private final TransportFactory transportFactory;
         
-        public TestCallable(Message message, TransportProvider transportProvider) {
+        public TestCallable(Message message, TransportFactory transportFactory) {
             this.message = message;
-            this.transportProvider = transportProvider;
+            this.transportFactory = transportFactory;
         }
         
         @Override
         public Message call() throws Exception {
-            Transport transport = transportProvider.get();
+            Transport transport = transportFactory.create();
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("call: transport=" + transport);
             }

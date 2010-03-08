@@ -35,13 +35,13 @@ import org.jtestplatform.client.domain.watchdog.WatchDog;
 import org.jtestplatform.client.domain.watchdog.WatchDogListener;
 import org.jtestplatform.common.transport.Transport;
 import org.jtestplatform.common.transport.TransportException;
-import org.jtestplatform.common.transport.TransportProvider;
+import org.jtestplatform.common.transport.TransportFactory;
 import org.jtestplatform.common.transport.UDPTransport;
 import org.jtestplatform.configuration.Configuration;
 import org.jtestplatform.configuration.Factory;
 import org.jtestplatform.configuration.Platform;
 
-public class DomainManager implements TransportProvider {
+public class DomainManager implements TransportFactory {
     private static final Logger LOGGER = Logger.getLogger(DomainManager.class);
 
     private final LoadBalancer<DomainManagerDelegate> delegates;
@@ -113,12 +113,12 @@ public class DomainManager implements TransportProvider {
             }
         }
     }
-
+    
     /**
      * {@inheritDoc}
      */
     @Override
-    public Transport get() throws TransportException {
+    public Transport create() throws TransportException {
         try {
             DatagramSocket socket = new DatagramSocket();
             String host = getNextIP();

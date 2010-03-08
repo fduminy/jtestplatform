@@ -139,7 +139,7 @@ public class TestDomainManager {
         config.setDomains(domains);
         
         DomainManager domainManager = createDomainManager(config, true);        
-        Transport transport = domainManager.get();
+        Transport transport = domainManager.create();
         assertNotNull(transport);
     }
     

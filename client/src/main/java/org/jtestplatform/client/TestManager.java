@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.concurrent.Future;
 
 import org.jtestplatform.common.message.Message;
-import org.jtestplatform.common.transport.TransportProvider;
+import org.jtestplatform.common.transport.TransportFactory;
 
 
 /**
@@ -39,12 +39,12 @@ import org.jtestplatform.common.transport.TransportProvider;
 public interface TestManager {
     /**
      * @param messages
-     * @param transportProvider
+     * @param transportFactory
      * @return
      * @throws Exception
      */
     List<Future<Message>> runTests(List<Message> messages,
-            TransportProvider transportProvider) throws Exception;
+            TransportFactory transportFactory) throws Exception;
 
     void shutdown();
 }

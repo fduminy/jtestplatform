@@ -39,7 +39,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.jtestplatform.common.message.Message;
 import org.jtestplatform.common.transport.Transport;
-import org.jtestplatform.common.transport.TransportProvider;
+import org.jtestplatform.common.transport.TransportFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -68,7 +68,7 @@ public class TestManagerTest {
     private final int nbMessages;
 
     private TestManager testManager;
-    private TransportProvider transportProvider;
+    private TransportFactory transportFactory;
 
     public TestManagerTest(Integer corePoolSize, Integer maximumPoolSize,
             Long keepAliveTime, Integer nbMessages) {
@@ -82,7 +82,7 @@ public class TestManagerTest {
     public void setUp() throws ConfigurationException {
         new ConfigReader().read(); // will initialize log4j
 
-        transportProvider = mock(TransportProvider.class);
+        transportFactory = mock(TransportFactory.class);
 
         testManager = new DefaultTestManager(corePoolSize,
                 maximumPoolSize, keepAliveTime, unit);
@@ -98,7 +98,7 @@ public class TestManagerTest {
         List<Message> messages = new ArrayList<Message>();
 
         Transport transport = mock(Transport.class);
-        when(transportProvider.get()).thenReturn(transport);
+        when(transportFactory.create()).thenReturn(transport);
 
         for (int i = 0; i < nbMessages; i++) {
             Message message = mock(Message.class);
@@ -108,7 +108,7 @@ public class TestManagerTest {
             messages.add(message);
         }
 
-        List<Future<Message>> results = testManager.runTests(messages, transportProvider);
+        List<Future<Message>> results = testManager.runTests(messages, transportFactory);
         assertNotNull(results);
         assertEquals(messages.size(), results.size());
     }
