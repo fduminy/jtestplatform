@@ -39,8 +39,6 @@ import org.jtestplatform.common.transport.TransportProvider;
 public class DefaultTestManager implements TestManager {
     private static final Logger LOGGER = Logger.getLogger(DefaultTestManager.class);
     
-    private final ThreadLocal<Transport> transports = new ThreadLocal<Transport>();
-    
     private final ExecutorService executor;
     private final TransportHelper transportHelper;
     private final ThreadGroup threadGroup;
