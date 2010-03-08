@@ -47,9 +47,9 @@ class DomainManagerDelegate {
     /**
      * @param config
      * @return
-     * @throws ConfigurationException 
+     * @throws DomainException 
      */
-    public Domain createDomain(DomainConfig config) throws ConfigurationException {
+    public Domain createDomain(DomainConfig config) throws DomainException {
         return domainFactory.createDomain(config, connections.getNext());
     }    
 }

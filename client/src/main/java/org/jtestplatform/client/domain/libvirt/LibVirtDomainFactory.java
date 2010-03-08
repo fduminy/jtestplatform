@@ -30,7 +30,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.dom4j.DocumentException;
-import org.jtestplatform.client.domain.ConfigurationException;
+import org.jtestplatform.client.domain.DomainException;
 import org.jtestplatform.client.domain.DomainConfig;
 import org.jtestplatform.client.domain.DomainFactory;
 import org.jtestplatform.common.ConfigUtils;
@@ -87,22 +87,22 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
     /**
      * {@inheritDoc}
      */
-    public LibVirtDomain createDomain(DomainConfig config, Connection connection) throws ConfigurationException {
+    public LibVirtDomain createDomain(DomainConfig config, Connection connection) throws DomainException {
         return new LibVirtDomain(config, this, connection); 
     }
 
     /**
      * @param domain
-     * @throws ConfigurationException 
+     * @throws DomainException 
      */
-    String start(Domain domain) throws ConfigurationException {
+    String start(Domain domain) throws DomainException {
         String ipAddress = null;
         try {
             domain.create();
             
             String macAddress = getMacAddress(domain);
             if (macAddress == null) {
-                throw new ConfigurationException("unable to get mac address");
+                throw new DomainException("unable to get mac address");
             }
             
             Network network = domain.getConnect().networkLookupByName(NETWORK_NAME);
@@ -114,14 +114,14 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
                 }
             }
             if (ipAddress == null) {
-                throw new ConfigurationException("unable to get mac address");
+                throw new DomainException("unable to get mac address");
             }
         } catch (LibvirtException e) {
-            throw new ConfigurationException(e);
+            throw new DomainException(e);
         } catch (IOException e) {
-            throw new ConfigurationException(e);
+            throw new DomainException(e);
         } catch (DocumentException e) {
-            throw new ConfigurationException(e);
+            throw new DomainException(e);
         }
         
         return ipAddress;
@@ -130,9 +130,9 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
     /**
      * @param domain
      * @param ipAddress
-     * @throws ConfigurationException 
+     * @throws DomainException 
      */
-    void stop(Domain domain, String ipAddress) throws ConfigurationException {
+    void stop(Domain domain, String ipAddress) throws DomainException {
         try {
             domain.destroy();
             
@@ -147,11 +147,11 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
             
             domain.undefine();
         } catch (LibvirtException e) {
-            throw new ConfigurationException(e);
+            throw new DomainException(e);
         }
     }
     
-    void ensureNetworkExist(Connect connect) throws LibvirtException, ConfigurationException {
+    void ensureNetworkExist(Connect connect) throws LibvirtException, DomainException {
         //TODO create our own network
 
         String wantedNetworkXML = XMLGenerator.generateNetwork(NETWORK_NAME);
@@ -224,13 +224,13 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
         return sameNetwork;
     }
 
-    private org.libvirt.model.Network toNetwork(String networkXML) throws ConfigurationException {
+    private org.libvirt.model.Network toNetwork(String networkXML) throws DomainException {
         try {
             return new NetworkDom4jReader().read(new StringReader(networkXML));
         } catch (IOException e) {
-            throw new ConfigurationException(e);
+            throw new DomainException(e);
         } catch (DocumentException e) {
-            throw new ConfigurationException(e);
+            throw new DomainException(e);
         }
     }
     
@@ -245,9 +245,9 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
     /**
      * @param config
      * @return
-     * @throws ConfigurationException 
+     * @throws DomainException 
      */
-    Domain defineDomain(Connect connect, DomainConfig config) throws ConfigurationException {
+    Domain defineDomain(Connect connect, DomainConfig config) throws DomainException {
         try {
             synchronized ((connect.getHostName() + "_defineDomain").intern()) {
                 List<Domain> domains = listAllDomains(connect);
@@ -263,7 +263,7 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
                 return connect.domainDefineXML(xml);
             }
         } catch (LibvirtException e) {
-            throw new ConfigurationException(e);
+            throw new DomainException(e);
         }
     }
 
@@ -272,9 +272,9 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
      * @param domains
      * @return
      * @throws LibvirtException
-     * @throws ConfigurationException 
+     * @throws DomainException 
      */
-    private String findUniqueDomainName(List<Domain> domains) throws LibvirtException, ConfigurationException {        
+    private String findUniqueDomainName(List<Domain> domains) throws LibvirtException, DomainException {        
         List<String> domainNames = new ArrayList<String>(domains.size());
         for (Domain domain : domains) {
             domainNames.add(domain.getName());
@@ -289,9 +289,9 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
      * @param domains
      * @return
      * @throws LibvirtException
-     * @throws ConfigurationException 
+     * @throws DomainException 
      */
-    private String findUniqueMacAddress(List<Domain> domains) throws LibvirtException, ConfigurationException {
+    private String findUniqueMacAddress(List<Domain> domains) throws LibvirtException, DomainException {
         List<String> macAddresses = new ArrayList<String>();        
         for (Domain domain : domains) {
             String addr = getMacAddress(domain);
@@ -331,9 +331,9 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
      * @param valuePrefix
      * @param valueIndex
      * @param maxValueIndex
-     * @throws ConfigurationException 
+     * @throws DomainException 
      */
-    private String findUniqueValue(List<String> values, String valueName, String valuePrefix, int valueIndex, int maxValueIndex, int hexadecimalSize) throws ConfigurationException {
+    private String findUniqueValue(List<String> values, String valueName, String valuePrefix, int valueIndex, int maxValueIndex, int hexadecimalSize) throws DomainException {
         String value = null;
         for (; valueIndex <= maxValueIndex; valueIndex++) {
             String indexStr = XMLGenerator.toHexString(valueIndex, hexadecimalSize);
@@ -345,7 +345,7 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
         }
         
         if ((maxValueIndex > maxValueIndex) || (value == null)) {
-            throw new ConfigurationException("unable to find a unique " + valueName);
+            throw new DomainException("unable to find a unique " + valueName);
         }
         
         LOGGER.debug("found a unique " + valueName + " : " + value);

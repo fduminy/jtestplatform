@@ -31,5 +31,5 @@ import org.jtestplatform.configuration.Connection;
  */
 public interface DomainFactory<D extends Domain> {
     String getType();
-    D createDomain(DomainConfig config, Connection connection) throws ConfigurationException;
+    D createDomain(DomainConfig config, Connection connection) throws DomainException;
 }

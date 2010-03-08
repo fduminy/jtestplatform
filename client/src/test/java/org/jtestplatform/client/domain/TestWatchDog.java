@@ -81,7 +81,7 @@ public class TestWatchDog {
     private WatchDog watchDog;
     
     @Before
-    public void setUp() throws ConfigurationException {
+    public void setUp() throws DomainException {
         new ConfigReader().read(); // will initialize log4j
     }
     
@@ -92,7 +92,7 @@ public class TestWatchDog {
     }
     
     @Theory
-    public void testAlwaysDead(NbDomains nbDomains, Long maxZombieTimeMillis, Integer pollInterval) throws IOException, ConfigurationException {
+    public void testAlwaysDead(NbDomains nbDomains, Long maxZombieTimeMillis, Integer pollInterval) throws IOException, DomainException {
         watchDog = createWatchDog(pollInterval, maxZombieTimeMillis);
         Domain[] p = createFixedStateProcesses(Boolean.FALSE, null, nbDomains, pollInterval);
         
@@ -106,7 +106,7 @@ public class TestWatchDog {
     }
 
     @Theory
-    public void testAlwaysAlive(NbDomains nbDomains, Long maxZombieTimeMillis, Integer pollInterval) throws IOException, ConfigurationException {
+    public void testAlwaysAlive(NbDomains nbDomains, Long maxZombieTimeMillis, Integer pollInterval) throws IOException, DomainException {
         watchDog = createWatchDog(pollInterval, maxZombieTimeMillis);
         Domain[] p = createFixedStateProcesses(Boolean.TRUE, null, nbDomains, pollInterval);
         

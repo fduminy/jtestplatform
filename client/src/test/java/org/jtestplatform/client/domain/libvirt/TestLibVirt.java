@@ -37,7 +37,7 @@ import net.sourceforge.groboutils.junit.v1.TestRunnable;
 
 import org.apache.log4j.Logger;
 import org.jtestplatform.client.ConfigReader;
-import org.jtestplatform.client.domain.ConfigurationException;
+import org.jtestplatform.client.domain.DomainException;
 import org.jtestplatform.client.domain.Domain;
 import org.jtestplatform.client.domain.DomainConfig;
 import org.jtestplatform.common.ConfigUtils;
@@ -75,7 +75,7 @@ public class TestLibVirt {
     private Configuration config;
     
     @Before
-    public void setUp() throws ConfigurationException {
+    public void setUp() throws DomainException {
         config = new ConfigReader().read(); // will initialize log4j
         
         factory = new LibVirtDomainFactory();
@@ -87,7 +87,7 @@ public class TestLibVirt {
     }
     
     @After
-    public void tearDown() throws IOException, ConfigurationException {
+    public void tearDown() throws IOException, DomainException {
         boolean error = false;
         for (Domain domain : domains) {
             try {

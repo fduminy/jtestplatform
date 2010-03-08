@@ -49,7 +49,7 @@ public class DomainManager implements TransportProvider {
     private final int maxNumberOfDomains;
     private final int serverPort;
     
-    public DomainManager(Configuration config, Platform platform, Map<String, DomainFactory<? extends Domain>> knownFactories) throws ConfigurationException {
+    public DomainManager(Configuration config, Platform platform, Map<String, DomainFactory<? extends Domain>> knownFactories) throws DomainException {
         checkValid(knownFactories, config);
         
         domainConfig = createDomainConfig(platform);        
@@ -108,7 +108,7 @@ public class DomainManager implements TransportProvider {
                 domain.stop();
             } catch (IOException e) {
                 LOGGER.error("an error happened while stopping", e);
-            } catch (ConfigurationException e) {
+            } catch (DomainException e) {
                 LOGGER.error("an error happened while stopping", e);
             }
         }
@@ -142,7 +142,7 @@ public class DomainManager implements TransportProvider {
                 Domain domain = delegate.createDomain(domainConfig);
                 domains.add(domain);
                 watchDog.watch(domain);
-            } catch (ConfigurationException ce) {
+            } catch (DomainException ce) {
                 throw new RuntimeException(ce);
             }
         }
@@ -150,15 +150,15 @@ public class DomainManager implements TransportProvider {
         return domains.getNext().getIPAddress();
     }
     
-    private void checkValid(Map<String, DomainFactory<? extends Domain>> knownFactories, Configuration config) throws ConfigurationException {
+    private void checkValid(Map<String, DomainFactory<? extends Domain>> knownFactories, Configuration config) throws DomainException {
         if ((knownFactories == null) || knownFactories.isEmpty()) {
-            throw new ConfigurationException("no known factory");
+            throw new DomainException("no known factory");
         }
         if (config.getDomains() == null) {
-            throw new ConfigurationException("domains is not defined");
+            throw new DomainException("domains is not defined");
         }
         if ((config.getDomains().getFactories() == null) || config.getDomains().getFactories().isEmpty()) {
-            throw new ConfigurationException("no factory has been defined");
+            throw new DomainException("no factory has been defined");
         }
                 
         StringBuilder wrongTypes = new StringBuilder();
@@ -196,7 +196,7 @@ public class DomainManager implements TransportProvider {
                 message.append("\tno connection for types ").append(typesWithoutConnection);
             }
             
-            throw new ConfigurationException(wrongTypes.toString());
+            throw new DomainException(wrongTypes.toString());
         }
     }
 }

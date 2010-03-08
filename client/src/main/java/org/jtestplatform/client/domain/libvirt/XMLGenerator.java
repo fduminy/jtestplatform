@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 
 import org.apache.log4j.Logger;
-import org.jtestplatform.client.domain.ConfigurationException;
+import org.jtestplatform.client.domain.DomainException;
 import org.libvirt.model.Bridge;
 import org.libvirt.model.DHCP;
 import org.libvirt.model.Forward;
@@ -49,7 +49,7 @@ public class XMLGenerator {
     static final int MIN_SUBNET_IP_ADDRESS = 2;
     static final int MAX_SUBNET_IP_ADDRESS = 254;
         
-    public static String generateNetwork(String networkName) throws ConfigurationException {
+    public static String generateNetwork(String networkName) throws DomainException {
         Network network = new Network();
         network.setName(networkName);
         network.setUuid("ec6f8ce7-ad0f-eea7-d9ed-dc460cf47023");
@@ -88,7 +88,7 @@ public class XMLGenerator {
         try {
             new NetworkDom4jWriter().write(writer, network);
         } catch (IOException e) {
-            throw new ConfigurationException(e);
+            throw new DomainException(e);
         }
         String result = writer.toString();
 
@@ -165,12 +165,12 @@ public class XMLGenerator {
      * @param valueIndex
      * @param hexadecimalSize
      * @return
-     * @throws ConfigurationException 
+     * @throws DomainException 
      */
-    public static String toHexString(int valueIndex, int hexadecimalSize) throws ConfigurationException {
+    public static String toHexString(int valueIndex, int hexadecimalSize) throws DomainException {
         String result = Integer.toHexString(valueIndex);
         if (result.length() > hexadecimalSize) {
-            throw new ConfigurationException("unable convert to hexadecimal with a maximum of " + hexadecimalSize + " characters");
+            throw new DomainException("unable convert to hexadecimal with a maximum of " + hexadecimalSize + " characters");
         }
         
         if (result.length() < hexadecimalSize) {

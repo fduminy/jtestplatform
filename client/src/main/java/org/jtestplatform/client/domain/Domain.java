@@ -32,16 +32,16 @@ public interface Domain {
     /**
      * Start the VM.
      * @return The IP address of the domain. 
-     * @throws ConfigurationException 
+     * @throws DomainException 
      */
-    String start() throws IOException, ConfigurationException;
+    String start() throws IOException, DomainException;
     
     /**
      * Stop the VM.
      * @throws IOException
-     * @throws ConfigurationException 
+     * @throws DomainException 
      */
-    void stop() throws IOException, ConfigurationException;
+    void stop() throws IOException, DomainException;
     
     /**
      * Checks if the VM is alive.

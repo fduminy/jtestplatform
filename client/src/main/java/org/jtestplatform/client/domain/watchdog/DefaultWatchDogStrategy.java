@@ -25,7 +25,7 @@ package org.jtestplatform.client.domain.watchdog;
 import java.io.IOException;
 
 import org.apache.log4j.Logger;
-import org.jtestplatform.client.domain.ConfigurationException;
+import org.jtestplatform.client.domain.DomainException;
 import org.jtestplatform.client.domain.Domain;
 
 /**
@@ -53,7 +53,7 @@ public class DefaultWatchDogStrategy implements WatchDogStrategy {
                 domain.start();
             } catch (IOException e) {
                 LOGGER.error("error while restarting", e);
-            } catch (ConfigurationException e) {
+            } catch (DomainException e) {
                 LOGGER.error("error while restarting", e);
             }
         } else {

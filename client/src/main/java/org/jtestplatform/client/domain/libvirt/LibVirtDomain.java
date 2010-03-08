@@ -25,7 +25,7 @@ package org.jtestplatform.client.domain.libvirt;
 import java.io.IOException;
 
 import org.apache.log4j.Logger;
-import org.jtestplatform.client.domain.ConfigurationException;
+import org.jtestplatform.client.domain.DomainException;
 import org.jtestplatform.client.domain.Domain;
 import org.jtestplatform.client.domain.DomainConfig;
 import org.jtestplatform.common.ConfigUtils;
@@ -60,7 +60,7 @@ class LibVirtDomain implements Domain {
      * 
      * @param config configuration of the machine to run with libvirt.
      * @param connect1
-     * @throws ConfigurationException 
+     * @throws DomainException 
      */
     LibVirtDomain(DomainConfig config, LibVirtDomainFactory factory, Connection connection) {
         this.config = config;        
@@ -70,14 +70,14 @@ class LibVirtDomain implements Domain {
         
     /**
      * {@inheritDoc}
-     * @throws ConfigurationException 
+     * @throws DomainException 
      */
     @Override
-    public synchronized String start() throws ConfigurationException {
+    public synchronized String start() throws DomainException {
         try {
             if (connect == null) {
                 if (ConfigUtils.isBlank(connection.getUri())) {
-                    throw new ConfigurationException("connection's URI not specified");
+                    throw new DomainException("connection's URI not specified");
                 }
                 
                 connect = new Connect(connection.getUri(), false);
@@ -92,9 +92,9 @@ class LibVirtDomain implements Domain {
                 }
             }
         } catch (LibvirtException lve) {
-            throw new ConfigurationException("failed to start", lve);
+            throw new DomainException("failed to start", lve);
         } catch (IOException e) {
-            throw new ConfigurationException("failed to start", e);
+            throw new DomainException("failed to start", e);
         }
         
         return ipAddress;
@@ -102,10 +102,10 @@ class LibVirtDomain implements Domain {
     
     /**
      * {@inheritDoc}
-     * @throws ConfigurationException 
+     * @throws DomainException 
      */
     @Override
-    public synchronized void stop() throws IOException, ConfigurationException {
+    public synchronized void stop() throws IOException, DomainException {
         if (isAlive()) {
             factory.stop(domain, ipAddress);
             domain = null;

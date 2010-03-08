@@ -25,7 +25,7 @@ import java.io.IOException;
 
 import org.apache.log4j.PropertyConfigurator;
 import org.dom4j.DocumentException;
-import org.jtestplatform.client.domain.ConfigurationException;
+import org.jtestplatform.client.domain.DomainException;
 import org.jtestplatform.common.ConfigUtils;
 import org.jtestplatform.configuration.Configuration;
 import org.jtestplatform.configuration.io.dom4j.ConfigurationDom4jReader;
@@ -43,7 +43,7 @@ public class ConfigReader {
      * @return the configuration.
      * @throws IOException
      */
-    public Configuration read() throws ConfigurationException {
+    public Configuration read() throws DomainException {
         try {
             File homeDirectory = findHome();
             File configurationDirectory = new File(homeDirectory, "config");            
@@ -65,9 +65,9 @@ public class ConfigReader {
             
             return config;
         } catch (IOException e) {
-            throw new ConfigurationException("can't read config", e);
+            throw new DomainException("can't read config", e);
         } catch (DocumentException e) {
-            throw new ConfigurationException("can't read config", e);
+            throw new DomainException("can't read config", e);
         }
     }
     
