@@ -30,8 +30,8 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.dom4j.DocumentException;
-import org.jtestplatform.client.domain.DomainException;
 import org.jtestplatform.client.domain.DomainConfig;
+import org.jtestplatform.client.domain.DomainException;
 import org.jtestplatform.client.domain.DomainFactory;
 import org.jtestplatform.common.ConfigUtils;
 import org.jtestplatform.configuration.Connection;

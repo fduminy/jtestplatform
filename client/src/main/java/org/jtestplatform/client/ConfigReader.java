@@ -25,7 +25,6 @@ import java.io.IOException;
 
 import org.apache.log4j.PropertyConfigurator;
 import org.dom4j.DocumentException;
-import org.jtestplatform.client.domain.DomainException;
 import org.jtestplatform.common.ConfigUtils;
 import org.jtestplatform.configuration.Configuration;
 import org.jtestplatform.configuration.io.dom4j.ConfigurationDom4jReader;

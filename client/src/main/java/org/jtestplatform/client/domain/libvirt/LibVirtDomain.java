@@ -22,12 +22,10 @@
  */
 package org.jtestplatform.client.domain.libvirt;
 
-import java.io.IOException;
-
 import org.apache.log4j.Logger;
-import org.jtestplatform.client.domain.DomainException;
 import org.jtestplatform.client.domain.Domain;
 import org.jtestplatform.client.domain.DomainConfig;
+import org.jtestplatform.client.domain.DomainException;
 import org.jtestplatform.common.ConfigUtils;
 import org.jtestplatform.configuration.Connection;
 import org.libvirt.Connect;

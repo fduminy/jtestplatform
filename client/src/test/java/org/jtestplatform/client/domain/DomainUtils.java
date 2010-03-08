@@ -26,8 +26,6 @@ import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
-
 import org.jtestplatform.client.domain.watchdog.WatchDog;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;

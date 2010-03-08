@@ -22,11 +22,9 @@
  */
 package org.jtestplatform.client.domain.watchdog;
 
-import java.io.IOException;
-
 import org.apache.log4j.Logger;
-import org.jtestplatform.client.domain.DomainException;
 import org.jtestplatform.client.domain.Domain;
+import org.jtestplatform.client.domain.DomainException;
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)
