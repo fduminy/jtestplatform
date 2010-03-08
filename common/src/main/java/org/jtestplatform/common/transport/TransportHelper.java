@@ -24,7 +24,6 @@ package org.jtestplatform.common.transport;
 
 import java.io.IOException;
 
-import org.apache.log4j.Logger;
 import org.jtestplatform.common.message.Message;
 
 /**
@@ -32,8 +31,6 @@ import org.jtestplatform.common.message.Message;
  *
  */
 public class TransportHelper {
-    private static final Logger LOGGER = Logger.getLogger(TransportHelper.class);
-    
     public void send(Transport transport, Message message) throws TransportException {
         transport.send(message.getClass().getName());
         
