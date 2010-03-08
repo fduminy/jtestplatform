@@ -42,6 +42,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -73,10 +76,12 @@ public class TestDriver {
     
     private final Configuration config;
     private final TestManager testManager;
+    private final TestHandler testHandler;
     
     private TestDriver(Configuration config) throws Exception {
         this.config = config;        
         testManager = new DefaultTestManager(1, 1, 0L, TimeUnit.MILLISECONDS);
+        testHandler = new MauveTestHandler(config);
     }
     
     public void start() throws Exception {
@@ -84,27 +89,17 @@ public class TestDriver {
         try {            
             domainManager = new DomainManager(config, findKnownFactories());
             domainManager.start();
-            
-            for (Platform platform : config.getPlatforms()) {         
-                StringBuilder platformStr = new StringBuilder(); 
-                Map<String, String> platformProperties = getPlatformProperties(platform, platformStr);                    
-                File workDir = new File(config.getWorkDir(), platformStr.toString());
-                Run latestRun = Run.getLatest(workDir);
-                Run newRun = Run.create(workDir);
-                
-                TestHandler testHandler = new MauveTestHandler(config);
-    
-                List<Future<Message>> replies = runTests(testHandler, domainManager, platform);
-                RunResult runResult = mergeResults(newRun.getTimestampString(), testHandler, replies);
-                
-                for (String property : platformProperties.keySet()) {
-                    runResult.setSystemProperty(property, platformProperties.get(property));
-                }
-                
-                writeReports(runResult, newRun.getReportXml());
-                
-                compareRuns(latestRun, newRun, runResult);
+
+            List<Callable<Object>> tasks = new ArrayList<Callable<Object>>(config.getPlatforms().size()); 
+            for (Platform platform : config.getPlatforms()) {
+                PlatformTask platformResults = new PlatformTask(platform, domainManager);
+                tasks.add(platformResults);
             }
+
+            // launch all tasks in parallel and wait for completion
+            ExecutorService executor = Executors.newFixedThreadPool(tasks.size());
+            executor.invokeAll(tasks);
+            executor.shutdown();
         } finally {
             if (domainManager != null) {
                 domainManager.stop();
@@ -121,23 +116,6 @@ public class TestDriver {
         result.put(f.getType(), f);
         return result;
     }
-    
-    private Map<String, String> getPlatformProperties(Platform platform, StringBuilder asString) {
-        Map<String, String> result = new HashMap<String, String>();
-        String prefix = "jtestplatform.platform.";
-        
-        result.put(prefix + "cpu", platform.getCpu());
-        asString.append(platform.getCpu());
-         
-        asString.append('_').append(platform.getWordSize()).append("bits");
-        result.put(prefix + "wordSize", Integer.toString(platform.getWordSize()));
-        
-        asString.append('x').append(platform.getNbCores());
-        result.put(prefix + "nbCores", Integer.toString(platform.getNbCores()));
-            
-        return result; 
-    }
-    
     
     private void compareRuns(Run latestRun, Run newRun, RunResult newRunResult) throws IOException {
         if ((latestRun != null) && latestRun.getReportXml().exists()) {
@@ -163,17 +141,6 @@ public class TestDriver {
         rw.write(result, reportXml);
         
         HTMLGenerator.createReport(result, reportXml.getParentFile());
-    }
-    
-    private List<Future<Message>> runTests(TestHandler testHandler, TransportProvider transportProvider, Platform platform) throws Exception {
-        final List<String> list = testHandler.readTests(null);
-
-        List<Message> messages = new ArrayList<Message>(list.size());
-        for (String test : list) {
-            messages.add(testHandler.createRequest(test));
-        }
-        
-        return testManager.runTests(messages, transportProvider, platform);
     }
     
     private RunResult mergeResults(String timestamp, TestHandler testHandler,
@@ -235,4 +202,61 @@ public class TestDriver {
         }
     }
     
+    private class PlatformTask implements Callable<Object> {
+        private final Platform platform;
+        private final TransportProvider transportProvider; 
+        
+        public PlatformTask(Platform platform, TransportProvider transportProvider) {
+            this.platform = platform;
+            this.transportProvider = transportProvider;
+        }
+
+        @Override
+        public Object call() throws Exception {
+            StringBuilder platformStr = new StringBuilder(); 
+            Map<String, String> platformProperties = getPlatformProperties(platform, platformStr);                    
+            File workDir = new File(config.getWorkDir(), platformStr.toString());
+            Run latestRun = Run.getLatest(workDir);
+            Run newRun = Run.create(workDir);
+            
+            List<Future<Message>> replies = runTests(testHandler);
+            RunResult runResult = mergeResults(newRun.getTimestampString(), testHandler, replies);
+            
+            for (String property : platformProperties.keySet()) {
+                runResult.setSystemProperty(property, platformProperties.get(property));
+            }
+            
+            writeReports(runResult, newRun.getReportXml());
+            
+            compareRuns(latestRun, newRun, runResult);
+
+            return null;
+        }
+        
+        private Map<String, String> getPlatformProperties(Platform platform, StringBuilder asString) {
+            Map<String, String> result = new HashMap<String, String>();
+            String prefix = "jtestplatform.platform.";
+            
+            result.put(prefix + "cpu", platform.getCpu());
+            asString.append(platform.getCpu());
+             
+            asString.append('_').append(platform.getWordSize()).append("bits");
+            result.put(prefix + "wordSize", Integer.toString(platform.getWordSize()));
+            
+            asString.append('x').append(platform.getNbCores());
+            result.put(prefix + "nbCores", Integer.toString(platform.getNbCores()));
+                
+            return result; 
+        }
+        
+        private List<Future<Message>> runTests(TestHandler testHandler) throws Exception {
+            List<Future<Message>> results = new ArrayList<Future<Message>>();
+            for (String test : testHandler.readTests(null)) {
+                Message message = testHandler.createRequest(test); 
+                Future<Message> result = testManager.runTest(message, transportProvider, platform);
+                results.add(result);
+            }
+            return results;
+        }
+    }    
 }

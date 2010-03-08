@@ -25,16 +25,13 @@
  */
 package org.jtestplatform.client;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -96,23 +93,19 @@ public class TestManagerTest {
 
     @Test
     public void testRunTests() throws Exception {
-        List<Message> messages = new ArrayList<Message>();
-
         Transport transport = mock(Transport.class);
         when(transportProvider.get(any(Platform.class))).thenReturn(transport);
+        
+        //TODO do tests with multiple platforms and check they are actually run on the proper platform
+        Platform platform = new Platform();
 
         for (int i = 0; i < nbMessages; i++) {
             Message message = mock(Message.class);
 //            doReturn(null).when(message).sendWith((Transport) any());
-//    
 //            doReturn(null).when(message).sendWith(any());
-            messages.add(message);
-        }
 
-        //TODO do tests with multiple platforms and check they are actually run on the proper platform
-        Platform platform = new Platform();
-        List<Future<Message>> results = testManager.runTests(messages, transportProvider, platform);
-        assertNotNull(results);
-        assertEquals(messages.size(), results.size());
+            Future<Message> result = testManager.runTest(message, transportProvider, platform);
+            assertNotNull(result);
+        }
     }
 }

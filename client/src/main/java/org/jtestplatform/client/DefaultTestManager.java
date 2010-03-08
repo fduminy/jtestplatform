@@ -22,9 +22,6 @@
  */
 package org.jtestplatform.client;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -69,15 +66,10 @@ public class DefaultTestManager implements TestManager {
      * {@inheritDoc}
      */
     @Override
-    public List<Future<Message>> runTests(List<Message> messages,
+    public Future<Message> runTest(Message message,
             TransportProvider transportProvider, Platform platform) 
             throws Exception {
-        Collection<TestCallable> tests = new ArrayList<TestCallable>(messages.size());
-        for (Message message : messages) {
-            tests.add(new TestCallable(message, transportProvider, platform));
-        }
-        
-        return executor.invokeAll(tests);
+        return executor.submit(new TestCallable(message, transportProvider, platform));
     }
 
 

@@ -25,7 +25,6 @@
  */
 package org.jtestplatform.client;
 
-import java.util.List;
 import java.util.concurrent.Future;
 
 import org.jtestplatform.common.message.Message;
@@ -38,12 +37,13 @@ import org.jtestplatform.configuration.Platform;
  */
 public interface TestManager {
     /**
-     * @param messages
-     * @param transportFactory
+     * @param message
+     * @param transportProvider
+     * @param platform
      * @return
      * @throws Exception
      */
-    List<Future<Message>> runTests(List<Message> messages,
+    Future<Message> runTest(Message message,
             TransportProvider transportProvider, Platform platform) 
             throws Exception;
 
