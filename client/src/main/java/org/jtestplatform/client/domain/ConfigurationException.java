@@ -26,8 +26,8 @@ package org.jtestplatform.client.domain;
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
  */
+@SuppressWarnings("serial")
 public class ConfigurationException extends Exception {
-
     public ConfigurationException(Throwable cause) {
         super(cause);
     }
