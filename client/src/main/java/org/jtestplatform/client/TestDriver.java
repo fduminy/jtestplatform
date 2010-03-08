@@ -80,35 +80,36 @@ public class TestDriver {
     }
     
     public void start() throws Exception {
+        DomainManager domainManager = null;
         try {            
-            for (Platform platform : config.getPlatforms()) {
-                DomainManager domainManager = new DomainManager(config, platform, findKnownFactories());
-                domainManager.start();
-         
-                try {
-                    StringBuilder platformStr = new StringBuilder(); 
-                    Map<String, String> platformProperties = getPlatformProperties(platform, platformStr);                    
-                    File workDir = new File(config.getWorkDir(), platformStr.toString());
-                    Run latestRun = Run.getLatest(workDir);
-                    Run newRun = Run.create(workDir);
-                    
-                    TestHandler testHandler = new MauveTestHandler(config);
-        
-                    List<Future<Message>> replies = runTests(testHandler, domainManager, platform);
-                    RunResult runResult = mergeResults(newRun.getTimestampString(), testHandler, replies);
-                    
-                    for (String property : platformProperties.keySet()) {
-                        runResult.setSystemProperty(property, platformProperties.get(property));
-                    }
-                    
-                    writeReports(runResult, newRun.getReportXml());
-                    
-                    compareRuns(latestRun, newRun, runResult);
-                } finally {        
-                    domainManager.stop();
+            domainManager = new DomainManager(config, findKnownFactories());
+            domainManager.start();
+            
+            for (Platform platform : config.getPlatforms()) {         
+                StringBuilder platformStr = new StringBuilder(); 
+                Map<String, String> platformProperties = getPlatformProperties(platform, platformStr);                    
+                File workDir = new File(config.getWorkDir(), platformStr.toString());
+                Run latestRun = Run.getLatest(workDir);
+                Run newRun = Run.create(workDir);
+                
+                TestHandler testHandler = new MauveTestHandler(config);
+    
+                List<Future<Message>> replies = runTests(testHandler, domainManager, platform);
+                RunResult runResult = mergeResults(newRun.getTimestampString(), testHandler, replies);
+                
+                for (String property : platformProperties.keySet()) {
+                    runResult.setSystemProperty(property, platformProperties.get(property));
                 }
+                
+                writeReports(runResult, newRun.getReportXml());
+                
+                compareRuns(latestRun, newRun, runResult);
             }
-        } finally {        
+        } finally {
+            if (domainManager != null) {
+                domainManager.stop();
+            }
+            
             testManager.shutdown();
         }
     }
