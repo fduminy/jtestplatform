@@ -122,12 +122,9 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
-					<systemProperties>
-						<property>
-							<name>jtestplatform.home</name>
-							<value>${basedir}/src/test/resources/home</value>
-						</property>
-					</systemProperties>
+					<systemPropertyVariables>
+						<jtestplatform.home>${basedir}/src/test/resources/home</jtestplatform.home>
+					</systemPropertyVariables>
 				</configuration>
 			</plugin>
 		</plugins>
