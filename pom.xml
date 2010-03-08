@@ -147,7 +147,9 @@
 			        <excludes>
 			            <exclude>LICENSE.txt</exclude>
 			            <exclude>**/src/test/resources/**</exclude>
-			            <exclude>**/.git/**</exclude>
+                        <exclude>**/src/main/mdo/**</exclude>
+                        <exclude>**/src/main/schema/**</exclude>
+			            <exclude>**/.git/**</exclude>			            
 			        </excludes>
 				</configuration>
 				<executions>
