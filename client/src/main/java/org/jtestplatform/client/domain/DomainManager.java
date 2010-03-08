@@ -145,7 +145,7 @@ public class DomainManager implements TransportProvider {
                 domains.add(domain);
                 watchDog.watch(domain);
             } catch (DomainException ce) {
-                throw new RuntimeException(ce);
+                throw new TransportException("unable to create a new domain", ce);
             }
         }
 
