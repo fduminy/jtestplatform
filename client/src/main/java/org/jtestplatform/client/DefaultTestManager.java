@@ -37,7 +37,7 @@ import org.apache.log4j.Logger;
 import org.jtestplatform.common.message.Message;
 import org.jtestplatform.common.transport.Transport;
 import org.jtestplatform.common.transport.TransportHelper;
-import org.jtestplatform.common.transport.TransportFactory;
+import org.jtestplatform.configuration.Platform;
 
 public class DefaultTestManager implements TestManager {
     private static final Logger LOGGER = Logger.getLogger(DefaultTestManager.class);
@@ -69,10 +69,12 @@ public class DefaultTestManager implements TestManager {
      * {@inheritDoc}
      */
     @Override
-    public List<Future<Message>> runTests(List<Message> messages, TransportFactory transportFactory) throws Exception {
+    public List<Future<Message>> runTests(List<Message> messages,
+            TransportProvider transportProvider, Platform platform) 
+            throws Exception {
         Collection<TestCallable> tests = new ArrayList<TestCallable>(messages.size());
         for (Message message : messages) {
-            tests.add(new TestCallable(message, transportFactory));
+            tests.add(new TestCallable(message, transportProvider, platform));
         }
         
         return executor.invokeAll(tests);
@@ -104,16 +106,18 @@ public class DefaultTestManager implements TestManager {
     
     private class TestCallable implements Callable<Message> {
         private final Message message;
-        private final TransportFactory transportFactory;
+        private final TransportProvider transportProvider;
+        private final Platform platform;
         
-        public TestCallable(Message message, TransportFactory transportFactory) {
+        public TestCallable(Message message, TransportProvider transportProvider, Platform platform) {
             this.message = message;
-            this.transportFactory = transportFactory;
+            this.transportProvider = transportProvider;
+            this.platform = platform;
         }
         
         @Override
         public Message call() throws Exception {
-            Transport transport = transportFactory.create();
+            Transport transport = transportProvider.get(platform);
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("call: transport=" + transport);
             }

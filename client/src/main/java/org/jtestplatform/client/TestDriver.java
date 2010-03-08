@@ -51,7 +51,6 @@ import org.jtestplatform.client.domain.DomainFactory;
 import org.jtestplatform.client.domain.DomainManager;
 import org.jtestplatform.client.domain.libvirt.LibVirtDomainFactory;
 import org.jtestplatform.common.message.Message;
-import org.jtestplatform.common.transport.TransportFactory;
 import org.jtestplatform.configuration.Configuration;
 import org.jtestplatform.configuration.Platform;
 
@@ -83,7 +82,6 @@ public class TestDriver {
     public void start() throws Exception {
         try {            
             for (Platform platform : config.getPlatforms()) {
-                //TODO run domain managers in parallel 
                 DomainManager domainManager = new DomainManager(config, platform, findKnownFactories());
                 domainManager.start();
          
@@ -96,7 +94,7 @@ public class TestDriver {
                     
                     TestHandler testHandler = new MauveTestHandler(config);
         
-                    List<Future<Message>> replies = runTests(testHandler, domainManager);
+                    List<Future<Message>> replies = runTests(testHandler, domainManager, platform);
                     RunResult runResult = mergeResults(newRun.getTimestampString(), testHandler, replies);
                     
                     for (String property : platformProperties.keySet()) {
@@ -166,7 +164,7 @@ public class TestDriver {
         HTMLGenerator.createReport(result, reportXml.getParentFile());
     }
     
-    private List<Future<Message>> runTests(TestHandler testHandler, TransportFactory transportFactory) throws Exception {
+    private List<Future<Message>> runTests(TestHandler testHandler, TransportProvider transportProvider, Platform platform) throws Exception {
         final List<String> list = testHandler.readTests(null);
 
         List<Message> messages = new ArrayList<Message>(list.size());
@@ -174,7 +172,7 @@ public class TestDriver {
             messages.add(testHandler.createRequest(test));
         }
         
-        return testManager.runTests(messages, transportFactory);
+        return testManager.runTests(messages, transportProvider, platform);
     }
     
     private RunResult mergeResults(String timestamp, TestHandler testHandler,

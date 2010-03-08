@@ -27,6 +27,7 @@ package org.jtestplatform.client;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -39,7 +40,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.jtestplatform.common.message.Message;
 import org.jtestplatform.common.transport.Transport;
-import org.jtestplatform.common.transport.TransportFactory;
+import org.jtestplatform.configuration.Platform;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -68,7 +69,7 @@ public class TestManagerTest {
     private final int nbMessages;
 
     private TestManager testManager;
-    private TransportFactory transportFactory;
+    private TransportProvider transportProvider;
 
     public TestManagerTest(Integer corePoolSize, Integer maximumPoolSize,
             Long keepAliveTime, Integer nbMessages) {
@@ -82,7 +83,7 @@ public class TestManagerTest {
     public void setUp() throws ConfigurationException {
         new ConfigReader().read(); // will initialize log4j
 
-        transportFactory = mock(TransportFactory.class);
+        transportProvider = mock(TransportProvider.class);
 
         testManager = new DefaultTestManager(corePoolSize,
                 maximumPoolSize, keepAliveTime, unit);
@@ -98,7 +99,7 @@ public class TestManagerTest {
         List<Message> messages = new ArrayList<Message>();
 
         Transport transport = mock(Transport.class);
-        when(transportFactory.create()).thenReturn(transport);
+        when(transportProvider.get(any(Platform.class))).thenReturn(transport);
 
         for (int i = 0; i < nbMessages; i++) {
             Message message = mock(Message.class);
@@ -108,7 +109,9 @@ public class TestManagerTest {
             messages.add(message);
         }
 
-        List<Future<Message>> results = testManager.runTests(messages, transportFactory);
+        //TODO do tests with multiple platforms and check they are actually run on the proper platform
+        Platform platform = new Platform();
+        List<Future<Message>> results = testManager.runTests(messages, transportProvider, platform);
         assertNotNull(results);
         assertEquals(messages.size(), results.size());
     }

@@ -18,34 +18,20 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
  * USA.
- * -
  */
 /**
  * 
  */
 package org.jtestplatform.client;
 
-import java.util.List;
-import java.util.concurrent.Future;
-
-import org.jtestplatform.common.message.Message;
+import org.jtestplatform.common.transport.Transport;
+import org.jtestplatform.common.transport.TransportException;
 import org.jtestplatform.configuration.Platform;
-
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
  */
-public interface TestManager {
-    /**
-     * @param messages
-     * @param transportFactory
-     * @return
-     * @throws Exception
-     */
-    List<Future<Message>> runTests(List<Message> messages,
-            TransportProvider transportProvider, Platform platform) 
-            throws Exception;
-
-    void shutdown();
+public interface TransportProvider {
+    Transport get(Platform platform) throws TransportException;
 }

@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.jtestplatform.client.TransportProvider;
 import org.jtestplatform.client.domain.watchdog.WatchDog;
 import org.jtestplatform.client.domain.watchdog.WatchDogListener;
 import org.jtestplatform.common.transport.Transport;
@@ -41,7 +42,7 @@ import org.jtestplatform.configuration.Configuration;
 import org.jtestplatform.configuration.Factory;
 import org.jtestplatform.configuration.Platform;
 
-public class DomainManager implements TransportFactory {
+public class DomainManager implements TransportProvider {
     private static final Logger LOGGER = Logger.getLogger(DomainManager.class);
 
     private final LoadBalancer<DomainManagerDelegate> delegates;
@@ -50,6 +51,7 @@ public class DomainManager implements TransportFactory {
     private final DomainConfig domainConfig;
     private final int maxNumberOfDomains;
     private final int serverPort;
+    private final DomainManagerTransportFactory transportFactory;
 
     public DomainManager(Configuration config, Platform platform, Map<String, DomainFactory<? extends Domain>> knownFactories) throws DomainException {
         checkValid(knownFactories, config);
@@ -76,6 +78,8 @@ public class DomainManager implements TransportFactory {
         }
 
         delegates = new LoadBalancer<DomainManagerDelegate>(dmDelegates);
+        
+        transportFactory = new DomainManagerTransportFactory();
     }
 
     /**
@@ -112,23 +116,37 @@ public class DomainManager implements TransportFactory {
                 LOGGER.error("an error happened while stopping", e);
             }
         }
-    }
+    }        
     
     /**
      * {@inheritDoc}
+     * @throws TransportException 
      */
     @Override
-    public Transport create() throws TransportException {
-        try {
-            DatagramSocket socket = new DatagramSocket();
-            String host = getNextIP();
+    public Transport get(Platform platform) throws TransportException {
+        //TODO use the provided platform
+        Transport transport = transportFactory.create();
+        return transport;
+    }
+    
+    private class DomainManagerTransportFactory implements TransportFactory {
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Transport create() throws TransportException {
+            try {
+                //TODO put the connection/transport in cache and remove it when the domain stop/die
+                DatagramSocket socket = new DatagramSocket();
+                String host = getNextIP();
 
-            socket.connect(InetAddress.getByName(host), serverPort);
-            return new UDPTransport(socket);
-        } catch (SocketException e) {
-            throw new TransportException("failed to create socket", e);
-        } catch (UnknownHostException e) {
-            throw new TransportException("failed to find host", e);
+                socket.connect(InetAddress.getByName(host), serverPort);
+                return new UDPTransport(socket);
+            } catch (SocketException e) {
+                throw new TransportException("failed to create socket", e);
+            } catch (UnknownHostException e) {
+                throw new TransportException("failed to find host", e);
+            }
         }
     }
 

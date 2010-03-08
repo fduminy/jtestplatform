@@ -138,8 +138,9 @@ public class TestDomainManager {
         Configuration config = new Configuration();
         config.setDomains(domains);
         
-        DomainManager domainManager = createDomainManager(config, true);        
-        Transport transport = domainManager.create();
+        DomainManager domainManager = createDomainManager(config, true);
+        Platform platform = new Platform();
+        Transport transport = domainManager.get(platform);
         assertNotNull(transport);
     }
     
