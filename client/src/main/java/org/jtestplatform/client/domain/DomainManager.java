@@ -43,41 +43,41 @@ import org.jtestplatform.configuration.Platform;
 
 public class DomainManager implements TransportProvider {
     private static final Logger LOGGER = Logger.getLogger(DomainManager.class);
-    
+
     private final LoadBalancer<DomainManagerDelegate> delegates;
     private final WatchDog watchDog;
     private final LoadBalancer<Domain> domains;
     private final DomainConfig domainConfig;
     private final int maxNumberOfDomains;
     private final int serverPort;
-    
+
     public DomainManager(Configuration config, Platform platform, Map<String, DomainFactory<? extends Domain>> knownFactories) throws DomainException {
         checkValid(knownFactories, config);
-        
-        domainConfig = createDomainConfig(platform);        
+
+        domainConfig = createDomainConfig(platform);
         maxNumberOfDomains = Math.max(1, config.getDomains().getMax());
         serverPort = config.getServerPort();
         
-        watchDog = new WatchDog(config);        
+        watchDog = new WatchDog(config);
         watchDog.addWatchDogListener(new WatchDogListener() {
             @Override
             public void domainDied(Domain domain) {
                 DomainManager.this.domainDied(domain);
             }
         });
-        
+
         domains = new LoadBalancer<Domain>();
-        
+
         List<DomainManagerDelegate> dmDelegates = new ArrayList<DomainManagerDelegate>();
         for (Factory factory : config.getDomains().getFactories()) {
             DomainFactory<? extends Domain> domainFactory = knownFactories.get(factory.getType());
             DomainManagerDelegate data = new DomainManagerDelegate(domainFactory, factory.getConnections());
             dmDelegates.add(data);
         }
-        
+
         delegates = new LoadBalancer<DomainManagerDelegate>(dmDelegates);
     }
-    
+
     /**
      * @param platform
      * @return
@@ -93,19 +93,19 @@ public class DomainManager implements TransportProvider {
     private void domainDied(Domain domain) {
         domains.remove(domain);
     }
-    
+
     public void start() {
         watchDog.startWatching();
     }
 
     public void stop() {
         watchDog.stopWatching();
-        
+
         for (Domain domain : domains.clear()) {
             // stop the watch dog before actually stop the domain
             watchDog.unwatch(domain);
-    
-            LOGGER.info("stopping domains");        
+
+            LOGGER.info("stopping domains");
             try {
                 domain.stop();
             } catch (DomainException e) {
@@ -122,7 +122,7 @@ public class DomainManager implements TransportProvider {
         try {
             DatagramSocket socket = new DatagramSocket();
             String host = getNextIP();
-               
+
             socket.connect(InetAddress.getByName(host), serverPort);
             return new UDPTransport(socket);
         } catch (SocketException e) {
@@ -131,14 +131,14 @@ public class DomainManager implements TransportProvider {
             throw new TransportException("failed to find host", e);
         }
     }
-    
+
     private synchronized String getNextIP() throws TransportException {
         if ((domains.size() == 0) || (domains.size() < maxNumberOfDomains)) {
             // create a domain if there is none or if there is less than maximum
-            
+
             try {
                 DomainManagerDelegate delegate = delegates.getNext();
-                                    
+
                 Domain domain = delegate.createDomain(domainConfig);
                 domains.add(domain);
                 watchDog.watch(domain);
@@ -146,10 +146,10 @@ public class DomainManager implements TransportProvider {
                 throw new RuntimeException(ce);
             }
         }
-        
+
         return domains.getNext().getIPAddress();
     }
-    
+
     private void checkValid(Map<String, DomainFactory<? extends Domain>> knownFactories, Configuration config) throws DomainException {
         if ((knownFactories == null) || knownFactories.isEmpty()) {
             throw new DomainException("no known factory");
@@ -160,24 +160,25 @@ public class DomainManager implements TransportProvider {
         if ((config.getDomains().getFactories() == null) || config.getDomains().getFactories().isEmpty()) {
             throw new DomainException("no factory has been defined");
         }
-                
+
         StringBuilder wrongTypes = new StringBuilder();
         StringBuilder typesWithoutConnection = new StringBuilder();
         for (Factory factory : config.getDomains().getFactories()) {
             DomainFactory<? extends Domain> domainFactory = knownFactories.get(factory.getType());
             if (domainFactory == null) {
                 LOGGER.error("no DomainFactory for type " + factory.getType());
-                
+
                 if (wrongTypes.length() != 0) {
                     wrongTypes.append(", ");
                 }
                 wrongTypes.append(factory.getType());
                 continue;
             }
-            
-            if ((factory.getConnections() == null) || factory.getConnections().isEmpty()) {
+
+            if ((factory.getConnections() == null) || factory.getConnections()
+                    .isEmpty()) {
                 LOGGER.error("no connection for type " + factory.getType());
-                
+
                 if (typesWithoutConnection.length() != 0) {
                     typesWithoutConnection.append(", ");
                 }
@@ -187,15 +188,15 @@ public class DomainManager implements TransportProvider {
         }
         if ((wrongTypes.length() != 0) || (typesWithoutConnection.length() != 0)) {
             StringBuilder message = new StringBuilder("Invalid configuration:\n");
-            
+
             if (wrongTypes.length() != 0) {
                 message.append("\tno DomainFactory for types ").append(wrongTypes).append('\n');
             }
-            
+
             if (typesWithoutConnection.length() != 0) {
                 message.append("\tno connection for types ").append(typesWithoutConnection);
             }
-            
+
             throw new DomainException(wrongTypes.toString());
         }
     }
