@@ -134,8 +134,9 @@ public class DomainManager implements TransportProvider {
     }
 
     private synchronized String getNextIP(DomainConfig domainConfig) throws TransportException {
-        if ((domains.size() == 0) || (domains.size() < maxNumberOfDomains)) {
-            // create a domain if there is none or if there is less than maximum
+        if (domains.size() < maxNumberOfDomains) {
+            // create a domain if there is less than maximum
+            // (it includes the case where there is no domain running)
 
             try {
                 DomainManagerDelegate delegate = delegates.getNext();
