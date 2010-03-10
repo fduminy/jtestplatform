@@ -66,25 +66,30 @@
             <field xml.attribute="true">
               <name>cdrom</name>
               <type>String</type>
+              <identifier>true</identifier>
             </field>
             <field xml.attribute="true">
               <name>cpu</name>
               <type>String</type>
+              <identifier>true</identifier>
             </field>
             <field xml.attribute="true">
               <name>nbCores</name>
               <type>int</type>
               <defaultValue>1</defaultValue>
+              <identifier>true</identifier>
             </field>
             <field xml.attribute="true">
               <name>wordSize</name>
               <type>int</type>
               <defaultValue>32</defaultValue>
+              <identifier>true</identifier>
             </field>
             <field xml.attribute="true">
               <name>memory</name>
               <type>long</type>
               <required>true</required>
+              <identifier>true</identifier>
               <description>Domain's memory size in kilobytes.</description>                           
             </field>
           </fields>
@@ -117,6 +122,7 @@
             <field xml.attribute="true">
               <name>type</name>
               <type>String</type>
+              <identifier>true</identifier>              
             </field>
             <field>
               <name>connections</name>
@@ -136,6 +142,7 @@
             <field xml.attribute="true">
               <name>uri</name>
               <type>String</type>
+              <identifier>true</identifier>              
             </field>
           </fields>
         </class>
