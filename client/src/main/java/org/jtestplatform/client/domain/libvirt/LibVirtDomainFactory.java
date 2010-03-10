@@ -38,6 +38,7 @@ import org.jtestplatform.client.domain.DomainException;
 import org.jtestplatform.client.domain.DomainFactory;
 import org.jtestplatform.common.ConfigUtils;
 import org.jtestplatform.configuration.Connection;
+import org.jtestplatform.configuration.Platform;
 import org.libvirt.Connect;
 import org.libvirt.Domain;
 import org.libvirt.DomainInfo;
@@ -90,7 +91,18 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
     /**
      * {@inheritDoc}
      */
+    @Override
+    public boolean support(Platform platform, Connection connection) { 
+        return true; //TODO implement me
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
     public LibVirtDomain createDomain(DomainConfig config, Connection connection) throws DomainException {
+        if (!support(config.getPlatform(), connection)) {
+            throw new DomainException("Unsupported platform :\n" + config.getPlatform() + "\n. You should call support(Platform, Connection) before.");
+        }
         return new LibVirtDomain(config, this, connection); 
     }
 
@@ -262,7 +274,7 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
                 }
                 
                 String macAddress = findUniqueMacAddress(domains);
-                String xml = XMLGenerator.generateDomain(config.getDomainName(), config.getCdrom(), macAddress, NETWORK_NAME, config.getMemory());
+                String xml = XMLGenerator.generateDomain(config, macAddress, NETWORK_NAME);
                 return connect.domainDefineXML(xml);
             }
         } catch (LibvirtException e) {

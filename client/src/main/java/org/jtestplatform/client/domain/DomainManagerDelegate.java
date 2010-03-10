@@ -28,6 +28,7 @@ package org.jtestplatform.client.domain;
 import java.util.List;
 
 import org.jtestplatform.configuration.Connection;
+import org.jtestplatform.configuration.Platform;
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)
@@ -47,12 +48,26 @@ class DomainManagerDelegate {
         this.connections = new LoadBalancer<Connection>(connections);
     }
 
+    public Connection getConnectionFor(Platform platform) {
+        Connection result = null;
+        for (int i = 0; i < connections.size(); i++) {
+            Connection connection = connections.getNext();
+            
+            //TODO think about caching the result of support(platform, connection) (to avoid potentially remote connection)
+            if (domainFactory.support(platform, connection)) {
+                result = connection;
+                break;
+            }
+        }
+        return result;
+    }
+    
     /**
      * @param config
      * @return
      * @throws DomainException 
      */
-    public Domain createDomain(DomainConfig config) throws DomainException {
-        return domainFactory.createDomain(config, connections.getNext());
+    public Domain createDomain(DomainConfig config, Connection connection) throws DomainException {
+        return domainFactory.createDomain(config, connection);
     }    
 }

@@ -26,6 +26,7 @@
 package org.jtestplatform.client.domain;
 
 import org.jtestplatform.configuration.Connection;
+import org.jtestplatform.configuration.Platform;
 
 
 /**
@@ -35,5 +36,6 @@ import org.jtestplatform.configuration.Connection;
  */
 public interface DomainFactory<D extends Domain> {
     String getType();
+    boolean support(Platform platform, Connection connection);
     D createDomain(DomainConfig config, Connection connection) throws DomainException;
 }

@@ -22,6 +22,9 @@
  */
 package org.jtestplatform.client.domain;
 
+import org.jtestplatform.configuration.Platform;
+
+
 /**
  * Interface for the configuration of a VM.
  * 
@@ -29,36 +32,40 @@ package org.jtestplatform.client.domain;
  *
  */
 public class DomainConfig {
-    private String cdrom;
     private String domainName;
-    private long memory;
     
+    private Platform platform;
+    
+    public void setDomainName(String domainName) {
+        this.domainName = domainName;
+    }
+
     public String getDomainName() {
         return domainName;
     }
 
-    /**
-     * @return
-     */
-    public String getCdrom() {
-        return cdrom;
+    public Platform getPlatform() {
+        return platform;
     }
 
-    public void setCdrom(String cdrom) {
-        this.cdrom = cdrom;
+    public void setPlatform(Platform platform) {
+        this.platform = platform;
     }
 
-    public void setDomainName(String name) {
-        this.domainName = name;
-    }
-
-    public long getMemory() {
-        return memory;
-    }
-
-    public void setMemory(long memory) {
-        this.memory = memory;
+    @Override
+    public boolean equals(Object o) {
+        boolean result = false;
+        if (o == this) {
+            result = true;
+        } else if (o instanceof DomainConfig) {
+            DomainConfig other = (DomainConfig) o;
+            result = platform.equals(other.platform) && domainName.equals(other.domainName);
+        }
+        return result;
     }
     
-    
+    @Override
+    public int hashCode() {
+        return domainName.hashCode();
+    }
 }

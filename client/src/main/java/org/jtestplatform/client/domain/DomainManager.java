@@ -38,6 +38,7 @@ import org.jtestplatform.common.transport.Transport;
 import org.jtestplatform.common.transport.TransportException;
 import org.jtestplatform.common.transport.UDPTransport;
 import org.jtestplatform.configuration.Configuration;
+import org.jtestplatform.configuration.Connection;
 import org.jtestplatform.configuration.Factory;
 import org.jtestplatform.configuration.Platform;
 
@@ -82,9 +83,8 @@ public class DomainManager implements TransportProvider {
      */
     private DomainConfig createDomainConfig(Platform platform) {
         DomainConfig domainConfig = new DomainConfig();
-        domainConfig.setCdrom(platform.getCdrom());
-        domainConfig.setMemory(platform.getMemory());
         domainConfig.setDomainName(null); // null => will be defined automatically
+        domainConfig.setPlatform(platform);
         return domainConfig;
     }
 
@@ -120,8 +120,7 @@ public class DomainManager implements TransportProvider {
     public Transport get(Platform platform) throws TransportException {
         try {
             //TODO put the connection/transport in cache and remove it when the domain stop/die
-            DomainConfig domainConfig = createDomainConfig(platform);
-            String host = getNextIP(domainConfig);
+            String host = getNextIP(platform);
 
             DatagramSocket socket = new DatagramSocket();
             socket.connect(InetAddress.getByName(host), serverPort);
@@ -133,15 +132,29 @@ public class DomainManager implements TransportProvider {
         }
     }
 
-    private synchronized String getNextIP(DomainConfig domainConfig) throws TransportException {
+    private synchronized String getNextIP(Platform platform) throws TransportException {
         if (domains.size() < maxNumberOfDomains) {
             // create a domain if there is less than maximum
             // (it includes the case where there is no domain running)
 
             try {
-                DomainManagerDelegate delegate = delegates.getNext();
+                DomainManagerDelegate delegate = null;
+                Connection connection = null;
+                for (int i = 0; i < delegates.size(); i++) {
+                    DomainManagerDelegate d = delegates.getNext();
+                    connection = d.getConnectionFor(platform);
+                    if (connection != null) {
+                        delegate = d;
+                        break;
+                    }
+                }
 
-                Domain domain = delegate.createDomain(domainConfig);
+                if (connection == null) {
+                    throw new TransportException("That platform is not supported :\n" + platform);
+                }
+                
+                DomainConfig domainConfig = createDomainConfig(platform);
+                Domain domain = delegate.createDomain(domainConfig, connection);
                 domains.add(domain);
                 watchDog.watch(domain);
             } catch (DomainException ce) {

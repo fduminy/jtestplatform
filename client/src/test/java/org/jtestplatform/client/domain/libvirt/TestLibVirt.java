@@ -46,6 +46,7 @@ import org.jtestplatform.client.domain.DomainException;
 import org.jtestplatform.common.ConfigUtils;
 import org.jtestplatform.configuration.Configuration;
 import org.jtestplatform.configuration.Connection;
+import org.jtestplatform.configuration.Platform;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.experimental.theories.DataPoint;
@@ -115,6 +116,7 @@ public class TestLibVirt {
         @Override
         public void runTest() throws Throwable {
             try {
+                //TODO also check createDomain/support methods work well together
                 Domain domain = factory.createDomain(createDomainConfig(), connection);
                 String ip = domain.getIPAddress();
                 org.junit.Assert.assertNull(ip);
@@ -179,10 +181,14 @@ public class TestLibVirt {
      * @return
      */
     private DomainConfig createDomainConfig() {
+        Platform platform = new Platform();
+        platform.setMemory(32L * 1024L);
+        platform.setCdrom(new File(config.getWorkDir()).getParent() + File.separatorChar + "config" + File.separatorChar + "microcore_2.7.iso");
+        
         DomainConfig cfg = new DomainConfig();
+        cfg.setPlatform(platform);
         cfg.setDomainName(null); // null => will be defined automatically
-        cfg.setMemory(32L * 1024L);
-        cfg.setCdrom(new File(config.getWorkDir()).getParent() + File.separatorChar + "config" + File.separatorChar + "microcore_2.7.iso");
+        
         return cfg;
     }
     

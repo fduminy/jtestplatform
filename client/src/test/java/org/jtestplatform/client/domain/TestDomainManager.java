@@ -164,6 +164,11 @@ public class TestDomainManager {
         public Domain createDomain(DomainConfig config, Connection connection)
             throws DomainException {
             return DomainUtils.createFixedStateProcesses(Boolean.TRUE, null, 1)[0];
+        }
+
+        @Override
+        public boolean support(Platform platform, Connection connection) {
+            return true;
         }        
     }
 }

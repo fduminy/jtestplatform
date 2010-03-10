@@ -29,7 +29,9 @@ import java.io.IOException;
 import java.io.StringWriter;
 
 import org.apache.log4j.Logger;
+import org.jtestplatform.client.domain.DomainConfig;
 import org.jtestplatform.client.domain.DomainException;
+import org.jtestplatform.configuration.Platform;
 import org.libvirt.model.Bridge;
 import org.libvirt.model.DHCP;
 import org.libvirt.model.Forward;
@@ -102,14 +104,15 @@ public class XMLGenerator {
         return result;
     }
         
-    public static String generateDomain(String name, String cdromFile, String macAddress, String networkName, long memory) {
+    public static String generateDomain(DomainConfig config, String macAddress, String networkName) {
+        Platform platform = config.getPlatform(); //TODO use cpu and wordSize properties
         StringBuilder sb = new StringBuilder(4096);
         
         sb.append("<domain type='kvm' id='1'>");             
-        sb.append("  <name>").append(name).append("</name>");
-        sb.append("  <memory>").append(memory).append("</memory>");    
-        sb.append("  <currentMemory>524288</currentMemory>"); 
-        sb.append("  <vcpu>1</vcpu>");
+        sb.append("  <name>").append(config.getDomainName()).append("</name>");
+        sb.append("  <memory>").append(platform.getMemory()).append("</memory>");    
+        sb.append("  <currentMemory>").append(platform.getMemory()).append("</currentMemory>"); 
+        sb.append("  <vcpu>").append(platform.getNbCores()).append("</vcpu>");
         sb.append("  <os>");
         sb.append("    <type arch='x86_64' machine='pc-0.11'>hvm</type>");
         sb.append("    <boot dev='cdrom'/>                                   ");
@@ -126,7 +129,7 @@ public class XMLGenerator {
         sb.append("  <devices>                                               ");
         sb.append("    <emulator>/usr/bin/kvm</emulator>                     ");
         sb.append("    <disk type='file' device='cdrom'>                     ");
-        sb.append("      <source file='").append(cdromFile).append("'/>");                                                                                        
+        sb.append("      <source file='").append(platform.getCdrom()).append("'/>");                                                                                        
         sb.append("      <target dev='hdc' bus='ide'/>");
         sb.append("      <readonly/>");
         sb.append("    </disk>");
@@ -161,7 +164,8 @@ public class XMLGenerator {
         String result = sb.toString();
         
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("generateDomain: name=" + name + " cdrom=" + cdromFile + " networkName=" + networkName + " Result=\n" + result);
+            LOGGER.debug("generateDomain: config=" + config + " macAddress=" + macAddress
+                    + " networkName=" + networkName + " Result=\n" + result);
         }
         
         return result;
