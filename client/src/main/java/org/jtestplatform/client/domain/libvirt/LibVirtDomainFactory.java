@@ -115,7 +115,7 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
             }
             
             Network network = domain.getConnect().networkLookupByName(NETWORK_NAME);
-            ipAddress = XMLGenerator.getIPAddress(network, macAddress);
+            ipAddress = LibVirtModelFacade.getIPAddress(network, macAddress);
             if (ipAddress == null) {
                 throw new DomainException("unable to get mac address");
             }
@@ -157,13 +157,13 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
     void ensureNetworkExist(Connect connect) throws LibvirtException, DomainException {
         //TODO create our own network
 
-        String wantedNetworkXML = XMLGenerator.generateNetwork(NETWORK_NAME);
+        String wantedNetworkXML = LibVirtModelFacade.generateNetwork(NETWORK_NAME);
             
         // synchronize because multiple threads might check/destroy/create the network concurrently
         synchronized ((connect.getHostName() + "_ensureNetworkExist").intern()) {   
             Network network = networkLookupByName(connect, NETWORK_NAME);
             if (network != null) {
-                if (XMLGenerator.sameNetwork(wantedNetworkXML, network)) {
+                if (LibVirtModelFacade.sameNetwork(wantedNetworkXML, network)) {
                     LOGGER.debug("network '" + NETWORK_NAME + "' already exists with proper characteristics");
                 } else {
                     network.destroy();
@@ -205,7 +205,7 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
                 }
                 
                 String macAddress = findUniqueMacAddress(domains);
-                String xml = XMLGenerator.generateDomain(config, macAddress, NETWORK_NAME);
+                String xml = LibVirtModelFacade.generateDomain(config, macAddress, NETWORK_NAME);
                 return connect.domainDefineXML(xml);
             }
         } catch (LibvirtException e) {
@@ -246,9 +246,9 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
             }
         }
         
-        String prefix = XMLGenerator.BASE_MAC_ADDRESS;
+        String prefix = LibVirtModelFacade.BASE_MAC_ADDRESS;
         
-        return findUniqueValue(macAddresses, "mac address", prefix, XMLGenerator.MIN_SUBNET_IP_ADDRESS, XMLGenerator.MAX_SUBNET_IP_ADDRESS, 2);
+        return findUniqueValue(macAddresses, "mac address", prefix, LibVirtModelFacade.MIN_SUBNET_IP_ADDRESS, LibVirtModelFacade.MAX_SUBNET_IP_ADDRESS, 2);
     }
     
     private String getMacAddress(Domain domain) throws LibvirtException {
@@ -282,7 +282,7 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
     private String findUniqueValue(List<String> values, String valueName, String valuePrefix, int valueIndex, int maxValueIndex, int hexadecimalSize) throws DomainException {
         String value = null;
         for (; valueIndex <= maxValueIndex; valueIndex++) {
-            String indexStr = XMLGenerator.toHexString(valueIndex, hexadecimalSize);
+            String indexStr = LibVirtModelFacade.toHexString(valueIndex, hexadecimalSize);
             
             value = valuePrefix + indexStr;
             if (!values.contains(value)) {

@@ -50,15 +50,15 @@ import org.libvirt.model.network.io.dom4j.NetworkDom4jWriter;
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
  */
-public class XMLGenerator {
-    private static final Logger LOGGER = Logger.getLogger(XMLGenerator.class);
+public class LibVirtModelFacade {
+    private static final Logger LOGGER = Logger.getLogger(LibVirtModelFacade.class);
     
     static final String BASE_MAC_ADDRESS = "54:52:00:77:58:";
     static final String BASE_IP_ADDRESS = "192.168.121.";
     static final int MIN_SUBNET_IP_ADDRESS = 2;
     static final int MAX_SUBNET_IP_ADDRESS = 254;
 
-    private XMLGenerator() {        
+    private LibVirtModelFacade() {        
     }
     
     public static String generateNetwork(String networkName) throws DomainException {
