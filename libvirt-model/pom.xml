@@ -147,6 +147,7 @@
                         <configuration>
                             <models>
                                 <model>src/main/mdo/network.mdo</model>
+                                <model>src/main/mdo/capabilities.mdo</model>
                             </models>
                             <version>1.0.0</version>
                             <useJava5>true</useJava5>
@@ -162,6 +163,7 @@
                         <configuration>
                             <models>
                                 <model>src/main/mdo/network.mdo</model>
+                                <model>src/main/mdo/capabilities.mdo</model>
                             </models>
                             <version>1.0.0</version>
                             <useJava5>true</useJava5>
