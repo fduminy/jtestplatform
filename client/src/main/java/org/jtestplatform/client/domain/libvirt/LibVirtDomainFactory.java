@@ -47,11 +47,11 @@ import org.libvirt.Network;
 import org.libvirt.DomainInfo.DomainState;
 import org.libvirt.jna.virError;
 import org.libvirt.jna.Libvirt.VirErrorCallback;
-import org.libvirt.model.DHCP;
-import org.libvirt.model.Host;
-import org.libvirt.model.IP;
-import org.libvirt.model.Range;
-import org.libvirt.model.io.dom4j.NetworkDom4jReader;
+import org.libvirt.model.network.DHCP;
+import org.libvirt.model.network.Host;
+import org.libvirt.model.network.IP;
+import org.libvirt.model.network.Range;
+import org.libvirt.model.network.io.dom4j.NetworkDom4jReader;
 
 import com.sun.jna.Pointer;
 
@@ -121,7 +121,7 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
             }
             
             Network network = domain.getConnect().networkLookupByName(NETWORK_NAME);
-            org.libvirt.model.Network net = new NetworkDom4jReader().read(new StringReader(network.getXMLDesc(0)));
+            org.libvirt.model.network.Network net = new NetworkDom4jReader().read(new StringReader(network.getXMLDesc(0)));
             for (Host host : net.getIp().getDhcp().getHost()) {
                 if (macAddress.equals(host.getMac())) {
                     ipAddress = host.getIp();
@@ -170,14 +170,14 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
         //TODO create our own network
 
         String wantedNetworkXML = XMLGenerator.generateNetwork(NETWORK_NAME);
-        org.libvirt.model.Network wantedNetwork = toNetwork(wantedNetworkXML);
+        org.libvirt.model.network.Network wantedNetwork = toNetwork(wantedNetworkXML);
             
         // synchronize because multiple threads might check/destroy/create the network concurrently
         synchronized ((connect.getHostName() + "_ensureNetworkExist").intern()) {   
             Network network = networkLookupByName(connect, NETWORK_NAME);
             if (network != null) {
                 String actualNetworkXML = network.getXMLDesc(0);
-                org.libvirt.model.Network actualNetwork = toNetwork(actualNetworkXML);
+                org.libvirt.model.network.Network actualNetwork = toNetwork(actualNetworkXML);
                 
                 if (sameNetwork(wantedNetwork, actualNetwork)) {
                     LOGGER.debug("network '" + NETWORK_NAME + "' already exists with proper characteristics");
@@ -201,8 +201,8 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
      * @param actualNetwork
      * @return
      */
-    private boolean sameNetwork(org.libvirt.model.Network wantedNetwork,
-            org.libvirt.model.Network actualNetwork) {
+    private boolean sameNetwork(org.libvirt.model.network.Network wantedNetwork,
+            org.libvirt.model.network.Network actualNetwork) {
 
         IP wantedIP = wantedNetwork.getIp();
         IP actualIP = actualNetwork.getIp();
@@ -239,7 +239,7 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
         return sameNetwork;
     }
 
-    private org.libvirt.model.Network toNetwork(String networkXML) throws DomainException {
+    private org.libvirt.model.network.Network toNetwork(String networkXML) throws DomainException {
         try {
             return new NetworkDom4jReader().read(new StringReader(networkXML));
         } catch (IOException e) {

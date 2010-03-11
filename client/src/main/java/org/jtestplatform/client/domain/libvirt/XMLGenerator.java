@@ -32,14 +32,14 @@ import org.apache.log4j.Logger;
 import org.jtestplatform.client.domain.DomainConfig;
 import org.jtestplatform.client.domain.DomainException;
 import org.jtestplatform.configuration.Platform;
-import org.libvirt.model.Bridge;
-import org.libvirt.model.DHCP;
-import org.libvirt.model.Forward;
-import org.libvirt.model.Host;
-import org.libvirt.model.IP;
-import org.libvirt.model.Network;
-import org.libvirt.model.Range;
-import org.libvirt.model.io.dom4j.NetworkDom4jWriter;
+import org.libvirt.model.network.Bridge;
+import org.libvirt.model.network.DHCP;
+import org.libvirt.model.network.Forward;
+import org.libvirt.model.network.Host;
+import org.libvirt.model.network.IP;
+import org.libvirt.model.network.Network;
+import org.libvirt.model.network.Range;
+import org.libvirt.model.network.io.dom4j.NetworkDom4jWriter;
 
 
 /**

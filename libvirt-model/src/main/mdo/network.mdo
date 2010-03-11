@@ -6,7 +6,7 @@
   <defaults>
     <default>
       <key>package</key>
-      <value>org.libvirt.model</value>
+      <value>org.libvirt.model.network</value>
     </default>
   </defaults>
   
