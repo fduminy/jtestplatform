@@ -26,7 +26,6 @@
 package org.jtestplatform.client.domain.libvirt;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -47,11 +46,6 @@ import org.libvirt.Network;
 import org.libvirt.DomainInfo.DomainState;
 import org.libvirt.jna.virError;
 import org.libvirt.jna.Libvirt.VirErrorCallback;
-import org.libvirt.model.network.DHCP;
-import org.libvirt.model.network.Host;
-import org.libvirt.model.network.IP;
-import org.libvirt.model.network.Range;
-import org.libvirt.model.network.io.dom4j.NetworkDom4jReader;
 
 import com.sun.jna.Pointer;
 
@@ -121,13 +115,7 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
             }
             
             Network network = domain.getConnect().networkLookupByName(NETWORK_NAME);
-            org.libvirt.model.network.Network net = new NetworkDom4jReader().read(new StringReader(network.getXMLDesc(0)));
-            for (Host host : net.getIp().getDhcp().getHost()) {
-                if (macAddress.equals(host.getMac())) {
-                    ipAddress = host.getIp();
-                    break;
-                }
-            }
+            ipAddress = XMLGenerator.getIPAddress(network, macAddress);
             if (ipAddress == null) {
                 throw new DomainException("unable to get mac address");
             }
@@ -170,16 +158,12 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
         //TODO create our own network
 
         String wantedNetworkXML = XMLGenerator.generateNetwork(NETWORK_NAME);
-        org.libvirt.model.network.Network wantedNetwork = toNetwork(wantedNetworkXML);
             
         // synchronize because multiple threads might check/destroy/create the network concurrently
         synchronized ((connect.getHostName() + "_ensureNetworkExist").intern()) {   
             Network network = networkLookupByName(connect, NETWORK_NAME);
             if (network != null) {
-                String actualNetworkXML = network.getXMLDesc(0);
-                org.libvirt.model.network.Network actualNetwork = toNetwork(actualNetworkXML);
-                
-                if (sameNetwork(wantedNetwork, actualNetwork)) {
+                if (XMLGenerator.sameNetwork(wantedNetworkXML, network)) {
                     LOGGER.debug("network '" + NETWORK_NAME + "' already exists with proper characteristics");
                 } else {
                     network.destroy();
@@ -193,59 +177,6 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
                 network = connect.networkCreateXML(wantedNetworkXML);
                 LOGGER.debug("created network '" + NETWORK_NAME + "'");            
             }
-        }
-    }
-    
-    /**
-     * @param wantedNetwork
-     * @param actualNetwork
-     * @return
-     */
-    private boolean sameNetwork(org.libvirt.model.network.Network wantedNetwork,
-            org.libvirt.model.network.Network actualNetwork) {
-
-        IP wantedIP = wantedNetwork.getIp();
-        IP actualIP = actualNetwork.getIp();
-        boolean sameNetwork = (wantedIP.getAddress().equals(actualIP.getAddress()));
-        sameNetwork &= (wantedIP.getNetmask().equals(actualIP.getNetmask()));
-
-        if (sameNetwork) {
-            DHCP wantedDHCP = wantedIP.getDhcp();
-            DHCP actualDHCP = actualIP.getDhcp();
-            for (Host wantedHost : wantedDHCP.getHost()) {
-                boolean sameHost = false;
-                for (Host actualHost : actualDHCP.getHost()) {
-                    if (wantedHost.getMac().equals(actualHost.getMac()) 
-                            && wantedHost.getIp().equals(actualHost.getIp())) {
-                        sameHost = true;
-                        break;
-                    }
-                }
-                sameNetwork &= sameHost;
-
-                if (!sameNetwork) {
-                    break;
-                }
-            }
-            
-            if (sameNetwork) {
-                Range wantedRange = wantedDHCP.getRange();
-                Range actualRange = actualDHCP.getRange();
-                sameNetwork &= wantedRange.getStart().equals(actualRange.getStart());
-                sameNetwork &= wantedRange.getEnd().equals(actualRange.getEnd());
-            }            
-        }
-        
-        return sameNetwork;
-    }
-
-    private org.libvirt.model.network.Network toNetwork(String networkXML) throws DomainException {
-        try {
-            return new NetworkDom4jReader().read(new StringReader(networkXML));
-        } catch (IOException e) {
-            throw new DomainException(e);
-        } catch (DocumentException e) {
-            throw new DomainException(e);
         }
     }
     

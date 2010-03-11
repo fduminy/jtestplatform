@@ -26,12 +26,15 @@
 package org.jtestplatform.client.domain.libvirt;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.io.StringWriter;
 
 import org.apache.log4j.Logger;
+import org.dom4j.DocumentException;
 import org.jtestplatform.client.domain.DomainConfig;
 import org.jtestplatform.client.domain.DomainException;
 import org.jtestplatform.configuration.Platform;
+import org.libvirt.LibvirtException;
 import org.libvirt.model.network.Bridge;
 import org.libvirt.model.network.DHCP;
 import org.libvirt.model.network.Forward;
@@ -39,6 +42,7 @@ import org.libvirt.model.network.Host;
 import org.libvirt.model.network.IP;
 import org.libvirt.model.network.Network;
 import org.libvirt.model.network.Range;
+import org.libvirt.model.network.io.dom4j.NetworkDom4jReader;
 import org.libvirt.model.network.io.dom4j.NetworkDom4jWriter;
 
 
@@ -189,5 +193,84 @@ public class XMLGenerator {
             }
         }
         return result;
+    }
+    
+    public static String getIPAddress(org.libvirt.Network network, String macAddress) throws IOException, DocumentException, LibvirtException {
+        String ipAddress = null;
+        org.libvirt.model.network.Network net = new NetworkDom4jReader().read(new StringReader(network.getXMLDesc(0)));
+        for (Host host : net.getIp().getDhcp().getHost()) {
+            if (macAddress.equals(host.getMac())) {
+                ipAddress = host.getIp();
+                break;
+            }
+        }
+        return ipAddress;
+    }
+
+    /**
+     * @param wantedNetworkXML
+     * @param network
+     * @return
+     * @throws LibvirtException 
+     * @throws DomainException 
+     */
+    public static boolean sameNetwork(String wantedNetworkXML, org.libvirt.Network network) throws LibvirtException, DomainException {
+        String actualNetworkXML = network.getXMLDesc(0);
+        org.libvirt.model.network.Network actualNetwork = toNetwork(actualNetworkXML);                
+        org.libvirt.model.network.Network wantedNetwork = toNetwork(wantedNetworkXML);
+        return sameNetwork(wantedNetwork, actualNetwork);
+    }
+
+    /**
+     * @param wantedNetwork
+     * @param actualNetwork
+     * @return
+     */
+    private static boolean sameNetwork(org.libvirt.model.network.Network wantedNetwork,
+            org.libvirt.model.network.Network actualNetwork) {
+
+        IP wantedIP = wantedNetwork.getIp();
+        IP actualIP = actualNetwork.getIp();
+        boolean sameNetwork = (wantedIP.getAddress().equals(actualIP.getAddress()));
+        sameNetwork &= (wantedIP.getNetmask().equals(actualIP.getNetmask()));
+
+        if (sameNetwork) {
+            DHCP wantedDHCP = wantedIP.getDhcp();
+            DHCP actualDHCP = actualIP.getDhcp();
+            for (Host wantedHost : wantedDHCP.getHost()) {
+                boolean sameHost = false;
+                for (Host actualHost : actualDHCP.getHost()) {
+                    if (wantedHost.getMac().equals(actualHost.getMac()) 
+                            && wantedHost.getIp().equals(actualHost.getIp())) {
+                        sameHost = true;
+                        break;
+                    }
+                }
+                sameNetwork &= sameHost;
+
+                if (!sameNetwork) {
+                    break;
+                }
+            }
+            
+            if (sameNetwork) {
+                Range wantedRange = wantedDHCP.getRange();
+                Range actualRange = actualDHCP.getRange();
+                sameNetwork &= wantedRange.getStart().equals(actualRange.getStart());
+                sameNetwork &= wantedRange.getEnd().equals(actualRange.getEnd());
+            }            
+        }
+        
+        return sameNetwork;
+    }
+
+    private static org.libvirt.model.network.Network toNetwork(String networkXML) throws DomainException {
+        try {
+            return new NetworkDom4jReader().read(new StringReader(networkXML));
+        } catch (IOException e) {
+            throw new DomainException(e);
+        } catch (DocumentException e) {
+            throw new DomainException(e);
+        }
     }
 }
