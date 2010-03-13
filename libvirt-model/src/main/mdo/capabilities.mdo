@@ -1,0 +1,245 @@
+<model>
+  <id>capabilities</id>
+  <name>Capabilities</name>
+  <description>Capabilities Data Model</description>
+  
+  <defaults>
+    <default>
+      <key>package</key>
+      <value>org.libvirt.model.capabilities</value>
+    </default>
+  </defaults>
+  
+  <classes>
+        <class rootElement="true" xml.tagName="capabilities">
+         <name>Capabilities</name>
+         <fields>
+            <field>
+              <name>host</name>
+              <association xml.itemsStyle="flat">
+                <type>Host</type>
+                <multiplicity>1</multiplicity>
+              </association>
+            </field>
+            <field>
+              <name>guests</name>
+              <association xml.itemsStyle="flat">
+                <type>Guest</type>
+                <multiplicity>*</multiplicity>
+              </association>
+            </field>                        
+         </fields>
+        </class>
+
+        <class>
+         <name>Host</name>
+         <fields>
+            <field>
+              <name>cpu</name>
+              <association xml.itemsStyle="flat">
+                <type>CPU</type>
+                <multiplicity>1</multiplicity>
+              </association>
+            </field>
+            <field xml.tagName="migration_features">
+              <name>migrationFeatures</name>
+              <association xml.itemsStyle="flat">
+                <type>MigrationFeatures</type>
+                <multiplicity>1</multiplicity>
+              </association>
+            </field>
+            <field>
+              <name>secmodel</name>
+              <association xml.itemsStyle="flat">
+                <type>SecModel</type>
+                <multiplicity>1</multiplicity>
+              </association>
+            </field>
+         </fields>
+        </class>
+        <class>
+         <name>CPU</name>
+         <fields>
+            <field>
+              <name>arch</name>
+              <type>String</type>
+            </field>
+         </fields>
+        </class>
+        <class>
+         <name>MigrationFeatures</name>
+         <fields>
+            <field>
+              <name>live</name>
+              <type>String</type>
+            </field>
+            <field xml.tagName="uri_transports">
+              <name>uriTransports</name>
+              <association xml.itemsStyle="flat">
+                <type>URITransport</type>
+                <multiplicity>1</multiplicity>
+              </association>
+            </field>            
+         </fields>
+        </class>
+        <class>
+         <name>URITransport</name>
+         <fields>
+            <field xml.tagName="uri_transport">
+              <name>uriTransport</name>
+              <association>
+                <type>String</type>
+                <multiplicity>*</multiplicity>
+              </association>
+            </field>            
+         </fields>
+        </class>
+        <class>
+         <name>SecModel</name>
+         <fields>
+            <field>
+              <name>model</name>
+              <type>String</type>
+            </field>            
+            <field>
+              <name>doi</name>
+              <type>int</type>
+            </field>            
+         </fields>
+        </class>
+        
+        <class>
+         <name>Guest</name>
+         <fields>
+            <field xml.tagName="os_type">
+              <name>osType</name>
+              <type>String</type>
+            </field>            
+            <field>
+              <name>arch</name>
+              <association>
+                <type>Arch</type>
+                <multiplicity>1</multiplicity>
+              </association>
+            </field>            
+            <field>
+              <name>features</name>
+              <association>
+                <type>Features</type>
+                <multiplicity>*</multiplicity>
+              </association>              
+            </field>            
+         </fields>
+        </class>
+        <class>
+         <name>Arch</name>
+         <fields>
+            <field xml.attribute="true">
+              <name>name</name>
+              <type>String</type>
+            </field>            
+            <field xml.tagName="wordsize">
+              <name>wordSize</name>
+              <type>int</type>
+            </field>            
+            <field>
+              <name>emulator</name>
+              <type>String</type>
+            </field>                        
+            <field>
+              <name>machines</name>
+              <association xml.itemsStyle="flat">
+                <type>Machine</type>
+                <multiplicity>*</multiplicity>
+              </association>              
+            </field>            
+            <field>
+              <name>domains</name>
+              <association xml.itemsStyle="flat">
+                <type>Domain</type>
+                <multiplicity>*</multiplicity>
+              </association>              
+            </field>            
+         </fields>
+        </class>
+        <class>
+         <name>Machine</name>
+         <fields>
+            <field xml.attribute="true" xml.tagName="canonical">
+              <name>canonicalName</name>
+              <type>String</type>
+            </field>            
+            <field xml.itemsStyle="flat">
+              <name>name</name>
+              <type>String</type>
+            </field>            
+         </fields>
+        </class>
+        <class>
+         <name>Domain</name>
+         <fields>
+            <field xml.attribute="true">
+              <name>type</name>
+              <type>String</type>
+            </field>            
+            <field>
+              <name>emulator</name>
+              <type>String</type>
+            </field>            
+         </fields>
+        </class>
+        <class>
+         <name>Features</name>
+         <fields>
+            <field>
+              <name>pae</name>
+              <type>String</type>
+            </field>            
+            <field>
+              <name>nonpae</name>
+              <type>String</type>
+            </field>            
+            <field>
+              <name>acpi</name>
+              <association>
+                <type>ACPI</type>
+                <multiplicity>*</multiplicity>
+              </association>              
+            </field>            
+            <field>
+              <name>apic</name>
+              <association>
+                <type>APIC</type>
+                <multiplicity>*</multiplicity>
+              </association>              
+            </field>            
+         </fields>
+        </class>
+        <class>
+         <name>ACPI</name>
+         <fields>
+            <field xml.attribute="true" xml.tagName="default">
+              <name>defaultValue</name>
+              <type>String</type>
+            </field>            
+            <field xml.attribute="true">
+              <name>toggle</name>
+              <type>String</type>
+            </field>            
+         </fields>
+        </class>
+        <class>
+         <name>APIC</name>
+         <fields>
+            <field xml.attribute="true" xml.tagName="default">
+              <name>defaultValue</name>
+              <type>String</type>
+            </field>            
+            <field xml.attribute="true">
+              <name>toggle</name>
+              <type>String</type>
+            </field>            
+         </fields>
+        </class>
+  </classes>
+</model>
