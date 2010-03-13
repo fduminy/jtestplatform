@@ -67,9 +67,9 @@ public class TestLibVirt {
 
     
     @DataPoint
-    public static final Integer NB_DOMAINS1 = Integer.valueOf(1);
+    public static final Integer _1_DOMAINS = Integer.valueOf(1);
     @DataPoint
-    public static final Integer NB_DOMAINS3 = Integer.valueOf(15);
+    public static final Integer _15_DOMAINS = Integer.valueOf(15);
     
     private Connection connection;
     
@@ -107,9 +107,11 @@ public class TestLibVirt {
     }
     
     private class TestStartAndStop extends TestRunnable {
+        private final String name;
         private final int estimatedBootTime;
         
-        public TestStartAndStop(int estimatedBootTime) {
+        public TestStartAndStop(int index, int estimatedBootTime) {
+            this.name = "TestStartAndStop[" + index + ']';
             this.estimatedBootTime = estimatedBootTime;
         }
         
@@ -117,13 +119,16 @@ public class TestLibVirt {
         public void runTest() throws Throwable {
             try {
                 //TODO also check createDomain/support methods work well together
+                LOGGER.debug(name + ": creating domain");
                 Domain domain = factory.createDomain(createDomainConfig(), connection);
+                LOGGER.debug(name + ": domain created");
                 String ip = domain.getIPAddress();
                 org.junit.Assert.assertNull(ip);
                 
                 domains.add(domain);
                 
                 // start
+                LOGGER.debug(name + ": starting domain");
                 ip = domain.start();                
                 sleep(estimatedBootTime); // wait a bit that the system has started
                 
@@ -133,11 +138,12 @@ public class TestLibVirt {
                 ipList.add(ip);
                 
                 // stop
+                LOGGER.debug(name + ": stopping domain");
                 domain.stop();
                 org.junit.Assert.assertNull(domain.getIPAddress());
                 org.junit.Assert.assertEquals("after stop, domain must not be pingable", 0, ping(ip));
             } catch (Throwable t) {
-                LOGGER.error(t);
+                LOGGER.error("error in " + name, t);
                 throw t;
             }
         }
@@ -148,12 +154,12 @@ public class TestLibVirt {
         final int estimatedBootTime = 40000;
         TestStartAndStop[] tests = new TestStartAndStop[nbDomains];
         for (int i = 0; i < nbDomains; i++) {
-            tests[i] = new TestStartAndStop(estimatedBootTime);
+            tests[i] = new TestStartAndStop(i, estimatedBootTime);
         }
 
         // run each test in its own thread
         MultiThreadedTestRunner mttr = new MultiThreadedTestRunner(tests);
-        mttr.runTestRunnables();
+        mttr.runTestRunnables(600000); // 10 minutes
         
         // now assert that the list of IPs is valid
         assertEquals("each domain must have an IP address", tests.length, ipList.size());

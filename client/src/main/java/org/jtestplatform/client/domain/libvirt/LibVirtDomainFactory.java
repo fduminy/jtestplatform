@@ -86,8 +86,26 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
      * {@inheritDoc}
      */
     @Override
-    public boolean support(Platform platform, Connection connection) { 
-        return true; //TODO implement me
+    public boolean support(Platform platform, Connection connection) throws DomainException {
+        LOGGER.debug("begin support"); //FIXME the trace level doesn't compile !
+        boolean support = false;
+        
+        Connect connect = null;
+        try {
+            connect = org.jtestplatform.client.domain.libvirt.ConnectManager.getConnect(connection);
+            support = LibVirtModelFacade.support(platform, connect);
+        } catch (LibvirtException e) {
+            throw new DomainException(e);
+        } catch (IOException e) {
+            throw new DomainException(e);
+        } catch (DocumentException e) {
+            throw new DomainException(e);
+        } finally {
+            ConnectManager.releaseConnect(connection);
+        }
+        
+        LOGGER.debug("end support"); //FIXME the trace level doesn't compile !        
+        return support;
     }
     
     /**
@@ -117,7 +135,7 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
             Network network = domain.getConnect().networkLookupByName(NETWORK_NAME);
             ipAddress = LibVirtModelFacade.getIPAddress(network, macAddress);
             if (ipAddress == null) {
-                throw new DomainException("unable to get mac address");
+                throw new DomainException("unable to get ip address");
             }
         } catch (LibvirtException e) {
             throw new DomainException(e);

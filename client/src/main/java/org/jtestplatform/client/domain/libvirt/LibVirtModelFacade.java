@@ -34,7 +34,13 @@ import org.dom4j.DocumentException;
 import org.jtestplatform.client.domain.DomainConfig;
 import org.jtestplatform.client.domain.DomainException;
 import org.jtestplatform.configuration.Platform;
+import org.libvirt.Connect;
 import org.libvirt.LibvirtException;
+import org.libvirt.model.capabilities.Arch;
+import org.libvirt.model.capabilities.Capabilities;
+import org.libvirt.model.capabilities.Domain;
+import org.libvirt.model.capabilities.Guest;
+import org.libvirt.model.capabilities.io.dom4j.CapabilitiesDom4jReader;
 import org.libvirt.model.network.Bridge;
 import org.libvirt.model.network.DHCP;
 import org.libvirt.model.network.Forward;
@@ -272,5 +278,57 @@ public class LibVirtModelFacade {
         } catch (DocumentException e) {
             throw new DomainException(e);
         }
+    }
+
+    /**
+     * @param platform
+     * @param connect
+     * @return
+     * @throws LibvirtException 
+     * @throws DocumentException 
+     * @throws IOException 
+     */
+    public static boolean support(Platform platform, Connect connect) throws LibvirtException, IOException, DocumentException {
+        LOGGER.debug("begin support"); //FIXME the trace level doesn't compile !
+        
+        boolean support;
+        try {
+            support = (connect.nodeInfo().memory >= platform.getMemory());
+        } catch (LibvirtException lve) {
+            // an exception might be thrown if the function is not supported by the hypervisor
+            // then, we assume there is enough memory
+            
+            LOGGER.error(lve);
+            support = true;
+        }
+        
+        if (support) {
+            String capabilitiesXML = connect.getCapabilities();
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("support: capabilitiesXML=" + capabilitiesXML);
+            }
+            Capabilities capabilities = new CapabilitiesDom4jReader().read(new StringReader(capabilitiesXML));
+            
+            outloop:
+            for (Guest guest : capabilities.getGuests()) {
+                Arch arch = guest.getArch();
+                
+                boolean supportCPU = arch.getName().equals(platform.getCpu());
+                boolean supportWordSize = (arch.getWordSize() == platform.getWordSize()); 
+                if (supportCPU && supportWordSize) {
+                    for (Domain domain : guest.getArch().getDomains()) {
+                        
+                        boolean supportNbCores = (platform.getNbCores() <= connect.getMaxVcpus(domain.getType()));
+                        if (supportNbCores) {
+                            support = true;
+                            break outloop;
+                        }
+                    }
+                }
+            }
+        }
+        
+        LOGGER.debug("end support"); //FIXME the trace level doesn't compile !        
+        return support;
     }
 }

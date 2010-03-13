@@ -36,6 +36,6 @@ import org.jtestplatform.configuration.Platform;
  */
 public interface DomainFactory<D extends Domain> {
     String getType();
-    boolean support(Platform platform, Connection connection);
+    boolean support(Platform platform, Connection connection) throws DomainException;
     D createDomain(DomainConfig config, Connection connection) throws DomainException;
 }

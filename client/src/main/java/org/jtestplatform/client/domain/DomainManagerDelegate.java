@@ -48,7 +48,7 @@ class DomainManagerDelegate {
         this.connections = new LoadBalancer<Connection>(connections);
     }
 
-    public Connection getConnectionFor(Platform platform) {
+    public Connection getConnectionFor(Platform platform) throws DomainException {
         Connection result = null;
         for (int i = 0; i < connections.size(); i++) {
             Connection connection = connections.getNext();

@@ -25,7 +25,6 @@
  */
 package org.jtestplatform.client.domain.libvirt;
 
-import org.apache.log4j.Logger;
 import org.jtestplatform.client.domain.Domain;
 import org.jtestplatform.client.domain.DomainConfig;
 import org.jtestplatform.client.domain.DomainException;
@@ -42,7 +41,6 @@ import org.libvirt.DomainInfo.DomainState;
  *
  */
 class LibVirtDomain implements Domain {
-    private static final Logger LOGGER = Logger.getLogger(LibVirtDomain.class);
     
     /**
      * Configuration of machine to run with libvirt.
@@ -53,7 +51,6 @@ class LibVirtDomain implements Domain {
     private final Connection connection;
     
     private org.libvirt.Domain domain;
-    private Connect connect;
     
     private String ipAddress;
     
@@ -61,11 +58,16 @@ class LibVirtDomain implements Domain {
      * 
      * @param config configuration of the machine to run with libvirt.
      * @param connect1
+     * @throws DomainException 
      */
-    LibVirtDomain(DomainConfig config, LibVirtDomainFactory factory, Connection connection) {
+    LibVirtDomain(DomainConfig config, LibVirtDomainFactory factory, Connection connection) throws DomainException {
         this.config = config;        
         this.factory = factory;
         this.connection = connection;
+        
+        if (ConfigUtils.isBlank(connection.getUri())) {
+            throw new DomainException("connection's URI not specified");
+        }
     }
         
     /**
@@ -75,14 +77,8 @@ class LibVirtDomain implements Domain {
     @Override
     public synchronized String start() throws DomainException {
         try {
-            if (connect == null) {
-                if (ConfigUtils.isBlank(connection.getUri())) {
-                    throw new DomainException("connection's URI not specified");
-                }
-                
-                connect = new Connect(connection.getUri(), false);
-                factory.ensureNetworkExist(connect);
-            }
+            Connect connect = ConnectManager.getConnect(connection);
+            factory.ensureNetworkExist(connect);
                             
             if (!isAlive()) {
                 ipAddress = null;
@@ -93,6 +89,8 @@ class LibVirtDomain implements Domain {
             }
         } catch (LibvirtException lve) {
             throw new DomainException("failed to start", lve);
+        } finally {
+            ConnectManager.releaseConnect(connection);
         }
         
         return ipAddress;
@@ -108,20 +106,23 @@ class LibVirtDomain implements Domain {
             factory.stop(domain, ipAddress);
             domain = null;
             ipAddress = null;
+            try {
+                closeConnection();
+            } catch (LibvirtException e) {
+                throw new DomainException(e);
+            }
         }
     }
 
     @Override
-    protected void finalize() throws Throwable {
-        if (connect != null) {
-            try {
-                connect.close();
-            } catch (LibvirtException e) {
-                LOGGER.error(e);
-            }
-        }
+    protected void finalize() throws LibvirtException {
+        closeConnection();
     }
-    
+
+    protected void closeConnection() throws LibvirtException {
+        org.jtestplatform.client.domain.libvirt.ConnectManager.releaseConnect(connection);
+    }
+
     /**
      * {@inheritDoc}
      */
