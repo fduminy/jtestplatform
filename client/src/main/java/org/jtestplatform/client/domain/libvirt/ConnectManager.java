@@ -42,17 +42,17 @@ class ConnectManager {
     private static final Map<org.jtestplatform.configuration.Connection, ConnectData> CONNECTIONS =
             new Hashtable<org.jtestplatform.configuration.Connection, ConnectData>();
     
-    static {
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                org.jtestplatform.configuration.Connection[] connections = CONNECTIONS.keySet().toArray(new org.jtestplatform.configuration.Connection[CONNECTIONS.size()]);
-                for (org.jtestplatform.configuration.Connection connection : connections) {
-                    closeConnect(connection);
-                }
-            } 
-        });
-    }
+//    static {
+//        Runtime.getRuntime().addShutdownHook(new Thread() {
+//            @Override
+//            public void run() {
+//                org.jtestplatform.configuration.Connection[] connections = CONNECTIONS.keySet().toArray(new org.jtestplatform.configuration.Connection[CONNECTIONS.size()]);
+//                for (org.jtestplatform.configuration.Connection connection : connections) {
+//                    closeConnect(connection);
+//                }
+//            } 
+//        });
+//    }
 
     static Connect getConnect(org.jtestplatform.configuration.Connection connection) throws DomainException {
         synchronized (getLock(connection)) {
@@ -72,7 +72,7 @@ class ConnectManager {
     }
 
     static void releaseConnect(org.jtestplatform.configuration.Connection connection) {
-//FIXME it seems that closing libvirt connection always crash the JVM        
+//FIXME it seems that closing libvirt connection always crash the JVM. That should be fixed with libvirt 0.7.1.        
 //        synchronized (getLock(connection)) {
 //            ConnectData connectData = CONNECTIONS.get(connection);
 //            if (connectData != null) {
@@ -92,7 +92,9 @@ class ConnectManager {
                 if (connectData.getReferenceCounter() > 0) {
                     LOGGER.warn("The connection to " + connection.getUri() + " has " + connectData.getReferenceCounter() + " unreleased references");
                 }
-                connectData.getConnect().close();
+                // note : return -1 on error, or >= 0 on success where the value is the number of references to the connection
+                int result = connectData.getConnect().close();
+                LOGGER.debug("Connect.close() returned " + result);
                 LOGGER.info("closed connection to " + connection.getUri());
             } catch (LibvirtException e) {
                 LOGGER.error("failed to close connection to " + connection.getUri(), e);
