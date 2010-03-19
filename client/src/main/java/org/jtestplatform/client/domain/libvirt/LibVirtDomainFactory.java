@@ -224,7 +224,7 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
                 
                 String macAddress = findUniqueMacAddress(domains);
                 String xml = LibVirtModelFacade.generateDomain(config, macAddress, NETWORK_NAME);
-                return connect.domainDefineXML(xml);
+                return connect.domainDefineXML(xml); //TODO call Domain.free() when no more needed
             }
         } catch (LibvirtException e) {
             throw new DomainException(e);
