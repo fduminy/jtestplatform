@@ -82,6 +82,9 @@ class LibVirtDomain implements Domain {
                             
             if (!isAlive()) {
                 ipAddress = null;
+                if (domain != null) {
+                    domain.free();
+                }
                 domain = factory.defineDomain(connect, config);
                 if (!isAlive()) {
                     ipAddress = factory.start(domain);
@@ -104,13 +107,14 @@ class LibVirtDomain implements Domain {
     public synchronized void stop() throws DomainException {
         if (isAlive()) {
             factory.stop(domain, ipAddress);
-            domain = null;
-            ipAddress = null;
             try {
+                domain.free();
                 closeConnection();
             } catch (LibvirtException e) {
                 throw new DomainException(e);
             }
+            domain = null;
+            ipAddress = null;
         }
     }
 
