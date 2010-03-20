@@ -38,29 +38,33 @@ import org.libvirt.LibvirtException;
  */
 class ConnectManager {
     private static final Logger LOGGER = Logger.getLogger(ConnectManager.class);
-        
+    
     private static final Map<org.jtestplatform.configuration.Connection, ConnectData> CONNECTIONS =
             new Hashtable<org.jtestplatform.configuration.Connection, ConnectData>();
     
-//    static {
-//        Runtime.getRuntime().addShutdownHook(new Thread() {
-//            @Override
-//            public void run() {
-//                org.jtestplatform.configuration.Connection[] connections = CONNECTIONS.keySet().toArray(new org.jtestplatform.configuration.Connection[CONNECTIONS.size()]);
-//                for (org.jtestplatform.configuration.Connection connection : connections) {
-//                    closeConnect(connection);
-//                }
-//            } 
-//        });
-//    }
+    static {
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                org.jtestplatform.configuration.Connection[] connections = CONNECTIONS.keySet().toArray(new org.jtestplatform.configuration.Connection[CONNECTIONS.size()]);
+                if (connections.length > 0) {
+                    LOGGER.warn("There are unclosed " + connections.length + " connections");
+                }
+                
+                for (org.jtestplatform.configuration.Connection connection : connections) {
+                    closeConnect(connection);
+                }
+            } 
+        });
+    }
 
     static Connect getConnect(org.jtestplatform.configuration.Connection connection) throws DomainException {
         synchronized (getLock(connection)) {
             ConnectData connectData = CONNECTIONS.get(connection);
             if (connectData == null) {
                 try {
-                    //TODO separate readonly and readwrite connections ?
-                    connectData = new ConnectData(new Connect(connection.getUri(), false));
+                    Connect connect = new Connect(connection.getUri(), false);
+                    connectData = new ConnectData(connect);
                 } catch (LibvirtException e) {
                     throw new DomainException(e);
                 }
@@ -70,18 +74,17 @@ class ConnectManager {
             return connectData.getConnect();
         }
     }
-
+    
     static void releaseConnect(org.jtestplatform.configuration.Connection connection) {
-//FIXME it seems that closing libvirt connection always crash the JVM. That should be fixed with libvirt 0.7.1.        
-//        synchronized (getLock(connection)) {
-//            ConnectData connectData = CONNECTIONS.get(connection);
-//            if (connectData != null) {
-//                int counter = connectData.decrementReferenceCounter();
-//                if (counter == 0) {
-//                    closeConnect(connection);
-//                }
-//            }
-//        }
+        synchronized (getLock(connection)) {
+            ConnectData connectData = CONNECTIONS.get(connection);
+            if (connectData != null) {
+                int counter = connectData.decrementReferenceCounter();
+                if (counter == 0) {
+                    closeConnect(connection);
+                }
+            }
+        }
     }
     
     private static void closeConnect(org.jtestplatform.configuration.Connection connection) {
