@@ -64,6 +64,24 @@
               <name>arch</name>
               <type>String</type>
             </field>
+            <field>
+              <name>model</name>
+              <type>String</type>
+            </field>
+            <field>
+              <name>topology</name>
+              <association xml.itemsStyle="flat">
+                <type>Topology</type>
+                <multiplicity>1</multiplicity>
+              </association>              
+            </field>
+            <field>
+              <name>features</name>
+              <association xml.itemsStyle="flat">
+                <type>Feature</type>
+                <multiplicity>*</multiplicity>
+              </association>              
+            </field>                        
          </fields>
         </class>
         <class>
@@ -186,6 +204,13 @@
               <name>emulator</name>
               <type>String</type>
             </field>            
+            <field>
+              <name>machines</name>
+              <association xml.itemsStyle="flat">
+                <type>Machine</type>
+                <multiplicity>*</multiplicity>
+              </association>              
+            </field>            
          </fields>
         </class>
         <class>
@@ -237,6 +262,33 @@
             </field>            
             <field xml.attribute="true">
               <name>toggle</name>
+              <type>String</type>
+            </field>            
+         </fields>
+        </class>
+
+        <class>
+         <name>Topology</name>
+         <fields>
+            <field xml.attribute="true">
+              <name>sockets</name>
+              <type>int</type>
+            </field>            
+            <field xml.attribute="true">
+              <name>cores</name>
+              <type>int</type>
+            </field>            
+            <field xml.attribute="true">
+              <name>threads</name>
+              <type>int</type>
+            </field>            
+         </fields>
+        </class>
+        <class>
+         <name>Feature</name>
+         <fields>
+            <field xml.attribute="true">
+              <name>name</name>
               <type>String</type>
             </field>            
          </fields>
