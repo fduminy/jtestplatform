@@ -18,42 +18,20 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
  * USA.
- * -
  */
-package org.jtestplatform.client.domain;
+/**
+ * 
+ */
+package org.jtestplatform.cloud;
 
+import org.jtestplatform.cloud.configuration.Platform;
+import org.jtestplatform.common.transport.Transport;
+import org.jtestplatform.common.transport.TransportException;
 
 /**
- * Interface with a domain.
- * 
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
  */
-public interface Domain {
-    
-    /**
-     * Start the VM.
-     * @return The IP address of the domain. 
-     * @throws DomainException 
-     */
-    String start() throws DomainException;
-    
-    /**
-     * Stop the VM.
-     * @throws DomainException 
-     */
-    void stop() throws DomainException;
-    
-    /**
-     * Checks if the VM is alive.
-     * @return true if the VM is alive.
-     * @throws DomainException
-     */
-    boolean isAlive() throws DomainException;
-    
-    /**
-     * Get the IP address of the domain.
-     * @return The IP address of the domain.
-     */
-    String getIPAddress();    
+public interface TransportProvider {
+    Transport get(Platform platform) throws TransportException;
 }

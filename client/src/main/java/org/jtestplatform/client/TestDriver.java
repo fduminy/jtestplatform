@@ -36,6 +36,7 @@ import gnu.testlet.runner.compare.RunComparison;
 import gnu.testlet.runner.compare.TextComparisonWriter;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -49,13 +50,11 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
-import org.jtestplatform.client.domain.Domain;
-import org.jtestplatform.client.domain.DomainFactory;
-import org.jtestplatform.client.domain.DomainManager;
-import org.jtestplatform.client.domain.libvirt.LibVirtDomainFactory;
+import org.jtestplatform.cloud.TransportProvider;
+import org.jtestplatform.cloud.configuration.Platform;
+import org.jtestplatform.cloud.domain.DomainManager;
 import org.jtestplatform.common.message.Message;
 import org.jtestplatform.configuration.Configuration;
-import org.jtestplatform.configuration.Platform;
 
 public class TestDriver {
     private static final Logger LOGGER = Logger.getLogger(TestDriver.class);
@@ -86,12 +85,17 @@ public class TestDriver {
     
     public void start() throws Exception {
         DomainManager domainManager = null;
-        try {            
-            domainManager = new DomainManager(config, findKnownFactories());
+        try {
+            File cloudConfig = new File(config.getWorkDir(), "cloud.xml");
+            FileReader configReader = new FileReader(cloudConfig);
+            domainManager = new DomainManager(configReader);
             domainManager.start();
 
-            List<Callable<Object>> tasks = new ArrayList<Callable<Object>>(config.getPlatforms().size()); 
-            for (Platform platform : config.getPlatforms()) {
+            //TODO we should have our own list of platforms, not necessarily the domain manager's ones
+            java.util.List<Platform> platforms = domainManager.getPlatforms();
+            
+            List<Callable<Object>> tasks = new ArrayList<Callable<Object>>(platforms.size()); 
+            for (Platform platform : platforms) {
                 PlatformTask platformResults = new PlatformTask(platform, domainManager);
                 tasks.add(platformResults);
             }
@@ -108,15 +112,7 @@ public class TestDriver {
             testManager.shutdown();
         }
     }
-    
-    private Map<String, DomainFactory<? extends Domain>> findKnownFactories() {
-        //TODO get it from ServiceLoader
-        Map<String, DomainFactory<? extends Domain>> result = new HashMap<String, DomainFactory<? extends Domain>>();
-        LibVirtDomainFactory f = new LibVirtDomainFactory(); 
-        result.put(f.getType(), f);
-        return result;
-    }
-    
+
     private void compareRuns(Run latestRun, Run newRun, RunResult newRunResult) throws IOException {
         if ((latestRun != null) && latestRun.getReportXml().exists()) {
             // there was a previous run, let do the comparison !

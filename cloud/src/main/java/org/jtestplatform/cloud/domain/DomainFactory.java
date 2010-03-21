@@ -23,14 +23,19 @@
 /**
  * 
  */
-package org.jtestplatform.client.domain.watchdog;
+package org.jtestplatform.cloud.domain;
 
-import org.jtestplatform.client.domain.Domain;
+import org.jtestplatform.cloud.configuration.Connection;
+import org.jtestplatform.cloud.configuration.Platform;
+
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
+ * @param <D>
  */
-public interface WatchDogListener {
-    void domainDied(Domain domain);
+public interface DomainFactory<D extends Domain> {
+    String getType();
+    boolean support(Platform platform, Connection connection) throws DomainException;
+    D createDomain(DomainConfig config, Connection connection) throws DomainException;
 }

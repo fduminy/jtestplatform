@@ -23,12 +23,12 @@
 /**
  * 
  */
-package org.jtestplatform.client.domain;
+package org.jtestplatform.cloud.domain;
 
 import java.util.List;
 
-import org.jtestplatform.configuration.Connection;
-import org.jtestplatform.configuration.Platform;
+import org.jtestplatform.cloud.configuration.Connection;
+import org.jtestplatform.cloud.configuration.Platform;
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)

@@ -23,7 +23,7 @@
 /**
  * 
  */
-package org.jtestplatform.client.domain;
+package org.jtestplatform.cloud.domain;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -36,13 +36,11 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.jtestplatform.client.ConfigReader;
-import org.jtestplatform.client.ConfigurationException;
-import org.jtestplatform.client.domain.DomainUtils.CustomDomain;
-import org.jtestplatform.client.domain.watchdog.DefaultWatchDogStrategy;
-import org.jtestplatform.client.domain.watchdog.WatchDog;
-import org.jtestplatform.client.domain.watchdog.WatchDogListener;
-import org.jtestplatform.configuration.Configuration;
+import org.jtestplatform.cloud.domain.DomainUtils.CustomDomain;
+import org.jtestplatform.cloud.domain.watchdog.DefaultWatchDogStrategy;
+import org.jtestplatform.cloud.domain.watchdog.WatchDog;
+import org.jtestplatform.cloud.domain.watchdog.WatchDogListener;
+import org.jtestplatform.cloud.configuration.Configuration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.experimental.theories.DataPoint;
@@ -85,8 +83,8 @@ public class TestWatchDog {
     private WatchDog watchDog;
     
     @Before
-    public void setUp() throws ConfigurationException {
-        new ConfigReader().read(); // will initialize log4j
+    public void setUp() {
+        DomainUtils.initLog4j();
     }
     
     @After

@@ -20,9 +20,9 @@
  * USA.
  * -
  */
-package org.jtestplatform.client.domain;
+package org.jtestplatform.cloud.domain;
 
-import org.jtestplatform.configuration.Platform;
+import org.jtestplatform.cloud.configuration.Platform;
 
 
 /**

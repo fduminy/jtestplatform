@@ -20,23 +20,27 @@
  * USA.
  * -
  */
-package org.jtestplatform.client.domain;
+package org.jtestplatform.cloud.domain;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jtestplatform.client.ConfigReader;
-import org.jtestplatform.client.ConfigurationException;
+import org.dom4j.DocumentException;
+import org.jtestplatform.cloud.configuration.Configuration;
+import org.jtestplatform.cloud.configuration.Connection;
+import org.jtestplatform.cloud.configuration.Domains;
+import org.jtestplatform.cloud.configuration.Factory;
+import org.jtestplatform.cloud.configuration.Platform;
+import org.jtestplatform.cloud.configuration.io.dom4j.ConfigurationDom4jReader;
 import org.jtestplatform.common.transport.Transport;
 import org.jtestplatform.common.transport.TransportException;
-import org.jtestplatform.configuration.Configuration;
-import org.jtestplatform.configuration.Connection;
-import org.jtestplatform.configuration.Domains;
-import org.jtestplatform.configuration.Factory;
-import org.jtestplatform.configuration.Platform;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -46,8 +50,15 @@ import org.junit.Test;
  */
 public class TestDomainManager {
     @Before
-    public void setUp() throws ConfigurationException {
-        new ConfigReader().read(); // force init of log4j        
+    public void setUp() {
+        DomainUtils.initLog4j();        
+    }
+
+    @Test
+    public void testReadConfigFile() throws FileNotFoundException, IOException, DocumentException {
+        ConfigurationDom4jReader dom4jReader = new ConfigurationDom4jReader();            
+        Configuration config = dom4jReader.read(new FileReader(DomainUtils.getConfigFile()));
+        assertNotNull(config);
     }
     
     @Test
@@ -144,13 +155,23 @@ public class TestDomainManager {
         assertNotNull(transport);
     }
     
-    private DomainManager createDomainManager(Configuration config, boolean withKnownFactories) throws DomainException {        
-        Map<String, DomainFactory<? extends Domain>> knownFactories = new HashMap<String, DomainFactory<? extends Domain>>();
+    private DomainManager createDomainManager(final Configuration config, boolean withKnownFactories) throws DomainException {        
+        final Map<String, DomainFactory<? extends Domain>> knownFactories = new HashMap<String, DomainFactory<? extends Domain>>();
         if (withKnownFactories) {
             knownFactories.put(CustomDomainFactory.TYPE, new CustomDomainFactory());
         }
         
-        return new DomainManager(config, knownFactories);                    
+        return new DomainManager(null) {
+            @Override
+            Map<String, DomainFactory<? extends Domain>> findKnownFactories() {
+                return knownFactories;
+            }
+            
+            @Override
+            Configuration read(Reader reader) throws DomainException {
+                return config;
+            }
+        };
     }
     
     private static class CustomDomainFactory implements DomainFactory<Domain> {

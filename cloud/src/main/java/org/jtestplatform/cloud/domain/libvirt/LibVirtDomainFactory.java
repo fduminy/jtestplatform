@@ -23,7 +23,7 @@
 /**
  * 
  */
-package org.jtestplatform.client.domain.libvirt;
+package org.jtestplatform.cloud.domain.libvirt;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -32,12 +32,12 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.dom4j.DocumentException;
-import org.jtestplatform.client.domain.DomainConfig;
-import org.jtestplatform.client.domain.DomainException;
-import org.jtestplatform.client.domain.DomainFactory;
+import org.jtestplatform.cloud.domain.DomainConfig;
+import org.jtestplatform.cloud.domain.DomainException;
+import org.jtestplatform.cloud.domain.DomainFactory;
 import org.jtestplatform.common.ConfigUtils;
-import org.jtestplatform.configuration.Connection;
-import org.jtestplatform.configuration.Platform;
+import org.jtestplatform.cloud.configuration.Connection;
+import org.jtestplatform.cloud.configuration.Platform;
 import org.libvirt.Connect;
 import org.libvirt.Domain;
 import org.libvirt.DomainInfo;
@@ -92,7 +92,7 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
         
         Connect connect = null;
         try {
-            connect = org.jtestplatform.client.domain.libvirt.ConnectManager.getConnect(connection);
+            connect = org.jtestplatform.cloud.domain.libvirt.ConnectManager.getConnect(connection);
             support = LibVirtModelFacade.support(platform, connect);
         } catch (LibvirtException e) {
             throw new DomainException(e);

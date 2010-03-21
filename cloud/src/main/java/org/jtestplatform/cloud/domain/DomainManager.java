@@ -20,38 +20,47 @@
  * USA.
  * -
  */
-package org.jtestplatform.client.domain;
+package org.jtestplatform.cloud.domain;
 
+import java.io.IOException;
+import java.io.Reader;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.jtestplatform.client.TransportProvider;
-import org.jtestplatform.client.domain.watchdog.WatchDog;
-import org.jtestplatform.client.domain.watchdog.WatchDogListener;
+import org.dom4j.DocumentException;
+import org.jtestplatform.cloud.TransportProvider;
+import org.jtestplatform.cloud.configuration.Configuration;
+import org.jtestplatform.cloud.configuration.Connection;
+import org.jtestplatform.cloud.configuration.Factory;
+import org.jtestplatform.cloud.configuration.Platform;
+import org.jtestplatform.cloud.configuration.io.dom4j.ConfigurationDom4jReader;
+import org.jtestplatform.cloud.domain.libvirt.LibVirtDomainFactory;
+import org.jtestplatform.cloud.domain.watchdog.WatchDog;
+import org.jtestplatform.cloud.domain.watchdog.WatchDogListener;
 import org.jtestplatform.common.transport.Transport;
 import org.jtestplatform.common.transport.TransportException;
 import org.jtestplatform.common.transport.UDPTransport;
-import org.jtestplatform.configuration.Configuration;
-import org.jtestplatform.configuration.Connection;
-import org.jtestplatform.configuration.Factory;
-import org.jtestplatform.configuration.Platform;
 
 public class DomainManager implements TransportProvider {
     private static final Logger LOGGER = Logger.getLogger(DomainManager.class);
 
+    private final Configuration config;
     private final LoadBalancer<DomainManagerDelegate> delegates;
     private final WatchDog watchDog;
     private final LoadBalancer<Domain> domains;
     private final int maxNumberOfDomains;
     private final int serverPort;
 
-    public DomainManager(Configuration config, Map<String, DomainFactory<? extends Domain>> knownFactories) throws DomainException {
+    public DomainManager(Reader configReader) throws DomainException {
+        config = read(configReader);
+        Map<String, DomainFactory<? extends Domain>> knownFactories = findKnownFactories();        
         checkValid(knownFactories, config);
 
         maxNumberOfDomains = Math.max(1, config.getDomains().getMax());
@@ -76,6 +85,15 @@ public class DomainManager implements TransportProvider {
 
         delegates = new LoadBalancer<DomainManagerDelegate>(dmDelegates);
     }
+    
+
+    /**
+     * @return
+     */
+    public List<Platform> getPlatforms() {
+        // TODO maybe we shouldn't expose our list of platforms 
+        return config.getPlatforms();
+    }    
 
     /**
      * @param platform
@@ -216,4 +234,27 @@ public class DomainManager implements TransportProvider {
             throw new DomainException(wrongTypes.toString());
         }
     }
+    
+    Configuration read(Reader reader) throws DomainException {
+        ConfigurationDom4jReader dom4jReader = new ConfigurationDom4jReader();            
+        Configuration config;
+        try {
+            config = dom4jReader.read(reader);
+        } catch (IOException e) {
+            throw new DomainException("can't read config", e);
+        } catch (DocumentException e) {
+            throw new DomainException("can't read config", e);
+        }
+        
+        return config;
+    }
+
+    Map<String, DomainFactory<? extends Domain>> findKnownFactories() {
+        //TODO get it from ServiceLoader
+        Map<String, DomainFactory<? extends Domain>> result = new HashMap<String, DomainFactory<? extends Domain>>();
+        LibVirtDomainFactory f = new LibVirtDomainFactory(); 
+        result.put(f.getType(), f);
+        return result;
+    }
+
 }

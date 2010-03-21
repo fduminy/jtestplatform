@@ -22,5 +22,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="var" path="M2_REPO/junit/junit/4.8.1/junit-4.8.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/net/sourceforge/groboutils/groboutils-core/5/groboutils-core-5.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/jtestplatform-cloud"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

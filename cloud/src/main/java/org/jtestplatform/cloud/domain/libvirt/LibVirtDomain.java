@@ -23,13 +23,13 @@
 /**
  * 
  */
-package org.jtestplatform.client.domain.libvirt;
+package org.jtestplatform.cloud.domain.libvirt;
 
-import org.jtestplatform.client.domain.Domain;
-import org.jtestplatform.client.domain.DomainConfig;
-import org.jtestplatform.client.domain.DomainException;
+import org.jtestplatform.cloud.domain.Domain;
+import org.jtestplatform.cloud.domain.DomainConfig;
+import org.jtestplatform.cloud.domain.DomainException;
 import org.jtestplatform.common.ConfigUtils;
-import org.jtestplatform.configuration.Connection;
+import org.jtestplatform.cloud.configuration.Connection;
 import org.libvirt.Connect;
 import org.libvirt.LibvirtException;
 import org.libvirt.DomainInfo.DomainState;
@@ -124,7 +124,7 @@ class LibVirtDomain implements Domain {
     }
 
     protected void closeConnection() throws LibvirtException {
-        org.jtestplatform.client.domain.libvirt.ConnectManager.releaseConnect(connection);
+        org.jtestplatform.cloud.domain.libvirt.ConnectManager.releaseConnect(connection);
     }
 
     /**

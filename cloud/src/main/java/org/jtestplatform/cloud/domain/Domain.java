@@ -20,22 +20,40 @@
  * USA.
  * -
  */
+package org.jtestplatform.cloud.domain;
+
+
 /**
+ * Interface with a domain.
  * 
- */
-package org.jtestplatform.client.domain;
-
-import org.jtestplatform.configuration.Connection;
-import org.jtestplatform.configuration.Platform;
-
-
-/**
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
- * @param <D>
  */
-public interface DomainFactory<D extends Domain> {
-    String getType();
-    boolean support(Platform platform, Connection connection) throws DomainException;
-    D createDomain(DomainConfig config, Connection connection) throws DomainException;
+public interface Domain {
+    
+    /**
+     * Start the VM.
+     * @return The IP address of the domain. 
+     * @throws DomainException 
+     */
+    String start() throws DomainException;
+    
+    /**
+     * Stop the VM.
+     * @throws DomainException 
+     */
+    void stop() throws DomainException;
+    
+    /**
+     * Checks if the VM is alive.
+     * @return true if the VM is alive.
+     * @throws DomainException
+     */
+    boolean isAlive() throws DomainException;
+    
+    /**
+     * Get the IP address of the domain.
+     * @return The IP address of the domain.
+     */
+    String getIPAddress();    
 }

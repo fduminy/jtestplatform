@@ -22,13 +22,13 @@
 /**
  * 
  */
-package org.jtestplatform.client.domain.libvirt;
+package org.jtestplatform.cloud.domain.libvirt;
 
 import java.util.Hashtable;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.jtestplatform.client.domain.DomainException;
+import org.jtestplatform.cloud.domain.DomainException;
 import org.libvirt.Connect;
 import org.libvirt.LibvirtException;
 
@@ -39,26 +39,26 @@ import org.libvirt.LibvirtException;
 class ConnectManager {
     private static final Logger LOGGER = Logger.getLogger(ConnectManager.class);
     
-    private static final Map<org.jtestplatform.configuration.Connection, ConnectData> CONNECTIONS =
-            new Hashtable<org.jtestplatform.configuration.Connection, ConnectData>();
+    private static final Map<org.jtestplatform.cloud.configuration.Connection, ConnectData> CONNECTIONS =
+            new Hashtable<org.jtestplatform.cloud.configuration.Connection, ConnectData>();
     
     static {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
-                org.jtestplatform.configuration.Connection[] connections = CONNECTIONS.keySet().toArray(new org.jtestplatform.configuration.Connection[CONNECTIONS.size()]);
+                org.jtestplatform.cloud.configuration.Connection[] connections = CONNECTIONS.keySet().toArray(new org.jtestplatform.cloud.configuration.Connection[CONNECTIONS.size()]);
                 if (connections.length > 0) {
                     LOGGER.warn("There are unclosed " + connections.length + " connections");
                 }
                 
-                for (org.jtestplatform.configuration.Connection connection : connections) {
+                for (org.jtestplatform.cloud.configuration.Connection connection : connections) {
                     closeConnect(connection);
                 }
             } 
         });
     }
 
-    static Connect getConnect(org.jtestplatform.configuration.Connection connection) throws DomainException {
+    static Connect getConnect(org.jtestplatform.cloud.configuration.Connection connection) throws DomainException {
         synchronized (getLock(connection)) {
             ConnectData connectData = CONNECTIONS.get(connection);
             if (connectData == null) {
@@ -75,7 +75,7 @@ class ConnectManager {
         }
     }
     
-    static void releaseConnect(org.jtestplatform.configuration.Connection connection) {
+    static void releaseConnect(org.jtestplatform.cloud.configuration.Connection connection) {
         synchronized (getLock(connection)) {
             ConnectData connectData = CONNECTIONS.get(connection);
             if (connectData != null) {
@@ -87,7 +87,7 @@ class ConnectManager {
         }
     }
     
-    private static void closeConnect(org.jtestplatform.configuration.Connection connection) {
+    private static void closeConnect(org.jtestplatform.cloud.configuration.Connection connection) {
         ConnectData connectData = CONNECTIONS.remove(connection);
         if (connectData != null) {
             try {
@@ -105,7 +105,7 @@ class ConnectManager {
         }
     }
 
-    private static Object getLock(org.jtestplatform.configuration.Connection connection) {
+    private static Object getLock(org.jtestplatform.cloud.configuration.Connection connection) {
         // use the interned String for the uri because it's warranted to be a unique reference
         // for a given String content.
         return connection.getUri().intern();

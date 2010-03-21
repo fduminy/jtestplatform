@@ -23,26 +23,14 @@
 /**
  * 
  */
-package org.jtestplatform.client.domain;
+package org.jtestplatform.cloud.domain.watchdog;
+
+import org.jtestplatform.cloud.domain.Domain;
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
  */
-@SuppressWarnings("serial")
-public class DomainException extends Exception {
-    public DomainException(Throwable cause) {
-        super(cause);
-    }
-
-    /**
-     * @param string
-     */
-    public DomainException(String message) {
-        super(message);
-    }
-
-    public DomainException(String message, Throwable cause) {
-        super(message, cause);
-    }
+public interface WatchDogListener {
+    void domainDied(Domain domain);
 }

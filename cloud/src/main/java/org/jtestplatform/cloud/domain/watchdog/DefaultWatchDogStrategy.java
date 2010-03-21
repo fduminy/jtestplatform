@@ -23,11 +23,11 @@
 /**
  * 
  */
-package org.jtestplatform.client.domain.watchdog;
+package org.jtestplatform.cloud.domain.watchdog;
 
 import org.apache.log4j.Logger;
-import org.jtestplatform.client.domain.Domain;
-import org.jtestplatform.client.domain.DomainException;
+import org.jtestplatform.cloud.domain.Domain;
+import org.jtestplatform.cloud.domain.DomainException;
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)

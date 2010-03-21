@@ -23,7 +23,7 @@
 /**
  * 
  */
-package org.jtestplatform.client.domain.libvirt;
+package org.jtestplatform.cloud.domain.libvirt;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -31,9 +31,9 @@ import java.io.StringWriter;
 
 import org.apache.log4j.Logger;
 import org.dom4j.DocumentException;
-import org.jtestplatform.client.domain.DomainConfig;
-import org.jtestplatform.client.domain.DomainException;
-import org.jtestplatform.configuration.Platform;
+import org.jtestplatform.cloud.domain.DomainConfig;
+import org.jtestplatform.cloud.domain.DomainException;
+import org.jtestplatform.cloud.configuration.Platform;
 import org.libvirt.Connect;
 import org.libvirt.LibvirtException;
 import org.libvirt.model.capabilities.Arch;

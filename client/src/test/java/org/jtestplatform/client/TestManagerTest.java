@@ -35,9 +35,10 @@ import java.util.Collection;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import org.jtestplatform.cloud.TransportProvider;
+import org.jtestplatform.cloud.configuration.Platform;
 import org.jtestplatform.common.message.Message;
 import org.jtestplatform.common.transport.Transport;
-import org.jtestplatform.configuration.Platform;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

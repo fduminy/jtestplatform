@@ -20,7 +20,7 @@
  * USA.
  * -
  */
-package org.jtestplatform.client.domain.watchdog;
+package org.jtestplatform.cloud.domain.watchdog;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,9 +30,9 @@ import java.util.Map;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
-import org.jtestplatform.client.domain.Domain;
-import org.jtestplatform.client.domain.DomainException;
-import org.jtestplatform.configuration.Configuration;
+import org.jtestplatform.cloud.domain.Domain;
+import org.jtestplatform.cloud.domain.DomainException;
+import org.jtestplatform.cloud.configuration.Configuration;
 
 /**
  * That utility class is used to watch a list of {@link Domain} and 

@@ -18,20 +18,31 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
  * USA.
+ * -
  */
 /**
  * 
  */
-package org.jtestplatform.client;
-
-import org.jtestplatform.common.transport.Transport;
-import org.jtestplatform.common.transport.TransportException;
-import org.jtestplatform.configuration.Platform;
+package org.jtestplatform.cloud.domain;
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
  */
-public interface TransportProvider {
-    Transport get(Platform platform) throws TransportException;
+@SuppressWarnings("serial")
+public class DomainException extends Exception {
+    public DomainException(Throwable cause) {
+        super(cause);
+    }
+
+    /**
+     * @param string
+     */
+    public DomainException(String message) {
+        super(message);
+    }
+
+    public DomainException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

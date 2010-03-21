@@ -23,7 +23,7 @@
 /**
  * 
  */
-package org.jtestplatform.client.domain;
+package org.jtestplatform.cloud.domain;
 
 import java.util.ArrayList;
 import java.util.List;

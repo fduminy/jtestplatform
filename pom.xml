@@ -54,7 +54,8 @@
 		<module>server</module>
         <!-- module>mauve</module-->
         <module>libvirt-model</module>
-  </modules>
+        <module>cloud</module>
+	</modules>
 
 	<dependencies>
 		<dependency>

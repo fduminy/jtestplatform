@@ -23,13 +23,17 @@
 /**
  * 
  */
-package org.jtestplatform.client.domain;
+package org.jtestplatform.cloud.domain;
 
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.jtestplatform.client.domain.watchdog.WatchDog;
+import java.io.File;
+import java.net.URL;
+
+import org.apache.log4j.PropertyConfigurator;
+import org.jtestplatform.cloud.domain.watchdog.WatchDog;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -41,6 +45,28 @@ public class DomainUtils {
     private DomainUtils() {        
     }
 
+    private static File getResource(String resource) {
+        URL url = DomainUtils.class.getResource("/" + resource);
+        File f = new File(url.getFile());
+        if (!f.exists()) {
+            throw new RuntimeException("file not found : " + f.getAbsolutePath());
+        }
+        return f;
+    }
+    
+    public static void initLog4j() {
+        File logConfigFile = getResource("log4j.properties");
+        PropertyConfigurator.configure(logConfigFile.getAbsolutePath());        
+    }
+
+    public static String getCDROM() {
+        return getResource("microcore_2.7.iso").getAbsolutePath();
+    }
+    
+    public static File getConfigFile() {
+        return getResource("cloud.xml");
+    }
+    
     public static CustomDomain[] createCustomDomain(long multiple, int nbDomains, WatchDog watchDog, int pollInterval) {
         CustomDomain[] p = new CustomDomain[nbDomains];
         for (int i = 0; i < nbDomains; i++) {

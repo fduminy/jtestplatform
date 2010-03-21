@@ -23,7 +23,7 @@
 /**
  * 
  */
-package org.jtestplatform.client.domain.libvirt;
+package org.jtestplatform.cloud.domain.libvirt;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -38,15 +38,14 @@ import net.sourceforge.groboutils.junit.v1.MultiThreadedTestRunner;
 import net.sourceforge.groboutils.junit.v1.TestRunnable;
 
 import org.apache.log4j.Logger;
-import org.jtestplatform.client.ConfigReader;
-import org.jtestplatform.client.ConfigurationException;
-import org.jtestplatform.client.domain.Domain;
-import org.jtestplatform.client.domain.DomainConfig;
-import org.jtestplatform.client.domain.DomainException;
+import org.jtestplatform.cloud.domain.Domain;
+import org.jtestplatform.cloud.domain.DomainConfig;
+import org.jtestplatform.cloud.domain.DomainException;
+import org.jtestplatform.cloud.domain.DomainUtils;
 import org.jtestplatform.common.ConfigUtils;
-import org.jtestplatform.configuration.Configuration;
-import org.jtestplatform.configuration.Connection;
-import org.jtestplatform.configuration.Platform;
+import org.jtestplatform.cloud.configuration.Configuration;
+import org.jtestplatform.cloud.configuration.Connection;
+import org.jtestplatform.cloud.configuration.Platform;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.experimental.theories.DataPoint;
@@ -76,14 +75,14 @@ public class TestLibVirt {
     private LibVirtDomainFactory factory;
     private List<Domain> domains;
     private List<String> ipList;
-    private Configuration config;
     
     @Before
-    public void setUp() throws ConfigurationException {
-        config = new ConfigReader().read(); // will initialize log4j
+    public void setUp() {
+        DomainUtils.initLog4j();
         
         factory = new LibVirtDomainFactory();
-        connection = config.getDomains().getFactories().get(0).getConnections().get(0);
+        connection = new Connection();
+        connection.setUri("qemu:///system");
         
         // must be a synchronized List since we run multiple threads
         domains = new Vector<Domain>();
@@ -189,7 +188,7 @@ public class TestLibVirt {
     private DomainConfig createDomainConfig() {
         Platform platform = new Platform();
         platform.setMemory(32L * 1024L);
-        platform.setCdrom(new File(config.getWorkDir()).getParent() + File.separatorChar + "config" + File.separatorChar + "microcore_2.7.iso");
+        platform.setCdrom(DomainUtils.getCDROM());
         
         DomainConfig cfg = new DomainConfig();
         cfg.setPlatform(platform);

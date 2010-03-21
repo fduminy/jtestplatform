@@ -27,8 +27,9 @@ package org.jtestplatform.client;
 
 import java.util.concurrent.Future;
 
+import org.jtestplatform.cloud.TransportProvider;
+import org.jtestplatform.cloud.configuration.Platform;
 import org.jtestplatform.common.message.Message;
-import org.jtestplatform.configuration.Platform;
 
 
 /**

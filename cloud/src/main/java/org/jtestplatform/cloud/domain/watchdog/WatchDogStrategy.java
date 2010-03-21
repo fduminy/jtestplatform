@@ -23,9 +23,9 @@
 /**
  * 
  */
-package org.jtestplatform.client.domain.watchdog;
+package org.jtestplatform.cloud.domain.watchdog;
 
-import org.jtestplatform.client.domain.Domain;
+import org.jtestplatform.cloud.domain.Domain;
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)

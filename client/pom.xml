@@ -27,8 +27,13 @@
 			<groupId>jtestplatform</groupId>
 			<artifactId>jtestplatform-common</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
-			<scope>compile</scope>
 		</dependency>
+
+        <dependency>
+		    <groupId>jtestplatform</groupId>
+		    <artifactId>jtestplatform-cloud</artifactId>
+		    <version>0.0.1-SNAPSHOT</version>
+        </dependency>
 
 		<dependency>
 			<groupId>com.redhat.sources</groupId>
@@ -50,30 +55,12 @@
 		</dependency>
 
 		<dependency>
-			<groupId>net.java.dev.jna</groupId>
-			<artifactId>jna</artifactId>
-			<version>3.2.4</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.libvirt</groupId>
-			<artifactId>libvirt</artifactId>
-			<version>0.4.2</version>
-		</dependency>
-
-		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-all</artifactId>
 			<version>1.8.2</version>
 			<scope>test</scope>
 		</dependency>
 
-		<dependency>
-		  <groupId>org.libvirt</groupId>
-		  <artifactId>libvirt-model</artifactId>
-		  <version>0.4.2</version>
-        </dependency>
-		
 	</dependencies>
 
 	<build>
@@ -130,13 +117,6 @@
 		</plugins>
 	</build>
 
-
-	<repositories>
-		<repository>
-			<id>libvirt-repository</id>
-			<url>http://www.libvirt.org/maven2/</url>
-		</repository>
-	</repositories>
 	<pluginRepositories>
 		<pluginRepository>
 			<id>maven2-repository.dev.java.net</id>
