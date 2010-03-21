@@ -124,6 +124,7 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
      */
     String start(Domain domain) throws DomainException {
         String ipAddress = null;
+        Network network = null;
         try {
             domain.create();
             
@@ -132,7 +133,7 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
                 throw new DomainException("unable to get mac address");
             }
             
-            Network network = domain.getConnect().networkLookupByName(NETWORK_NAME);
+            network = domain.getConnect().networkLookupByName(NETWORK_NAME);
             ipAddress = LibVirtModelFacade.getIPAddress(network, macAddress);
             if (ipAddress == null) {
                 throw new DomainException("unable to get ip address");
@@ -143,6 +144,14 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
             throw new DomainException(e);
         } catch (DocumentException e) {
             throw new DomainException(e);
+        } finally {
+            if (network != null) {
+                try {
+                    network.free();
+                } catch (LibvirtException e) {
+                    LOGGER.error("failed to free network", e);        
+                }
+            }
         }
         
         return ipAddress;
@@ -179,21 +188,29 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
             
         // synchronize because multiple threads might check/destroy/create the network concurrently
         synchronized ((connect.getHostName() + "_ensureNetworkExist").intern()) {   
-            Network network = networkLookupByName(connect, NETWORK_NAME);
-            if (network != null) {
-                if (LibVirtModelFacade.sameNetwork(wantedNetworkXML, network)) {
-                    LOGGER.debug("network '" + NETWORK_NAME + "' already exists with proper characteristics");
-                } else {
-                    network.destroy();
-                    //network.undefine();
-                    LOGGER.debug("destroyed network '" + NETWORK_NAME + "'");
-                    network = null; 
-                }
-            }
+            Network network = null;
             
-            if (network == null) {
-                network = connect.networkCreateXML(wantedNetworkXML);
-                LOGGER.debug("created network '" + NETWORK_NAME + "'");            
+            try {
+                network = networkLookupByName(connect, NETWORK_NAME);
+                if (network != null) {
+                    if (LibVirtModelFacade.sameNetwork(wantedNetworkXML, network)) {
+                        LOGGER.debug("network '" + NETWORK_NAME + "' already exists with proper characteristics");
+                    } else {
+                        network.destroy();
+                        //network.undefine();
+                        LOGGER.debug("destroyed network '" + NETWORK_NAME + "'");
+                        network = null; 
+                    }
+                }
+                
+                if (network == null) {
+                    network = connect.networkCreateXML(wantedNetworkXML);
+                    LOGGER.debug("created network '" + NETWORK_NAME + "'");            
+                }
+            } finally {
+                if (network != null) {
+                    network.free();
+                }
             }
         }
     }
@@ -224,7 +241,7 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
                 
                 String macAddress = findUniqueMacAddress(domains);
                 String xml = LibVirtModelFacade.generateDomain(config, macAddress, NETWORK_NAME);
-                return connect.domainDefineXML(xml); //TODO call Domain.free() when no more needed
+                return connect.domainDefineXML(xml);
             }
         } catch (LibvirtException e) {
             throw new DomainException(e);
