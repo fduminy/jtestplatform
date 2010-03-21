@@ -67,9 +67,9 @@ public class TestLibVirt {
 
     
     @DataPoint
-    public static final Integer _1_DOMAINS = Integer.valueOf(1);
+    public static final Integer _1_DOMAIN = Integer.valueOf(1);
     @DataPoint
-    public static final Integer _15_DOMAINS = Integer.valueOf(15);
+    public static final Integer _10_DOMAINS = Integer.valueOf(10);
     
     private Connection connection;
     
