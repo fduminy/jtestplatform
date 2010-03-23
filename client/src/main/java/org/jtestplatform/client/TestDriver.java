@@ -22,25 +22,10 @@
  */
 package org.jtestplatform.client;
 
-import gnu.testlet.runner.ClassResult;
-import gnu.testlet.runner.HTMLGenerator;
-import gnu.testlet.runner.PackageResult;
-import gnu.testlet.runner.RunResult;
-import gnu.testlet.runner.TestResult;
-import gnu.testlet.runner.XMLReportParser;
-import gnu.testlet.runner.XMLReportWriter;
-import gnu.testlet.runner.compare.ComparisonWriter;
-import gnu.testlet.runner.compare.HTMLComparisonWriter;
-import gnu.testlet.runner.compare.ReportComparator;
-import gnu.testlet.runner.compare.RunComparison;
-import gnu.testlet.runner.compare.TextComparisonWriter;
-
 import java.io.File;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -53,7 +38,12 @@ import org.apache.log4j.Logger;
 import org.jtestplatform.cloud.TransportProvider;
 import org.jtestplatform.cloud.configuration.Platform;
 import org.jtestplatform.cloud.domain.DomainManager;
-import org.jtestplatform.common.message.Message;
+import org.jtestplatform.common.message.GetTestFrameworks;
+import org.jtestplatform.common.message.RunTest;
+import org.jtestplatform.common.message.TestFrameworks;
+import org.jtestplatform.common.message.TestReport;
+import org.jtestplatform.common.transport.Transport;
+import org.jtestplatform.common.transport.TransportHelper;
 import org.jtestplatform.configuration.Configuration;
 
 public class TestDriver {
@@ -75,12 +65,10 @@ public class TestDriver {
     
     private final Configuration config;
     private final TestManager testManager;
-    private final TestHandler testHandler;
     
     private TestDriver(Configuration config) throws Exception {
         this.config = config;        
         testManager = new DefaultTestManager(1, 1, 0L, TimeUnit.MILLISECONDS);
-        testHandler = new MauveTestHandler(config);
     }
     
     public void start() throws Exception {
@@ -91,13 +79,24 @@ public class TestDriver {
             domainManager = new DomainManager(configReader);
             domainManager.start();
 
+            TransportProvider transportProvider = domainManager;
+            TransportHelper transportHelper = new TransportHelper();
+
             //TODO we should have our own list of platforms, not necessarily the domain manager's ones
             java.util.List<Platform> platforms = domainManager.getPlatforms();
-            
+
             List<Callable<Object>> tasks = new ArrayList<Callable<Object>>(platforms.size()); 
             for (Platform platform : platforms) {
-                PlatformTask platformResults = new PlatformTask(platform, domainManager);
-                tasks.add(platformResults);
+                Transport transport = transportProvider.get(platform);
+                
+                //TODO we assume that all frameworks are available on each server. check it ?
+                transportHelper.send(transport, new GetTestFrameworks());
+                TestFrameworks testFrameworks = (TestFrameworks) transportHelper.receive(transport);
+                
+                for (String testFramework : testFrameworks.getFrameworks()) {
+                    PlatformTask platformResults = new PlatformTask(testFramework, platform, domainManager);
+                    tasks.add(platformResults);
+                }
             }
 
             // launch all tasks in parallel and wait for completion
@@ -112,97 +111,14 @@ public class TestDriver {
             testManager.shutdown();
         }
     }
-
-    private void compareRuns(Run latestRun, Run newRun, RunResult newRunResult) throws IOException {
-        if ((latestRun != null) && latestRun.getReportXml().exists()) {
-            // there was a previous run, let do the comparison !
-            
-            RunResult latestRunResult = new XMLReportParser().parse(latestRun.getReportXml());
-            
-            ReportComparator comparator = new ReportComparator(latestRunResult, newRunResult);
-            RunComparison comparison = comparator.compare();
-            
-            // write comparison in html format
-            ComparisonWriter writer = new HTMLComparisonWriter();
-            writer.write(comparison, new File(newRun.getReportXml().getParentFile(), "comparison.html"));
-            
-            // write comparison in text format
-            writer = new TextComparisonWriter();
-            writer.write(comparison, new File(newRun.getReportXml().getParentFile(), "comparison.txt"));
-        }
-    }
-    
-    private void writeReports(RunResult result, File reportXml) throws IOException {
-        XMLReportWriter rw = new XMLReportWriter(false);
-        rw.write(result, reportXml);
-        
-        HTMLGenerator.createReport(result, reportXml.getParentFile());
-    }
-    
-    private RunResult mergeResults(String timestamp, TestHandler testHandler,
-            List<Future<Message>> replies) throws Exception {
-        RunResult result = new RunResult(timestamp);
-        boolean firstTest = true;
-        for (Future<Message> reply : replies) {
-            Result runnerResult = testHandler.parseResult(reply.get());
-            RunResult delta = runnerResult.getRunResult();
-            mergeResults(result, delta);
-
-            if (firstTest && (delta != null)) {
-                for (String name : delta.getSystemPropertyNames()) {
-                    result.setSystemProperty(name, delta.getSystemProperty(name));
-                }
-
-                firstTest = false;
-            }
-        }
-
-        return result;
-    }
-    
-    private void mergeResults(RunResult target, RunResult source) {
-        for (Iterator<?> itSourcePackage = source.getPackageIterator(); itSourcePackage.hasNext(); ) {
-            PackageResult sourcePackage = (PackageResult) itSourcePackage.next();
-            
-            PackageResult targetPackage = target.getPackageResult(sourcePackage.getName());
-            if (targetPackage == null) {
-                target.add(sourcePackage);
-            } else {            
-                for (Iterator<?> itSourceClass = sourcePackage.getClassIterator(); itSourceClass.hasNext(); ) {
-                    ClassResult sourceClass = (ClassResult) itSourceClass.next();
-                    
-                    ClassResult targetClass = targetPackage.getClassResult(sourceClass.getName());
-                    if (targetClass == null) {
-                        targetPackage.add(sourceClass);
-                    } else {                                    
-                        for (Iterator<?> itSourceTest = sourceClass.getTestIterator(); itSourceTest.hasNext(); ) {
-                            TestResult sourceTest = (TestResult) itSourceTest.next();
-                            
-                            boolean hasTest = false;
-                            for (Iterator<?> it = targetClass.getTestIterator(); it.hasNext(); ) {
-                                TestResult tr = (TestResult) it.next();
-                                if (tr.getName().equals(sourceTest.getName())) {
-                                    hasTest = true;
-                                    break;
-                                }
-                            }
-                            
-                            if (!hasTest) {
-                                targetClass.add(sourceTest);
-                            }
-                            
-                        }
-                    }
-                }
-            }
-        }
-    }
     
     private class PlatformTask implements Callable<Object> {
+        private final String testFramework;
         private final Platform platform;
         private final TransportProvider transportProvider; 
         
-        public PlatformTask(Platform platform, TransportProvider transportProvider) {
+        public PlatformTask(String testFramework, Platform platform, TransportProvider transportProvider) {
+            this.testFramework = testFramework;
             this.platform = platform;
             this.transportProvider = transportProvider;
         }
@@ -215,16 +131,17 @@ public class TestDriver {
             Run latestRun = Run.getLatest(workDir);
             Run newRun = Run.create(workDir);
             
-            List<Future<Message>> replies = runTests(testHandler);
-            RunResult runResult = mergeResults(newRun.getTimestampString(), testHandler, replies);
-            
-            for (String property : platformProperties.keySet()) {
-                runResult.setSystemProperty(property, platformProperties.get(property));
-            }
-            
-            writeReports(runResult, newRun.getReportXml());
-            
-            compareRuns(latestRun, newRun, runResult);
+            List<Future<TestReport>> replies = runTests();
+            // TODO process results
+//            RunResult runResult = mergeResults(newRun.getTimestampString(), testHandler, replies);
+//            
+//            for (String property : platformProperties.keySet()) {
+//                runResult.setSystemProperty(property, platformProperties.get(property));
+//            }
+//            
+//            writeReports(runResult, newRun.getReportXml());
+//            
+//            compareRuns(latestRun, newRun, runResult);
 
             return null;
         }
@@ -245,11 +162,11 @@ public class TestDriver {
             return result; 
         }
         
-        private List<Future<Message>> runTests(TestHandler testHandler) throws Exception {
-            List<Future<Message>> results = new ArrayList<Future<Message>>();
-            for (String test : testHandler.readTests(null)) {
-                Message message = testHandler.createRequest(test); 
-                Future<Message> result = testManager.runTest(message, transportProvider, platform);
+        private List<Future<TestReport>> runTests() throws Exception {
+            List<Future<TestReport>> results = new ArrayList<Future<TestReport>>();
+            for (String test : testManager.getFrameworkTests(testFramework, transportProvider, platform)) {
+                RunTest message = new RunTest(testFramework, test); 
+                Future<TestReport> result = testManager.runTest(message, transportProvider, platform);
                 results.add(result);
             }
             return results;

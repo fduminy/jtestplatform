@@ -23,28 +23,33 @@
 /**
  * 
  */
-package org.jtestplatform.client;
+package org.jtestplatform.common.message;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-
-import org.jtestplatform.common.message.Message;
-
+import org.jtestplatform.common.transport.Transport;
+import org.jtestplatform.common.transport.TransportException;
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
  */
-public interface TestHandler {
-    Message createRequest(String test);
-    
-    Result parseResult(Message reply);
+public class GetTestFrameworks implements Message {
+    public GetTestFrameworks() {
+        // nothing
+    }
 
     /**
-     * @param object
-     * @return
-     * @throws IOException 
+     * {@inheritDoc}
      */
-    List<String> readTests(File file) throws IOException;
+    @Override
+    public void sendWith(Transport transport) throws TransportException {
+        // nothing
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void receiveFrom(Transport transport) throws TransportException {
+        // nothing
+    }
 }

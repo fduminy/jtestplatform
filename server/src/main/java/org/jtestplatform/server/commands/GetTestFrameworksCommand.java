@@ -20,43 +20,33 @@
  * USA.
  * -
  */
-/**
- * 
- */
-package org.jtestplatform.client;
+package org.jtestplatform.server.commands;
 
-import java.util.List;
-import java.util.concurrent.Future;
+import java.util.Set;
 
-import org.jtestplatform.cloud.TransportProvider;
-import org.jtestplatform.cloud.configuration.Platform;
-import org.jtestplatform.common.message.Message;
-import org.jtestplatform.common.message.TestReport;
-import org.jtestplatform.common.transport.TransportException;
-
+import org.jtestplatform.common.message.GetTestFrameworks;
+import org.jtestplatform.common.message.TestFrameworks;
+import org.jtestplatform.server.TestServer;
+import org.jtestplatform.server.TestServerCommand;
 
 /**
+ *
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
  */
-public interface TestManager {
-    /**
-     * @param message
-     * @param transportProvider
-     * @param platform
-     * @return
-     * @throws Exception
-     */
-    Future<TestReport> runTest(Message message,
-            TransportProvider transportProvider, Platform platform) 
-            throws Exception;
+public class GetTestFrameworksCommand implements TestServerCommand<GetTestFrameworks, TestFrameworks> {
+    private final TestServer<?> testServer;
 
-    void shutdown();
+    public GetTestFrameworksCommand(TestServer<?> testServer) {
+        this.testServer = testServer;
+    }
 
     /**
-     * @param testFramework
-     * @return
-     * @throws TransportException 
+     * {@inheritDoc}
      */
-    List<String> getFrameworkTests(String testFramework, TransportProvider transportProvider, Platform platform) throws TransportException;
+    @Override
+    public TestFrameworks execute(GetTestFrameworks message) throws Exception {
+        Set<String> frameworks = testServer.getTestFrameworks();
+        return new TestFrameworks(frameworks);
+    }
 }

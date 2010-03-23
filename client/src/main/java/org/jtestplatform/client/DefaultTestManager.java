@@ -22,6 +22,7 @@
  */
 package org.jtestplatform.client;
 
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -33,8 +34,12 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 import org.jtestplatform.cloud.TransportProvider;
 import org.jtestplatform.cloud.configuration.Platform;
+import org.jtestplatform.common.message.FrameworkTests;
+import org.jtestplatform.common.message.GetFrameworkTests;
 import org.jtestplatform.common.message.Message;
+import org.jtestplatform.common.message.TestReport;
 import org.jtestplatform.common.transport.Transport;
+import org.jtestplatform.common.transport.TransportException;
 import org.jtestplatform.common.transport.TransportHelper;
 
 public class DefaultTestManager implements TestManager {
@@ -67,12 +72,26 @@ public class DefaultTestManager implements TestManager {
      * {@inheritDoc}
      */
     @Override
-    public Future<Message> runTest(Message message,
+    public Future<TestReport> runTest(Message message,
             TransportProvider transportProvider, Platform platform) 
             throws Exception {
         return executor.submit(new TestCallable(message, transportProvider, platform));
     }
 
+    /**
+     * {@inheritDoc}
+     * @throws TransportException 
+     */
+    @Override
+    public List<String> getFrameworkTests(String testFramework, TransportProvider transportProvider, Platform platform) throws TransportException {
+        //TODO we assume here that the available tests/test frameworks are all the same on each server. check it ?
+        Transport transport = transportProvider.get(platform);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("call: transport=" + transport);
+        }
+        transportHelper.send(transport, new GetFrameworkTests());
+        return ((FrameworkTests) transportHelper.receive(transport)).getTests();
+    }
 
     /**
      * {@inheritDoc}
@@ -97,7 +116,7 @@ public class DefaultTestManager implements TestManager {
         }
     }
     
-    private class TestCallable implements Callable<Message> {
+    private class TestCallable implements Callable<TestReport> {
         private final Message message;
         private final TransportProvider transportProvider;
         private final Platform platform;
@@ -109,13 +128,13 @@ public class DefaultTestManager implements TestManager {
         }
         
         @Override
-        public Message call() throws Exception {
+        public TestReport call() throws Exception {
             Transport transport = transportProvider.get(platform);
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("call: transport=" + transport);
             }
             transportHelper.send(transport, message);
-            return transportHelper.receive(transport);
+            return (TestReport) transportHelper.receive(transport);
         }
     }
     

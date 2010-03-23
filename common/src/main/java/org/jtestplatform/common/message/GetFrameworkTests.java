@@ -23,40 +23,46 @@
 /**
  * 
  */
-package org.jtestplatform.client;
+package org.jtestplatform.common.message;
 
-import java.util.List;
-import java.util.concurrent.Future;
-
-import org.jtestplatform.cloud.TransportProvider;
-import org.jtestplatform.cloud.configuration.Platform;
-import org.jtestplatform.common.message.Message;
-import org.jtestplatform.common.message.TestReport;
+import org.jtestplatform.common.transport.Transport;
 import org.jtestplatform.common.transport.TransportException;
-
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
  */
-public interface TestManager {
-    /**
-     * @param message
-     * @param transportProvider
-     * @param platform
-     * @return
-     * @throws Exception
-     */
-    Future<TestReport> runTest(Message message,
-            TransportProvider transportProvider, Platform platform) 
-            throws Exception;
+public class GetFrameworkTests implements Message {
+    private String framework;
 
-    void shutdown();
+    public GetFrameworkTests() {
+        // nothing
+    }
+
+    public GetFrameworkTests(String framework) {
+        this.framework = framework;
+    }
 
     /**
-     * @param testFramework
-     * @return
-     * @throws TransportException 
+     * @return the framework
      */
-    List<String> getFrameworkTests(String testFramework, TransportProvider transportProvider, Platform platform) throws TransportException;
+    public String getFramework() {
+        return framework;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void sendWith(Transport transport) throws TransportException {
+        transport.send(framework);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void receiveFrom(Transport transport) throws TransportException {
+        framework = transport.receive();
+    }
 }
