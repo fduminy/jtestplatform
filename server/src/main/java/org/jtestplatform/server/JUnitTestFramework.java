@@ -18,62 +18,43 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
  * USA.
- * -
  */
 /**
  * 
  */
-package org.jtestplatform.common.message;
+package org.jtestplatform.server;
 
-import org.jtestplatform.common.transport.Transport;
-import org.jtestplatform.common.transport.TransportException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
  */
-public class MauveReport implements Message {
-    private String test;
-    private String report;
-
-    public MauveReport() {
-        // nothing
-    }
-    
-    public MauveReport(String test, String report) {
-        this.report = report;            
-    }
-        
-    /**
-     * Get the mauve report.
-     * @return The mauve report.
-     */
-    public String getReport() {
-        return report;
-    }
-
-    /**
-     * @return
-     */
-    public String getTest() {
-        return test;
-    }
+public class JUnitTestFramework implements TestFramework {
+    private List<String> tests = new ArrayList<String>();
     
     /**
      * {@inheritDoc}
      */
     @Override
-    public void sendWith(Transport transport) throws TransportException {
-        transport.send(test);
-        transport.send(report);
+    public String getName() {
+        return "junit";
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void receiveFrom(Transport transport) throws TransportException {
-        test = transport.receive();
-        report = transport.receive();
+    public List<String> getTests() {
+        return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String runTest(String test) {
+        return ""; //TODO
     }
 }

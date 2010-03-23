@@ -18,50 +18,50 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
  * USA.
- * -
  */
-package org.jtestplatform.server.commands;
+/**
+ * 
+ */
+package org.jtestplatform.server;
 
 import gnu.testlet.runner.CheckResult;
 import gnu.testlet.runner.Mauve;
 import gnu.testlet.runner.RunResult;
 
+import java.util.List;
 import java.util.Locale;
 
-import org.jtestplatform.common.message.Status;
-import org.jtestplatform.server.Config;
-import org.jtestplatform.server.TestFailureException;
+/**
+ * @author Fabien DUMINY (fduminy@jnode.org)
+ *
+ */
+public class MauveTestFramework implements TestFramework {
 
-public class MauveTestRunner implements TestRunner<RunResult> {
-    private static final MauveTestRunner INSTANCE = new MauveTestRunner();
-    
-    public static final MauveTestRunner getInstance() {
-        return INSTANCE;
-    }
-    
-    private Status status = Status.READY;
-//    private RunnerThread thread = new RunnerThread();
-    private Config config;
-    
-    private MauveTestRunner() {        
-    }
-    
-    public void setConfig(Config config) {
-        this.config = config;        
-    }
-    
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public RunResult runTest(String test) throws TestFailureException {
-        status = Status.RUNNING;
+    public String getName() {
+        return "mauve";
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<String> getTests() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String runTest(String test) {
         JTSMauve m = new JTSMauve();
         RunResult result = m.runTest(test);
-        status = Status.READY;
-        
-        return result;
-    }
-
-    public Status getStatus() {
-        return status;
+        return ""; //TODO
     }
 
     private class JTSMauve extends Mauve {

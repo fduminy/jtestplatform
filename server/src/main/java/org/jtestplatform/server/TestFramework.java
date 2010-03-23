@@ -18,12 +18,22 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
  * USA.
- * -
  */
-package org.jtestplatform.server.commands;
+/**
+ * 
+ */
+package org.jtestplatform.server;
 
-import org.jtestplatform.server.TestFailureException;
+import java.util.List;
 
-public interface TestRunner<T> {
-    T runTest(String test) throws TestFailureException;
+/**
+ * @author Fabien DUMINY (fduminy@jnode.org)
+ *
+ */
+public interface TestFramework {
+    String getName();
+    
+    List<String> getTests();
+    
+    String runTest(String test);
 }

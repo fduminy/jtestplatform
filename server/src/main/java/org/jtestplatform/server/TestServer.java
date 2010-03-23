@@ -27,20 +27,20 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.jtestplatform.common.message.GetStatus;
 import org.jtestplatform.common.message.Message;
-import org.jtestplatform.common.message.RunMauveTest;
+import org.jtestplatform.common.message.RunTest;
 import org.jtestplatform.common.message.Shutdown;
 import org.jtestplatform.common.transport.Transport;
 import org.jtestplatform.common.transport.TransportException;
-import org.jtestplatform.common.transport.TransportHelper;
 import org.jtestplatform.common.transport.TransportFactory;
+import org.jtestplatform.common.transport.TransportHelper;
 import org.jtestplatform.common.transport.UDPTransport;
 import org.jtestplatform.server.commands.GetStatusCommand;
-import org.jtestplatform.server.commands.MauveTestRunner;
-import org.jtestplatform.server.commands.RunMauveTestCommand;
+import org.jtestplatform.server.commands.RunTestCommand;
 import org.jtestplatform.server.commands.ShutdownCommand;
 
 public class TestServer<T extends Message> {
@@ -60,6 +60,7 @@ public class TestServer<T extends Message> {
     }
     
     private final Map<Class<? extends Message>, TestServerCommand<? extends Message, ? extends Message>> messageClassToCommand;
+    private final Map<String, TestFramework> testFrameworks;
     private final Config config;
     private final TransportHelper transportManager;
     private final TransportFactory transportFactory;
@@ -68,12 +69,12 @@ public class TestServer<T extends Message> {
     public TestServer() throws Exception {
         messageClassToCommand = new HashMap<Class<? extends Message>, TestServerCommand<? extends Message, ? extends Message>>();
         
-        addCommand(RunMauveTest.class, new RunMauveTestCommand());
+        addCommand(RunTest.class, new RunTestCommand(this));
         addCommand(Shutdown.class, new ShutdownCommand(this));
         addCommand(GetStatus.class, new GetStatusCommand());
-        
-        config = Config.read();
-        MauveTestRunner.getInstance().setConfig(config);
+
+        config = Config.read(); //TODO remove it ?
+
         transportFactory = new TransportFactory() {
             @Override
             public Transport create() throws TransportException {
@@ -85,12 +86,36 @@ public class TestServer<T extends Message> {
             }
         };
         transportManager = new TransportHelper();
+
+        testFrameworks = new HashMap<String, TestFramework>();
+        addTestFramework(new JUnitTestFramework());
+        addTestFramework(new MauveTestFramework());
     }
-    
+
+    public void addTestFramework(TestFramework framework) {
+        testFrameworks.put(framework.getName(), framework);
+    }
+
+    /**
+     * @param framework
+     * @return
+     */
+    public TestFramework getTestFramework(String framework) {
+        return testFrameworks.get(framework);
+    }
+
+    /**
+     * @param framework
+     * @return
+     */
+    public Set<String> getTestFrameworks() {
+        return testFrameworks.keySet();
+    }
+
     private <TM extends Message> void addCommand(Class<TM> messageClass, TestServerCommand<TM, ? extends Message> command) {
         messageClassToCommand.put(messageClass, command);
     }
-    
+
     public void start() throws Exception {
         LOGGER.info("server started");
 
@@ -109,7 +134,7 @@ public class TestServer<T extends Message> {
                     LOGGER.error("error in command", t);
                 }
             }
-        }        
+        }
     }
     
     private void shutdown() {

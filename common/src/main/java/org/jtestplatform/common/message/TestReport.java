@@ -32,30 +32,48 @@ import org.jtestplatform.common.transport.TransportException;
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
  */
-public class RunMauveTest implements Message {
+public class TestReport implements Message {
+    private String framework;
     private String test;
+    private String report;
 
-    public RunMauveTest() {
+    public TestReport() {
         // nothing
     }
-    
-    public RunMauveTest(String test) {
-        this.test = test;            
+
+    public TestReport(String framework, String test, String report) {
+        this.framework = framework;
+        this.test = test;
+        this.report = report;
     }
-        
+
     /**
-     * @return
+     * @return the framework
      */
+    public String getFramework() {
+        return framework;
+    }
+
     public String getTest() {
         return test;
     }
-    
+
+    /**
+     * Get the test report.
+     * @return The test report.
+     */
+    public String getReport() {
+        return report;
+    }
+
     /**
      * {@inheritDoc}
      */
     @Override
     public void sendWith(Transport transport) throws TransportException {
+        transport.send(framework);
         transport.send(test);
+        transport.send(report);
     }
 
     /**
@@ -63,6 +81,8 @@ public class RunMauveTest implements Message {
      */
     @Override
     public void receiveFrom(Transport transport) throws TransportException {
+        framework = transport.receive();
         test = transport.receive();
+        report = transport.receive();
     }
 }

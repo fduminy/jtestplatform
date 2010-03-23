@@ -38,9 +38,7 @@ import net.sourceforge.nanoxml.XMLParseException;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.jtestplatform.client.utils.TestListRW;
-import org.jtestplatform.common.message.MauveReport;
 import org.jtestplatform.common.message.Message;
-import org.jtestplatform.common.message.RunMauveTest;
 import org.jtestplatform.configuration.Configuration;
 
 /**
@@ -61,7 +59,9 @@ public class MauveTestHandler implements TestHandler {
      */
     @Override
     public Message createRequest(String test) {
-        return new RunMauveTest(test);
+        //TODO
+//        return new RunMauveTest(test);
+        return null;
     }
 
     /* (non-Javadoc)
@@ -70,15 +70,16 @@ public class MauveTestHandler implements TestHandler {
     @Override
     public Result parseResult(Message reply) {
         Result result = null;
-        
-        if (reply instanceof MauveReport) {
-            MauveReport r = (MauveReport) reply;
-            RunResult runResult = parseMauveReport(r.getReport());
-            if (runResult != null) {
-                result = new Result(r.getTest(), runResult);
-            }
-        }
-        
+
+        //TODO
+//        if (reply instanceof MauveReport) {
+//            MauveReport r = (MauveReport) reply;
+//            RunResult runResult = parseMauveReport(r.getReport());
+//            if (runResult != null) {
+//                result = new Result(r.getTest(), runResult);
+//            }
+//        }
+
         return result;
     }
 
