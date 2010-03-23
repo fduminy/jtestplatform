@@ -33,8 +33,6 @@ import org.jtestplatform.common.transport.Transport;
  *
  */
 public class Shutdown implements Message {
-    public static final String NAME = RunMauveTest.class.getSimpleName();
-    
     /**
      * {@inheritDoc}
      */
