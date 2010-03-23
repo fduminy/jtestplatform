@@ -26,9 +26,15 @@ import org.jtestplatform.common.message.GetStatus;
 import org.jtestplatform.common.message.Status;
 import org.jtestplatform.server.TestServerCommand;
 
+/**
+ * 
+ * @author Fabien DUMINY (fduminy@jnode.org)
+ * @deprecated TODO remove it ?
+ */
 public class GetStatusCommand implements TestServerCommand<GetStatus, Status> {
     @Override
     public Status execute(GetStatus message) throws Exception {
-        return MauveTestRunner.getInstance().getStatus();
+        //return MauveTestRunner.getInstance().getStatus();
+        return Status.READY;
     }
 }

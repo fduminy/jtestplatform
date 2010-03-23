@@ -30,7 +30,7 @@ import org.jtestplatform.common.transport.TransportException;
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)
- *
+ * @deprecated TODO remove it ?
  */
 public class GetStatus implements Message {
     private String status;

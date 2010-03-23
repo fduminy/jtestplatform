@@ -25,6 +25,11 @@ package org.jtestplatform.common.message;
 import org.jtestplatform.common.transport.Transport;
 import org.jtestplatform.common.transport.TransportException;
 
+/**
+ * 
+ * @author Fabien DUMINY (fduminy@jnode.org)
+ * @deprecated TODO remove it ?
+ */
 public enum Status implements Message {
     READY,
     ERROR,
