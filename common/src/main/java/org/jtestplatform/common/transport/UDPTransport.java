@@ -135,7 +135,12 @@ public class UDPTransport implements Transport {
     @Override
     public void close() throws IOException {
         socket.close();
-    }    
+    }
+    
+    @Override
+    protected void finalize() throws Throwable {
+        close();
+    }
 
     /**
      * 
