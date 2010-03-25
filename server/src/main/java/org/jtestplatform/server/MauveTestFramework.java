@@ -25,9 +25,13 @@
 package org.jtestplatform.server;
 
 import gnu.testlet.runner.CheckResult;
+import gnu.testlet.runner.Filter;
 import gnu.testlet.runner.Mauve;
 import gnu.testlet.runner.RunResult;
+import gnu.testlet.runner.Filter.LineProcessor;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -36,6 +40,15 @@ import java.util.Locale;
  *
  */
 public class MauveTestFramework implements TestFramework {
+    private final List<String> testList;
+
+    /**
+     * @throws IOException
+     *
+     */
+    public MauveTestFramework() throws IOException {
+        testList = readCompleteList();
+    }
 
     /**
      * {@inheritDoc}
@@ -50,18 +63,17 @@ public class MauveTestFramework implements TestFramework {
      */
     @Override
     public List<String> getTests() {
-        // TODO Auto-generated method stub
-        return null;
+        return testList;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public String runTest(String test) {
+    public boolean runTest(String test) {
         JTSMauve m = new JTSMauve();
         RunResult result = m.runTest(test);
-        return ""; //TODO
+        return false; //TODO
     }
 
     private class JTSMauve extends Mauve {
@@ -80,5 +92,27 @@ public class MauveTestFramework implements TestFramework {
             
             return getResult();
         }
+    }
+
+    /**
+     * Read the mauve tests list but don't take lines containing '[' 
+     * and also apply additional filters specified in configuration. 
+     * @return
+     * @throws IOException
+     */
+    private List<String> readCompleteList() throws IOException {
+        final List<String> list = new ArrayList<String>();
+        Filter.readTestList(new LineProcessor() {
+
+            @Override
+            public void processLine(StringBuffer buf) {
+                String line = buf.toString();
+                if (!line.contains("[")) {
+                    list.add(line);
+                }
+            }
+
+        });
+        return list;
     }
 }

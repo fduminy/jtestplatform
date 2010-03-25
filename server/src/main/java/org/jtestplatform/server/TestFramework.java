@@ -35,5 +35,5 @@ public interface TestFramework {
     
     List<String> getTests();
     
-    String runTest(String test);
+    boolean runTest(String test);
 }

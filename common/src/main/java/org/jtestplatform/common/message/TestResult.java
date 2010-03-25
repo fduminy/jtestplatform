@@ -32,19 +32,19 @@ import org.jtestplatform.common.transport.TransportException;
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
  */
-public class TestReport implements Message {
+public class TestResult implements Message {
     private String framework;
     private String test;
-    private String report;
+    private boolean success;
 
-    public TestReport() {
+    public TestResult() {
         // nothing
     }
 
-    public TestReport(String framework, String test, String report) {
+    public TestResult(String framework, String test, boolean success) {
         this.framework = framework;
         this.test = test;
-        this.report = report;
+        this.success = success;
     }
 
     /**
@@ -59,11 +59,11 @@ public class TestReport implements Message {
     }
 
     /**
-     * Get the test report.
-     * @return The test report.
+     * Get the success of the test.
+     * @return The success of the test.
      */
-    public String getReport() {
-        return report;
+    public boolean isSuccess() {
+        return success;
     }
 
     /**
@@ -73,7 +73,7 @@ public class TestReport implements Message {
     public void sendWith(Transport transport) throws TransportException {
         transport.send(framework);
         transport.send(test);
-        transport.send(report);
+        transport.send(Boolean.toString(success));
     }
 
     /**
@@ -83,6 +83,6 @@ public class TestReport implements Message {
     public void receiveFrom(Transport transport) throws TransportException {
         framework = transport.receive();
         test = transport.receive();
-        report = transport.receive();
+        success = Boolean.getBoolean(transport.receive());
     }
 }

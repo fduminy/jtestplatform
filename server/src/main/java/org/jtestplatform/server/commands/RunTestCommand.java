@@ -24,14 +24,16 @@ package org.jtestplatform.server.commands;
 
 
 
+import gnu.testlet.TestReport;
+
 import org.apache.log4j.Logger;
 import org.jtestplatform.common.message.RunTest;
-import org.jtestplatform.common.message.TestReport;
+import org.jtestplatform.common.message.TestResult;
 import org.jtestplatform.server.TestFramework;
 import org.jtestplatform.server.TestServer;
 import org.jtestplatform.server.TestServerCommand;
 
-public class RunTestCommand implements TestServerCommand<RunTest, TestReport> {
+public class RunTestCommand implements TestServerCommand<RunTest, TestResult> {
     private static final Logger LOGGER = Logger.getLogger(RunTestCommand.class);
 
     private final TestServer<?> testServer;
@@ -41,11 +43,11 @@ public class RunTestCommand implements TestServerCommand<RunTest, TestReport> {
     }
 
     @Override
-    public TestReport execute(RunTest message) {
+    public TestResult execute(RunTest message) {
         String test = message.getTest();
         LOGGER.debug("running test " + test + " on framework " + message.getFramework());
         TestFramework testFramework = testServer.getTestFramework(message.getFramework());
-        String result = testFramework.runTest(test);
-        return new TestReport(message.getFramework(), message.getTest(), result);
+        boolean success = testFramework.runTest(test);
+        return new TestResult(message.getFramework(), message.getTest(), success);
     }
 }

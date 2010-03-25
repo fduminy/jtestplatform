@@ -24,8 +24,10 @@ package org.jtestplatform.client;
 
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -35,13 +37,19 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
+import org.jtestplatform.client.report.PlatformReport;
+import org.jtestplatform.client.report.RunReport;
+import org.jtestplatform.client.report.TestFrameworkReport;
+import org.jtestplatform.client.report.TestReport;
+import org.jtestplatform.client.report.io.dom4j.ReportDom4jWriter;
 import org.jtestplatform.cloud.TransportProvider;
 import org.jtestplatform.cloud.configuration.Platform;
+import org.jtestplatform.cloud.domain.DomainException;
 import org.jtestplatform.cloud.domain.DomainManager;
 import org.jtestplatform.common.message.GetTestFrameworks;
 import org.jtestplatform.common.message.RunTest;
 import org.jtestplatform.common.message.TestFrameworks;
-import org.jtestplatform.common.message.TestReport;
+import org.jtestplatform.common.message.TestResult;
 import org.jtestplatform.common.transport.Transport;
 import org.jtestplatform.common.transport.TransportHelper;
 import org.jtestplatform.configuration.Configuration;
@@ -57,7 +65,7 @@ public class TestDriver {
             Configuration config = reader.read();
             testDriver = new TestDriver(config);
             
-            testDriver.start();
+            testDriver.run();
         } catch (Exception e) {
             LOGGER.error("Failed to start", e);
         }
@@ -70,13 +78,22 @@ public class TestDriver {
         this.config = config;        
         testManager = new DefaultTestManager(1, 1, 0L, TimeUnit.MILLISECONDS);
     }
-    
-    public void start() throws Exception {
+
+    public void run() throws Exception {
+        RunReport runReport = runTests();
+        writeReport(runReport);
+    }
+
+    protected DomainManager createDomainManager() throws Exception {
+        File cloudConfig = new File(config.getWorkDir(), "cloud.xml");
+        FileReader configReader = new FileReader(cloudConfig);
+        return new DomainManager(configReader);
+    }
+
+    protected RunReport runTests() throws Exception {
         DomainManager domainManager = null;
         try {
-            File cloudConfig = new File(config.getWorkDir(), "cloud.xml");
-            FileReader configReader = new FileReader(cloudConfig);
-            domainManager = new DomainManager(configReader);
+            domainManager = createDomainManager();
             domainManager.start();
 
             TransportProvider transportProvider = domainManager;
@@ -84,66 +101,94 @@ public class TestDriver {
 
             //TODO we should have our own list of platforms, not necessarily the domain manager's ones
             java.util.List<Platform> platforms = domainManager.getPlatforms();
+            RunReport runReport = new RunReport();
 
             List<Callable<Object>> tasks = new ArrayList<Callable<Object>>(platforms.size()); 
             for (Platform platform : platforms) {
                 Transport transport = transportProvider.get(platform);
-                
+
                 //TODO we assume that all frameworks are available on each server. check it ?
                 transportHelper.send(transport, new GetTestFrameworks());
                 TestFrameworks testFrameworks = (TestFrameworks) transportHelper.receive(transport);
-                
+
                 for (String testFramework : testFrameworks.getFrameworks()) {
-                    PlatformTask platformResults = new PlatformTask(testFramework, platform, domainManager);
+                    PlatformTask platformResults = new PlatformTask(testFramework, platform, domainManager, runReport);
                     tasks.add(platformResults);
                 }
             }
 
             // launch all tasks in parallel and wait for completion
-            ExecutorService executor = Executors.newFixedThreadPool(tasks.size());
+            ExecutorService executor = Executors.newFixedThreadPool(platforms.size());
             executor.invokeAll(tasks);
             executor.shutdown();
+
+            return runReport;
         } finally {
             if (domainManager != null) {
                 domainManager.stop();
             }
-            
+
             testManager.shutdown();
         }
+    }
+
+    protected void writeReport(RunReport runReport) throws Exception {
+        // write the report
+        File workDir = new File(config.getWorkDir());
+        Run newRun = Run.create(workDir);
+        File f = new File(workDir, newRun.getTimestampString());
+        new ReportDom4jWriter().write(new FileWriter(f), runReport);
     }
     
     private class PlatformTask implements Callable<Object> {
         private final String testFramework;
         private final Platform platform;
         private final TransportProvider transportProvider; 
+        private final RunReport runReport;
         
-        public PlatformTask(String testFramework, Platform platform, TransportProvider transportProvider) {
+        public PlatformTask(String testFramework, Platform platform, TransportProvider transportProvider, RunReport runReport) {
             this.testFramework = testFramework;
             this.platform = platform;
             this.transportProvider = transportProvider;
+            this.runReport = runReport;
         }
 
         @Override
-        public Object call() throws Exception {
-            StringBuilder platformStr = new StringBuilder(); 
-            Map<String, String> platformProperties = getPlatformProperties(platform, platformStr);                    
-            File workDir = new File(config.getWorkDir(), platformStr.toString());
-            Run latestRun = Run.getLatest(workDir);
-            Run newRun = Run.create(workDir);
+        public Object call() throws Exception {            
+            TestFrameworkReport testFrameworkReport = new TestFrameworkReport();
+            testFrameworkReport.setName(testFramework);
             
-            List<Future<TestReport>> replies = runTests();
-            // TODO process results
-//            RunResult runResult = mergeResults(newRun.getTimestampString(), testHandler, replies);
-//            
-//            for (String property : platformProperties.keySet()) {
-//                runResult.setSystemProperty(property, platformProperties.get(property));
-//            }
-//            
-//            writeReports(runResult, newRun.getReportXml());
-//            
-//            compareRuns(latestRun, newRun, runResult);
+            List<Future<TestResult>> replies = runTests();
+            for (Future<TestResult> reply : replies) {
+                TestResult testResult = reply.get();
+                
+                TestReport testReport = new TestReport();
+                testReport.setName(testResult.getTest());
+                testReport.setSuccess(testResult.isSuccess());
+                testFrameworkReport.addTestReport(testReport);
+            }
+            
+            synchronized (runReport) {
+                for (PlatformReport platformReport : runReport.getPlatformReports()) {
+                    if (samePlatform(platform, platformReport.getPlatform())) {
+                        platformReport.addTestFrameworkReport(testFrameworkReport);
+                    }
+                }
+            }
 
             return null;
+        }
+        
+        private boolean samePlatform(Platform platform, org.jtestplatform.client.report.Platform reportPlatform) {
+            boolean result = true;
+
+            result = result && ( platform.getCdrom() == null ? reportPlatform.getCdrom() == null : platform.getCdrom().equals( reportPlatform.getCdrom() ) );
+            result = result && ( platform.getCpu() == null ? reportPlatform.getCpu() == null : platform.getCpu().equals( reportPlatform.getCpu() ) );
+            result = result && platform.getNbCores() == reportPlatform.getNbCores();
+            result = result && platform.getWordSize() == reportPlatform.getWordSize();
+            result = result && platform.getMemory() == reportPlatform.getMemory();
+
+            return result;
         }
         
         private Map<String, String> getPlatformProperties(Platform platform, StringBuilder asString) {
@@ -162,11 +207,11 @@ public class TestDriver {
             return result; 
         }
         
-        private List<Future<TestReport>> runTests() throws Exception {
-            List<Future<TestReport>> results = new ArrayList<Future<TestReport>>();
+        private List<Future<TestResult>> runTests() throws Exception {
+            List<Future<TestResult>> results = new ArrayList<Future<TestResult>>();
             for (String test : testManager.getFrameworkTests(testFramework, transportProvider, platform)) {
                 RunTest message = new RunTest(testFramework, test); 
-                Future<TestReport> result = testManager.runTest(message, transportProvider, platform);
+                Future<TestResult> result = testManager.runTest(message, transportProvider, platform);
                 results.add(result);
             }
             return results;

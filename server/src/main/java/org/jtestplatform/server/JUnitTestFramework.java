@@ -54,7 +54,7 @@ public class JUnitTestFramework implements TestFramework {
      * {@inheritDoc}
      */
     @Override
-    public String runTest(String test) {
-        return ""; //TODO
+    public boolean runTest(String test) {
+        return false; //TODO
     }
 }

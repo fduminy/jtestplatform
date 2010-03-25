@@ -31,7 +31,7 @@ import java.util.concurrent.Future;
 import org.jtestplatform.cloud.TransportProvider;
 import org.jtestplatform.cloud.configuration.Platform;
 import org.jtestplatform.common.message.Message;
-import org.jtestplatform.common.message.TestReport;
+import org.jtestplatform.common.message.TestResult;
 import org.jtestplatform.common.transport.TransportException;
 
 
@@ -47,7 +47,7 @@ public interface TestManager {
      * @return
      * @throws Exception
      */
-    Future<TestReport> runTest(Message message,
+    Future<TestResult> runTest(Message message,
             TransportProvider transportProvider, Platform platform) 
             throws Exception;
 

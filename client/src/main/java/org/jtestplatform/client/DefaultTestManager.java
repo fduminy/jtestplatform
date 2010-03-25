@@ -37,7 +37,7 @@ import org.jtestplatform.cloud.configuration.Platform;
 import org.jtestplatform.common.message.FrameworkTests;
 import org.jtestplatform.common.message.GetFrameworkTests;
 import org.jtestplatform.common.message.Message;
-import org.jtestplatform.common.message.TestReport;
+import org.jtestplatform.common.message.TestResult;
 import org.jtestplatform.common.transport.Transport;
 import org.jtestplatform.common.transport.TransportException;
 import org.jtestplatform.common.transport.TransportHelper;
@@ -72,7 +72,7 @@ public class DefaultTestManager implements TestManager {
      * {@inheritDoc}
      */
     @Override
-    public Future<TestReport> runTest(Message message,
+    public Future<TestResult> runTest(Message message,
             TransportProvider transportProvider, Platform platform) 
             throws Exception {
         return executor.submit(new TestCallable(message, transportProvider, platform));
@@ -116,7 +116,7 @@ public class DefaultTestManager implements TestManager {
         }
     }
     
-    private class TestCallable implements Callable<TestReport> {
+    private class TestCallable implements Callable<TestResult> {
         private final Message message;
         private final TransportProvider transportProvider;
         private final Platform platform;
@@ -128,13 +128,13 @@ public class DefaultTestManager implements TestManager {
         }
         
         @Override
-        public TestReport call() throws Exception {
+        public TestResult call() throws Exception {
             Transport transport = transportProvider.get(platform);
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("call: transport=" + transport);
             }
             transportHelper.send(transport, message);
-            return (TestReport) transportHelper.receive(transport);
+            return (TestResult) transportHelper.receive(transport);
         }
     }
     
