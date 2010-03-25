@@ -38,6 +38,7 @@ import java.util.concurrent.TimeUnit;
 import org.jtestplatform.cloud.TransportProvider;
 import org.jtestplatform.cloud.configuration.Platform;
 import org.jtestplatform.common.message.Message;
+import org.jtestplatform.common.message.TestResult;
 import org.jtestplatform.common.transport.Transport;
 import org.junit.After;
 import org.junit.Before;
@@ -105,7 +106,7 @@ public class TestManagerTest {
 //            doReturn(null).when(message).sendWith((Transport) any());
 //            doReturn(null).when(message).sendWith(any());
 
-            Future<Message> result = testManager.runTest(message, transportProvider, platform);
+            Future<TestResult> result = testManager.runTest(message, transportProvider, platform);
             assertNotNull(result);
         }
     }
