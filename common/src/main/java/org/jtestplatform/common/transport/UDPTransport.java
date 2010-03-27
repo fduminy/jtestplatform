@@ -45,7 +45,7 @@ public class UDPTransport implements Transport {
     private static final int MAX_SIZE = Integer.MAX_VALUE; // 1024 * 1024;
 
     //private static final int CHAR_SIZE = 2; // size of a char in bytes
-    private static final int INT_SIZE = 4; // size of an int in bytes
+    private static final int INT_SIZE = Integer.SIZE / 4; // size of an int in bytes
     
     private final DatagramSocket socket;
     
