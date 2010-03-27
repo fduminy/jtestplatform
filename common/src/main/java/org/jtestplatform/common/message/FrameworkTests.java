@@ -26,7 +26,7 @@
 package org.jtestplatform.common.message;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 
 import org.jtestplatform.common.transport.Transport;
 import org.jtestplatform.common.transport.TransportException;
@@ -36,20 +36,20 @@ import org.jtestplatform.common.transport.TransportException;
  *
  */
 public class FrameworkTests implements Message {
-    private List<String> tests;
+    private Collection<String> tests;
 
     public FrameworkTests() {
         // nothing
     }
 
-    public FrameworkTests(List<String> tests) {
+    public FrameworkTests(Collection<String> tests) {
         this.tests = tests;
     }
 
     /**
      * @return the tests
      */
-    public List<String> getTests() {
+    public Collection<String> getTests() {
         return tests;
     }
 

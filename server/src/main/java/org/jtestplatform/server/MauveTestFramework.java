@@ -25,9 +25,12 @@
 package org.jtestplatform.server;
 
 import gnu.testlet.runner.CheckResult;
+import gnu.testlet.runner.ClassResult;
 import gnu.testlet.runner.Filter;
 import gnu.testlet.runner.Mauve;
+import gnu.testlet.runner.PackageResult;
 import gnu.testlet.runner.RunResult;
+import gnu.testlet.runner.TestResult;
 import gnu.testlet.runner.Filter.LineProcessor;
 
 import java.io.IOException;
@@ -35,19 +38,35 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.log4j.Logger;
+
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
  */
 public class MauveTestFramework implements TestFramework {
+    private static final Logger LOGGER = Logger.getLogger(MauveTestFramework.class);
+
     private final List<String> testList;
 
     /**
      * @throws IOException
      *
      */
-    public MauveTestFramework() throws IOException {
-        testList = readCompleteList();
+    public MauveTestFramework() {
+        try {
+            testList = readCompleteList();
+        } catch (IOException e) {
+            LOGGER.error(e);
+            throw new Error(e);
+        }
+    }
+
+    void replaceDefaultTestList(Class<?>... classes) {
+        testList.clear();
+        for (Class<?> cls : classes) {
+            testList.add(cls.getName());
+        }
     }
 
     /**
@@ -68,35 +87,47 @@ public class MauveTestFramework implements TestFramework {
 
     /**
      * {@inheritDoc}
+     * @throws UnknownTestException
      */
     @Override
-    public boolean runTest(String test) {
+    public boolean runTest(String test) throws UnknownTestException {
+        if (!getTests().contains(test)) {
+            throw new UnknownTestException(test);
+        }
+
         JTSMauve m = new JTSMauve();
         RunResult result = m.runTest(test);
-        return false; //TODO
+        int cc = result.getCheckCount();
+        int cc2 = result.getCheckCount(true);
+        int cc3 = result.getCheckCount(false);
+        PackageResult pr = (PackageResult) result.getPackageIterator().next();
+        ClassResult cr = (ClassResult) pr.getClassIterator().next();
+        TestResult tr = (TestResult) cr.getTestIterator().next();
+
+        return result.getCheckCount(false) == 0; 
     }
 
     private class JTSMauve extends Mauve {
         public RunResult runTest(String testName) {
             // save the default locale, some tests change the default
             Locale savedLocale = Locale.getDefault();
-            
+
             result = new RunResult("Mauve Test Run");
             addSystemProperties(result);
             currentCheck = new CheckResult(0, false);
 
             executeLine("", testName);
-            
+
             // restore the default locale
             Locale.setDefault(savedLocale);
-            
+
             return getResult();
         }
     }
 
     /**
-     * Read the mauve tests list but don't take lines containing '[' 
-     * and also apply additional filters specified in configuration. 
+     * Read the mauve tests list but don't take lines containing '['
+     * and also apply additional filters specified in configuration.
      * @return
      * @throws IOException
      */

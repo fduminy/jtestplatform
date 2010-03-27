@@ -25,7 +25,7 @@
  */
 package org.jtestplatform.client;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.concurrent.Future;
 
 import org.jtestplatform.cloud.TransportProvider;
@@ -58,5 +58,5 @@ public interface TestManager {
      * @return
      * @throws TransportException 
      */
-    List<String> getFrameworkTests(String testFramework, TransportProvider transportProvider, Platform platform) throws TransportException;
+    Collection<String> getFrameworkTests(String testFramework, TransportProvider transportProvider, Platform platform) throws TransportException;
 }

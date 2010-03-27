@@ -22,7 +22,7 @@
  */
 package org.jtestplatform.client;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -83,7 +83,7 @@ public class DefaultTestManager implements TestManager {
      * @throws TransportException 
      */
     @Override
-    public List<String> getFrameworkTests(String testFramework, TransportProvider transportProvider, Platform platform) throws TransportException {
+    public Collection<String> getFrameworkTests(String testFramework, TransportProvider transportProvider, Platform platform) throws TransportException {
         //TODO we assume here that the available tests/test frameworks are all the same on each server. check it ?
         Transport transport = transportProvider.get(platform);
         if (LOGGER.isDebugEnabled()) {

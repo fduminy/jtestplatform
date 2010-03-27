@@ -24,6 +24,7 @@
  */
 package org.jtestplatform.server;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -32,8 +33,8 @@ import java.util.List;
  */
 public interface TestFramework {
     String getName();
-    
-    List<String> getTests();
-    
-    boolean runTest(String test);
+
+    Collection<String> getTests();
+
+    boolean runTest(String test) throws UnknownTestException;
 }

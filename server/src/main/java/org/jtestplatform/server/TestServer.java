@@ -129,7 +129,7 @@ public class TestServer<T extends Message> {
         while (true) {
             Message message = transportManager.receive(transport);
             TestServerCommand<T, ?> command = (TestServerCommand<T, ?>) messageClassToCommand.get(message.getClass());
-            
+
             if (command != null) {
                 try {
                     Message result = command.execute((T) message);

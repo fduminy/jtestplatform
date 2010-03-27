@@ -18,35 +18,21 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
  * USA.
- * -
  */
-package org.jtestplatform.server.commands;
-
-import java.util.Collection;
-
-import org.jtestplatform.common.message.FrameworkTests;
-import org.jtestplatform.common.message.GetFrameworkTests;
-import org.jtestplatform.server.TestServer;
-import org.jtestplatform.server.TestServerCommand;
+/**
+ * 
+ */
+package org.jtestplatform.server;
 
 /**
- *
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
  */
-public class GetFrameworkTestsCommand implements TestServerCommand<GetFrameworkTests, FrameworkTests> {
-    private final TestServer<?> testServer;
+public class UnknownTestException extends Exception {
 
-    public GetFrameworkTestsCommand(TestServer<?> testServer) {
-        this.testServer = testServer;
-    }
+    private static final long serialVersionUID = 8247965068975993166L;
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public FrameworkTests execute(GetFrameworkTests message) throws Exception {
-        Collection<String> tests = testServer.getTestFramework(message.getFramework()).getTests();
-        return new FrameworkTests(tests);
+    public UnknownTestException(String testName) {
+        super("unknown test : " + testName);
     }
 }

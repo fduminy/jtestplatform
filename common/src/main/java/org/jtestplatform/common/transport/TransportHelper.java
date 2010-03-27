@@ -36,14 +36,14 @@ import org.jtestplatform.common.message.Message;
 public class TransportHelper {
     public void send(Transport transport, Message message) throws TransportException {
         transport.send(message.getClass().getName());
-        
+
         if (message.getClass().isEnum()) {
             transport.send(((Enum<?>) message).name());
         }
-        
+
         message.sendWith(transport);
     }
-    
+
     public Message receive(Transport transport) throws TransportException {
         String className = transport.receive();
         

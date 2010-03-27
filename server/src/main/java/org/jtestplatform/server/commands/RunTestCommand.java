@@ -32,6 +32,7 @@ import org.jtestplatform.common.message.TestResult;
 import org.jtestplatform.server.TestFramework;
 import org.jtestplatform.server.TestServer;
 import org.jtestplatform.server.TestServerCommand;
+import org.jtestplatform.server.UnknownTestException;
 
 public class RunTestCommand implements TestServerCommand<RunTest, TestResult> {
     private static final Logger LOGGER = Logger.getLogger(RunTestCommand.class);
@@ -43,7 +44,7 @@ public class RunTestCommand implements TestServerCommand<RunTest, TestResult> {
     }
 
     @Override
-    public TestResult execute(RunTest message) {
+    public TestResult execute(RunTest message) throws Exception {
         String test = message.getTest();
         LOGGER.debug("running test " + test + " on framework " + message.getFramework());
         TestFramework testFramework = testServer.getTestFramework(message.getFramework());
