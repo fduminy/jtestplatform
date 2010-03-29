@@ -24,7 +24,7 @@
  */
 package org.jtestplatform.server;
 
-import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -51,9 +51,8 @@ public class JUnitTestFramework implements TestFramework {
     private final Map<String, TestData> tests = new HashMap<String, TestData>();
 
     public void addTestClass(Class<?> testClass) throws Exception {
-        for (FrameworkMethod method : getTestMethods(testClass)) {
-            String name = method.getMethod().getDeclaringClass().getName();
-            name += '#' + method.getName();
+        for (String method : getTestMethods(testClass)) {
+            String name = testClass.getName() + '#' + method;
             tests.put(name, new TestData(testClass, method));
         }
     }
@@ -91,7 +90,7 @@ public class JUnitTestFramework implements TestFramework {
             @Override
             public boolean shouldRun(Description description) {
                 String wantedClass = t.getTestClass().getName();
-                String wantedMethod = t.getTestMethod().getName();
+                String wantedMethod = t.getTestMethod();
 
                 boolean match = description.getClassName().equals(wantedClass) &&
                     extractRealMethodName(description).equals(wantedMethod);
@@ -105,17 +104,14 @@ public class JUnitTestFramework implements TestFramework {
                 }
 
                 if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("getClassName=" + description.getClassName() +
-                            " methodName=" + description.getMethodName() +
-                            " displayName=" + description.getDisplayName() +
-                            " match=" + match);
+                    LOGGER.debug(JUnitTestFramework.this.toString(description) + " match=" + match);
                 }
                 return match;
             }
 
             @Override
             public String describe() {
-                return t.getTestClass().getName() + '#' + t.getTestMethod().getName();
+                return t.getTestClass().getName() + '#' + t.getTestMethod();
             }
 
             private String extractRealMethodName(Description d) {
@@ -127,7 +123,7 @@ public class JUnitTestFramework implements TestFramework {
                     }
                 }
                 return methodName;
-            }            
+            }
         });
 
         Result result = core.run(request);
@@ -184,29 +180,56 @@ public class JUnitTestFramework implements TestFramework {
 */
 
     @SuppressWarnings("unchecked")
-    private Set<FrameworkMethod> getTestMethods(Class<?> classToTest) throws Exception {
-        org.junit.runners.model.TestClass tc = new org.junit.runners.model.TestClass(classToTest);
-        Set<FrameworkMethod> methods =
-                new HashSet<FrameworkMethod>(tc.getAnnotatedMethods(Test.class));
-        methods.addAll(tc.getAnnotatedMethods(Theory.class));
+    private Set<String> getTestMethods(Class<?> testClass) throws Exception {
+        final Set<String> methods = new HashSet<String>();
+        if (junit.framework.TestCase.class.isAssignableFrom(testClass)) {
+            for (Method method : testClass.getMethods()) {
+                if (LOGGER.isDebugEnabled() && method.getName().startsWith("test")) {
+                    LOGGER.debug("class=" + testClass.getName() + " method=" + method.getName());
+                }
+
+                if (method.getName().startsWith("test") && (method.getParameterTypes().length == 0)) {
+                    methods.add(method.getName());
+                }
+            }
+        } else {
+            org.junit.runners.model.TestClass tc = new org.junit.runners.model.TestClass(testClass);
+            for (FrameworkMethod method : tc.getAnnotatedMethods(Test.class)) {
+                methods.add(method.getName());
+            }
+            for (FrameworkMethod method : tc.getAnnotatedMethods(Theory.class)) {
+                methods.add(method.getName());
+            }
+        }
+
+        if (methods.isEmpty()) {
+            throw new Exception("no test method in class " + testClass.getName());
+        }
+
         return methods;
     }
 
     private static class TestData {
         private final Class<?> testClass;
-        private final FrameworkMethod testMethod;
+        private final String testMethod;
 
-        public TestData(Class<?> testClass, FrameworkMethod testMethod) {
+        public TestData(Class<?> testClass, String method) {
             this.testClass = testClass;
-            this.testMethod = testMethod;
+            this.testMethod = method;
         }
 
         public Class<?> getTestClass() {
             return testClass;
         }
 
-        public FrameworkMethod getTestMethod() {
+        public String getTestMethod() {
             return testMethod;
         }
+    }
+
+    private String toString(Description description) {
+        return "Description[className=" + description.getClassName() +
+        " methodName=" + description.getMethodName() +
+        " displayName=" + description.getDisplayName() + ']';
     }
 }

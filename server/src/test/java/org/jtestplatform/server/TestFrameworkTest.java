@@ -24,9 +24,8 @@
  */
 package org.jtestplatform.server;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
+import static org.jtestplatform.server.Utils.*;
 import gnu.testlet.TestHarness;
 import gnu.testlet.Testlet;
 
@@ -37,6 +36,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import junit.framework.TestCase;
+
+import org.hamcrest.Matcher;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.theories.DataPoint;
@@ -62,15 +64,29 @@ public class TestFrameworkTest {
         new HashMap<TestFramework, List<String>>();
 
     static {
+        Utils.initLog4j();
+        
         try {
             // junit test framework
             List<String> failingTests = new ArrayList<String>();
 
-            JUNIT_TEST_FRAMEWORK.addTestClass(ParameterizedTestClass.class);
-            failingTests.add(ParameterizedTestClass.class.getName() + "#aFailingTest");
+            Class<?> testClass = ParameterizedTestClass.class;
+            JUNIT_TEST_FRAMEWORK.addTestClass(testClass);
+            failingTests.add(makeTestName(testClass, "aFailingTest"));
+            assertThat(JUNIT_TEST_FRAMEWORK.getTests(), contains(testClass, "aFailingTest"));
+            assertThat(JUNIT_TEST_FRAMEWORK.getTests(), contains(testClass, "aTest"));
 
-            JUNIT_TEST_FRAMEWORK.addTestClass(TestClass.class);
-            failingTests.add(TestClass.class.getName() + "#aFailingTest");
+            testClass = TestClass.class;
+            JUNIT_TEST_FRAMEWORK.addTestClass(testClass);
+            failingTests.add(makeTestName(testClass, "aFailingTest"));
+            assertThat(JUNIT_TEST_FRAMEWORK.getTests(), contains(testClass, "aFailingTest"));
+            assertThat(JUNIT_TEST_FRAMEWORK.getTests(), contains(testClass, "aTest"));
+
+            testClass = JUnit3TestClassTest.class;
+            JUNIT_TEST_FRAMEWORK.addTestClass(testClass);
+            failingTests.add(JUnit3TestClassTest.class.getName() + "#testThatFails");
+            assertThat(JUNIT_TEST_FRAMEWORK.getTests(), contains(testClass, "testThatFails"));
+            assertThat(JUNIT_TEST_FRAMEWORK.getTests(), contains(testClass, "testThatWorks"));
 
             FAILING_TESTS.put(JUNIT_TEST_FRAMEWORK, failingTests);
 
@@ -81,8 +97,11 @@ public class TestFrameworkTest {
                     MauveFailingTestClass.class);
             failingTests.add(MauveFailingTestClass.class.getName());
             FAILING_TESTS.put(MAUVE_TEST_FRAMEWORK, failingTests);
+            assertThat(MAUVE_TEST_FRAMEWORK.getTests(), contains(MauveTestClass.class));
+            assertThat(MAUVE_TEST_FRAMEWORK.getTests(), contains(MauveFailingTestClass.class));
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            throw new AssertionError(e.getMessage());
         }
     }
 
@@ -167,6 +186,20 @@ public class TestFrameworkTest {
 
         @Test
         public void aFailingTest() {
+            Assert.fail("a failure");
+        }
+    }
+
+    public static class JUnit3TestClassTest extends TestCase {
+        public JUnit3TestClassTest() {
+            super();
+        }
+        
+        public void testThatWorks() {
+
+        }
+
+        public void testThatFails() {
             Assert.fail("a failure");
         }
     }
