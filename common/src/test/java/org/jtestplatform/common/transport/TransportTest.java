@@ -32,6 +32,7 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
+import org.junit.AfterClass;
 import org.junit.experimental.theories.DataPoint;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
@@ -49,7 +50,22 @@ public class TransportTest {
     @DataPoint
     public static final ServerTransport SERVER_UDP_TRANSPORT;
 
+    @DataPoint
+    public static final String MESSAGE = "a message";
+    @DataPoint
+    public static final String NULL_MESSAGE = null;
+    @DataPoint
+    public static final String EMPTY_MESSAGE = "";
+    //@DataPoint //TODO handle case of a big message
+    public static final String A_BIG_MESSAGE;
     static {
+        int size = 10 * 1024 * 1024;
+        StringBuilder sb = new StringBuilder(size);
+        for (int i = 0; i < size; i++) {
+            sb.append((char) i);
+        }
+        A_BIG_MESSAGE = sb.toString();
+        
         try {
             final int port = 12345;
             DatagramSocket ds = new DatagramSocket();
@@ -62,18 +78,26 @@ public class TransportTest {
             throw new Error(e);
         }
     }
-
-    @Theory
-    public void testSendReceive(ClientTransport client, ServerTransport server) throws IOException, TransportException {        
+    
+    @AfterClass
+    public static void afterClass() {
         try {
-            String clientMsg = "a message";
-            client.getTransport().send(clientMsg);
-            String serverMsg = server.getTransport().receive();
-            assertEquals(clientMsg, serverMsg);
-        } finally {
-            client.getTransport().close();
-            server.getTransport().close();
+            CLIENT_UDP_TRANSPORT.getTransport().close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+        try {
+            SERVER_UDP_TRANSPORT.getTransport().close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    @Theory
+    public void testSendReceive(ClientTransport client, ServerTransport server, String message) throws IOException, TransportException {
+        client.getTransport().send(message);
+        String serverMsg = server.getTransport().receive();
+        assertEquals(message, serverMsg);
     }
 
     private static class ClientTransport {
@@ -85,9 +109,9 @@ public class TransportTest {
 
         public Transport getTransport() {
             return transport;
-        }        
+        }
     }
-    
+
     private static class ServerTransport {
         private final Transport transport;
 
@@ -97,6 +121,6 @@ public class TransportTest {
 
         public Transport getTransport() {
             return transport;
-        }        
+        }
     }
 }
