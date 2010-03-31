@@ -24,21 +24,22 @@
  */
 package org.jtestplatform.server;
 
+import gnu.testlet.Testlet;
 import gnu.testlet.runner.CheckResult;
-import gnu.testlet.runner.ClassResult;
 import gnu.testlet.runner.Filter;
 import gnu.testlet.runner.Mauve;
-import gnu.testlet.runner.PackageResult;
 import gnu.testlet.runner.RunResult;
-import gnu.testlet.runner.TestResult;
 import gnu.testlet.runner.Filter.LineProcessor;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
+
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)
@@ -54,18 +55,27 @@ public class MauveTestFramework implements TestFramework {
      *
      */
     public MauveTestFramework() {
-        try {
-            testList = readCompleteList();
-        } catch (IOException e) {
-            LOGGER.error(e);
-            throw new Error(e);
-        }
+        testList = new ArrayList<String>();
     }
 
-    void replaceDefaultTestList(Class<?>... classes) {
-        testList.clear();
-        for (Class<?> cls : classes) {
-            testList.add(cls.getName());
+    public void addDefaultTests() throws IOException {
+        testList.addAll(readCompleteList());
+    }
+
+    /**
+     * {@inheritDoc}
+     * @param testClass
+     * @throws Exception
+     */
+    @Override
+    public void addTestClass(Class<?> testClass) throws Exception {
+        Set<String> tests = getTests(testClass);
+        if (tests == null) {
+            throw new Exception("no test method in class " + testClass.getName());
+        }
+
+        for (String test : tests) {
+            testList.add(testClass.getName());
         }
     }
 
@@ -97,14 +107,17 @@ public class MauveTestFramework implements TestFramework {
 
         JTSMauve m = new JTSMauve();
         RunResult result = m.runTest(test);
+
+        /*
         int cc = result.getCheckCount();
         int cc2 = result.getCheckCount(true);
         int cc3 = result.getCheckCount(false);
         PackageResult pr = (PackageResult) result.getPackageIterator().next();
         ClassResult cr = (ClassResult) pr.getClassIterator().next();
         TestResult tr = (TestResult) cr.getTestIterator().next();
+        */
 
-        return result.getCheckCount(false) == 0; 
+        return result.getCheckCount(false) == 0;
     }
 
     private class JTSMauve extends Mauve {
@@ -145,5 +158,19 @@ public class MauveTestFramework implements TestFramework {
 
         });
         return list;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Set<String> getTests(Class<?> testClass) {
+        Set<String> tests = null;
+
+        if (Testlet.class.isAssignableFrom(testClass)) {
+            tests = Collections.singleton(testClass.getName());
+        }
+
+        return tests;
     }
 }

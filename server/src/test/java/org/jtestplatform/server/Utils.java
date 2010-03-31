@@ -85,7 +85,7 @@ class Utils {
     }
 
     public static String makeTestName(Class<?> testClass, String methodName) {
-        return testClass.getName() + "#" + methodName;        
+        return testClass.getName() + ((methodName == null) ? "" : ("#" + methodName));
     }
     
     public static Matcher<Collection<String>> contains(Class<?> testClass, String methodName) {

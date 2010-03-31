@@ -24,8 +24,14 @@
  */
 package org.jtestplatform.server;
 
-import static org.junit.Assert.*;
-import static org.jtestplatform.server.Utils.*;
+import static org.jtestplatform.server.Utils.contains;
+import static org.jtestplatform.server.Utils.makeTestName;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import gnu.testlet.TestHarness;
 import gnu.testlet.Testlet;
 
@@ -35,10 +41,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import junit.framework.TestCase;
 
-import org.hamcrest.Matcher;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.theories.DataPoint;
@@ -60,45 +66,60 @@ public class TestFrameworkTest {
     @DataPoint
     public static final JUnitTestFramework JUNIT_TEST_FRAMEWORK = new JUnitTestFramework();
 
-    private static final Map<TestFramework, List<String>> FAILING_TESTS =
-        new HashMap<TestFramework, List<String>>();
+    private static final Map<TestFramework, TestFrameworkData> TESTS =
+        new HashMap<TestFramework, TestFrameworkData>();
 
+    private static final boolean FAIL = false;
+    private static final boolean SUCCEED = true;
+    private static void addTest(TestFramework testFramework, Class<?> testClass, boolean succeed) throws Exception {
+        addTest(testFramework, testClass, succeed, null);
+    }
+    private static void addTest(TestFramework testFramework, Class<?> testClass, boolean succeed, String method) throws Exception {
+        TestFrameworkData data = (TestFrameworkData) TESTS.get(testFramework);
+        if (data == null) {
+            data = new TestFrameworkData(testFramework);
+            TESTS.put(testFramework, data);
+        }
+        data.addTest(testClass, succeed, method);
+    }
+    private static boolean mustFail(TestFramework framework, String testName) {
+        TestFrameworkData data = (TestFrameworkData) TESTS.get(framework);
+        return data.mustFail(testName);
+    }
+
+
+    /**
+     * @param testClass
+     * @return
+     */
+    private static List<String> getExpectedTests(TestFramework testFramework, Class<?> testClass) {
+        TestFrameworkData data = (TestFrameworkData) TESTS.get(testFramework);
+        return data.getExpectedTests(testClass);
+    }
+    /**
+     * @param testFramework
+     * @return
+     */
+    private static Collection<Class<?>> getTestClasses(TestFramework testFramework) {
+        TestFrameworkData data = (TestFrameworkData) TESTS.get(testFramework);
+        return data.getTestClasses();
+    }
+    
     static {
         Utils.initLog4j();
         
         try {
             // junit test framework
-            List<String> failingTests = new ArrayList<String>();
-
-            Class<?> testClass = ParameterizedTestClass.class;
-            JUNIT_TEST_FRAMEWORK.addTestClass(testClass);
-            failingTests.add(makeTestName(testClass, "aFailingTest"));
-            assertThat(JUNIT_TEST_FRAMEWORK.getTests(), contains(testClass, "aFailingTest"));
-            assertThat(JUNIT_TEST_FRAMEWORK.getTests(), contains(testClass, "aTest"));
-
-            testClass = TestClass.class;
-            JUNIT_TEST_FRAMEWORK.addTestClass(testClass);
-            failingTests.add(makeTestName(testClass, "aFailingTest"));
-            assertThat(JUNIT_TEST_FRAMEWORK.getTests(), contains(testClass, "aFailingTest"));
-            assertThat(JUNIT_TEST_FRAMEWORK.getTests(), contains(testClass, "aTest"));
-
-            testClass = JUnit3TestClassTest.class;
-            JUNIT_TEST_FRAMEWORK.addTestClass(testClass);
-            failingTests.add(JUnit3TestClassTest.class.getName() + "#testThatFails");
-            assertThat(JUNIT_TEST_FRAMEWORK.getTests(), contains(testClass, "testThatFails"));
-            assertThat(JUNIT_TEST_FRAMEWORK.getTests(), contains(testClass, "testThatWorks"));
-
-            FAILING_TESTS.put(JUNIT_TEST_FRAMEWORK, failingTests);
+            addTest(JUNIT_TEST_FRAMEWORK, ParameterizedTestClass.class, FAIL, "aFailingTest");
+            addTest(JUNIT_TEST_FRAMEWORK, ParameterizedTestClass.class, SUCCEED, "aTest");
+            addTest(JUNIT_TEST_FRAMEWORK, TestClass.class, FAIL, "aFailingTest");
+            addTest(JUNIT_TEST_FRAMEWORK, TestClass.class, SUCCEED, "aTest");            
+            addTest(JUNIT_TEST_FRAMEWORK, JUnit3TestClassTest.class, FAIL, "testThatFails");
+            addTest(JUNIT_TEST_FRAMEWORK, JUnit3TestClassTest.class, SUCCEED, "testThatWorks");
 
             // mauve test framework
-            failingTests = new ArrayList<String>();
-
-            MAUVE_TEST_FRAMEWORK.replaceDefaultTestList(MauveTestClass.class,
-                    MauveFailingTestClass.class);
-            failingTests.add(MauveFailingTestClass.class.getName());
-            FAILING_TESTS.put(MAUVE_TEST_FRAMEWORK, failingTests);
-            assertThat(MAUVE_TEST_FRAMEWORK.getTests(), contains(MauveTestClass.class));
-            assertThat(MAUVE_TEST_FRAMEWORK.getTests(), contains(MauveFailingTestClass.class));
+            addTest(MAUVE_TEST_FRAMEWORK, MauveTestClass.class, SUCCEED);
+            addTest(MAUVE_TEST_FRAMEWORK, MauveFailingTestClass.class, FAIL);
         } catch (Exception e) {
             e.printStackTrace();
             throw new AssertionError(e.getMessage());
@@ -125,9 +146,28 @@ public class TestFrameworkTest {
     }
 
     @Theory
+    public void testGetTestsForClass(TestFramework testFramework) {        
+        for (Class<?> testClass : getTestClasses(testFramework)) {
+            String[] expectedTests = getExpectedTests(testFramework, testClass).toArray(new String[0]);
+            String[] tests = testFramework.getTests(testClass).toArray(new String[0]);
+            Arrays.sort(expectedTests);
+            Arrays.sort(tests);
+            assertArrayEquals("invalid test list for class " + testClass.getName(), expectedTests, tests);
+        }
+    }
+
+    @Theory()
+    
+    public void testGetTestsForWrongClass(TestFramework testFramework) {
+        Class<?> aWrongClass = String.class; // must not be a valid test class for the framework
+        Set<String> tests = testFramework.getTests(aWrongClass);
+        assertNull("list of tests must be null for a wrong class", tests);
+    }
+    
+    @Theory
     public void testRunTest(TestFramework testFramework) throws UnknownTestException {
         for (String aTest : testFramework.getTests()) {
-            if (!FAILING_TESTS.get(testFramework).contains(aTest)) {
+            if (!mustFail(testFramework, aTest)) {
                 boolean success = testFramework.runTest(aTest);
                 assertTrue("The test '" + aTest + "' must succeed", success);
             }
@@ -137,7 +177,7 @@ public class TestFrameworkTest {
     @Theory
     public void testRunFailingTest(TestFramework testFramework) throws UnknownTestException {
         for (String aTest : testFramework.getTests()) {
-            if (FAILING_TESTS.get(testFramework).contains(aTest)) {
+            if (mustFail(testFramework, aTest)) {
                 boolean success = testFramework.runTest(aTest);
                 assertFalse("The test '" + aTest + "' must fail", success);
             }
@@ -217,6 +257,71 @@ public class TestFrameworkTest {
         @Override
         public void test(TestHarness harness) {
             harness.check(true, false); // will fail
+        }
+    }
+    
+    private static class TestFrameworkData {
+        private final TestFramework framework;
+        private final List<String> failingTests = new ArrayList<String>();
+        private final List<String> succeedingTests = new ArrayList<String>();
+        private final Map<Class<?>, List<String>> tests = new HashMap<Class<?>, List<String>>();
+        
+        public TestFrameworkData(TestFramework framework) {
+            this.framework = framework;
+        }
+
+        /**
+         * @param testClass
+         * @return
+         */
+        public List<String> getExpectedTests(Class<?> testClass) {
+            return tests.get(testClass);
+        }
+
+        /**
+         * @return
+         */
+        public Collection<Class<?>> getTestClasses() {
+            return tests.keySet();
+        }
+
+        /**
+         * @param testName
+         * @return
+         */
+        public boolean mustFail(String testName) {
+            boolean result;
+            
+            if (failingTests.contains(testName)) {
+                result = true;
+            } else if (succeedingTests.contains(testName)) {
+                result = false;
+            } else {
+                throw new AssertionError("unexpected test : " + testName);
+            }
+            
+            return result;
+        }
+
+        public void addTest(Class<?> testClass, boolean succeed, String method) throws Exception {
+            String testName = makeTestName(testClass, method);
+            
+            framework.addTestClass(testClass);
+            
+            List<String> testsForClass = tests.get(testClass);
+            if (testsForClass == null) {
+                testsForClass = new ArrayList<String>();
+                tests.put(testClass, testsForClass);
+            }
+            testsForClass.add(testName);
+            
+            if (succeed) {
+                succeedingTests.add(testName);
+            } else {
+                failingTests.add(testName);
+            }
+            
+            assertThat(framework.getTests(), contains(testClass, method));
         }
     }
 }

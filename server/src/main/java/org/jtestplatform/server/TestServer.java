@@ -62,22 +62,21 @@ public class TestServer<T extends Message> {
             System.exit(2);
         }
     }
-    
+
     private final Map<Class<? extends Message>, TestServerCommand<? extends Message, ? extends Message>> messageClassToCommand;
-    private final Map<String, TestFramework> testFrameworks;
     private final Config config;
     private final TransportHelper transportManager;
     private final TransportFactory transportFactory;
     private Transport transport;
-    
+
     public TestServer() throws Exception {
         messageClassToCommand = new HashMap<Class<? extends Message>, TestServerCommand<? extends Message, ? extends Message>>();
-        
+
         addCommand(RunTest.class, new RunTestCommand(this));
         addCommand(Shutdown.class, new ShutdownCommand(this));
         addCommand(GetStatus.class, new GetStatusCommand());
-        addCommand(GetTestFrameworks.class, new GetTestFrameworksCommand(this));
-        addCommand(GetFrameworkTests.class, new GetFrameworkTestsCommand(this));
+        addCommand(GetTestFrameworks.class, new GetTestFrameworksCommand());
+        addCommand(GetFrameworkTests.class, new GetFrameworkTestsCommand());
 
         config = Config.read(); //TODO remove it ?
 
@@ -92,30 +91,6 @@ public class TestServer<T extends Message> {
             }
         };
         transportManager = new TransportHelper();
-
-        testFrameworks = new HashMap<String, TestFramework>();
-        addTestFramework(new JUnitTestFramework());
-        addTestFramework(new MauveTestFramework());
-    }
-
-    public void addTestFramework(TestFramework framework) {
-        testFrameworks.put(framework.getName(), framework);
-    }
-
-    /**
-     * @param framework
-     * @return
-     */
-    public TestFramework getTestFramework(String framework) {
-        return testFrameworks.get(framework);
-    }
-
-    /**
-     * @param framework
-     * @return
-     */
-    public Set<String> getTestFrameworks() {
-        return testFrameworks.keySet();
     }
 
     private <TM extends Message> void addCommand(Class<TM> messageClass, TestServerCommand<TM, ? extends Message> command) {

@@ -50,10 +50,20 @@ public class JUnitTestFramework implements TestFramework {
     
     private final Map<String, TestData> tests = new HashMap<String, TestData>();
 
+    /**
+     * {@inheritDoc}
+     * @param testClass
+     * @throws Exception
+     */
+    @Override
     public void addTestClass(Class<?> testClass) throws Exception {
-        for (String method : getTestMethods(testClass)) {
-            String name = testClass.getName() + '#' + method;
-            tests.put(name, new TestData(testClass, method));
+        Set<String> methods = getMethods(testClass);
+        if (methods == null) {
+            throw new Exception("no test method in class " + testClass.getName());
+        }
+
+        for (String method : methods) {
+            tests.put(generateTestName(testClass, method), new TestData(testClass, method));
         }
     }
 
@@ -72,7 +82,7 @@ public class JUnitTestFramework implements TestFramework {
     public Collection<String> getTests() {
         return tests.keySet();
     }
-
+    
     /**
      * {@inheritDoc}
      * @throws UnknownTestException
@@ -111,7 +121,7 @@ public class JUnitTestFramework implements TestFramework {
 
             @Override
             public String describe() {
-                return t.getTestClass().getName() + '#' + t.getTestMethod();
+                return generateTestName(t.getTestClass(), t.getTestMethod());
             }
 
             private String extractRealMethodName(Description d) {
@@ -130,58 +140,26 @@ public class JUnitTestFramework implements TestFramework {
         return result.getFailureCount() == 0;
     }
 
-    // TODO put that code in JNode to collect its junit tests in a file
-/*
-    private Map<String, TestData> findTests() throws Exception {
-        Map<String, TestData> result = new HashMap<String, TestData>();
-
-        String path = "/home/fabien/data/Projets/jtestplatform/server/target/test-classes";
-
-        for (Class<?> cls : getClasses(new File(path))) {
-            addTestClass(cls);
-        }
-
-        return result;
-    }
-
-    private Set<Class<?>> getClasses(File directory) {
-        Set<Class<?>> classes = new HashSet<Class<?>>();
-        getClasses(directory, directory, classes);
-        return classes;
-    }
-
-    private void getClasses(File baseDirectory, File directory, Set<Class<?>> classes) {
-        final String extension = ".class";
-        File[] files = directory.listFiles(new FileFilter() {
-            public boolean accept(File pathname) {
-                return pathname.isDirectory() || pathname.getName().endsWith(extension);
-            }
-        });
-        for (File f : files) {
-            if (f.isDirectory()) {
-                getClasses(baseDirectory, f, classes);
-            } else {
-                String path = f.getAbsolutePath();
-                String baseDir = baseDirectory.getAbsolutePath();
-                path = path.substring(baseDir.length() + 1).replace(File.separatorChar, '.');
-                String className = path.substring(0, path.length() - extension.length());
-                try {
-                    Class<?> cls = Class.forName(className);
-                    if (cls.getConstructors().length == 1) {
-                        classes.add(cls);
-                    }
-                } catch (ClassNotFoundException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
+    @SuppressWarnings("unchecked")
+    @Override
+    public Set<String> getTests(Class<?> testClass) {        
+        Set<String> tests = null;
+        
+        Set<String> methods = getMethods(testClass);
+        if (methods != null) {
+            tests = new HashSet<String>(methods.size());
+            for (String method : methods) {
+                tests.add(generateTestName(testClass, method));
             }
         }
+        
+        return tests;
     }
-*/
 
     @SuppressWarnings("unchecked")
-    private Set<String> getTestMethods(Class<?> testClass) throws Exception {
+    private Set<String> getMethods(Class<?> testClass) {
         final Set<String> methods = new HashSet<String>();
+        
         if (junit.framework.TestCase.class.isAssignableFrom(testClass)) {
             for (Method method : testClass.getMethods()) {
                 if (LOGGER.isDebugEnabled() && method.getName().startsWith("test")) {
@@ -192,7 +170,7 @@ public class JUnitTestFramework implements TestFramework {
                     methods.add(method.getName());
                 }
             }
-        } else {
+        } else if (testClass.getConstructors().length == 1) {            
             org.junit.runners.model.TestClass tc = new org.junit.runners.model.TestClass(testClass);
             for (FrameworkMethod method : tc.getAnnotatedMethods(Test.class)) {
                 methods.add(method.getName());
@@ -202,11 +180,11 @@ public class JUnitTestFramework implements TestFramework {
             }
         }
 
-        if (methods.isEmpty()) {
-            throw new Exception("no test method in class " + testClass.getName());
-        }
-
-        return methods;
+        return methods.isEmpty() ? null : methods;
+    }
+    
+    private String generateTestName(Class<?> testClass, String method) {
+        return testClass.getName() + '#' + method;
     }
 
     private static class TestData {

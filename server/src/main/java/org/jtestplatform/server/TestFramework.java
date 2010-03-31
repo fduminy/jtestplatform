@@ -25,16 +25,32 @@
 package org.jtestplatform.server;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.Set;
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
  */
 public interface TestFramework {
+    /**
+     * {@inheritDoc}
+     * @param testClass
+     * @throws Exception
+     */
+    void addTestClass(Class<?> testClass) throws Exception;
+    
     String getName();
 
     Collection<String> getTests();
 
     boolean runTest(String test) throws UnknownTestException;
+
+    /**
+     * @param testClass
+     * @return a list of tests provided by the given class, 
+     * null if there is none or the class is not a valid 
+     * test class for the framework.  
+     * @throws ClassNotFoundException when 
+     */
+    Set<String> getTests(Class<?> testClass);
 }

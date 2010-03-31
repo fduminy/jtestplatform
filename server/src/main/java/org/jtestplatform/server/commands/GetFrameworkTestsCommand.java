@@ -26,6 +26,7 @@ import java.util.Collection;
 
 import org.jtestplatform.common.message.FrameworkTests;
 import org.jtestplatform.common.message.GetFrameworkTests;
+import org.jtestplatform.server.TestFrameworkManager;
 import org.jtestplatform.server.TestServer;
 import org.jtestplatform.server.TestServerCommand;
 
@@ -35,18 +36,13 @@ import org.jtestplatform.server.TestServerCommand;
  *
  */
 public class GetFrameworkTestsCommand implements TestServerCommand<GetFrameworkTests, FrameworkTests> {
-    private final TestServer<?> testServer;
-
-    public GetFrameworkTestsCommand(TestServer<?> testServer) {
-        this.testServer = testServer;
-    }
-
     /**
      * {@inheritDoc}
      */
     @Override
     public FrameworkTests execute(GetFrameworkTests message) throws Exception {
-        Collection<String> tests = testServer.getTestFramework(message.getFramework()).getTests();
+        TestFrameworkManager manager = TestFrameworkManager.getInstance();
+        Collection<String> tests = manager.getTestFramework(message.getFramework()).getTests();
         return new FrameworkTests(tests);
     }
 }
