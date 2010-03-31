@@ -39,6 +39,7 @@ import org.apache.log4j.Logger;
 public class UDPTransport implements Transport {
     private static final Logger LOGGER = Logger.getLogger(UDPTransport.class);
 
+    private static final int NULL_SIZE = Integer.MIN_VALUE;
     private static final int MAX_SIZE = Integer.MAX_VALUE;
 
     /**
@@ -61,28 +62,40 @@ public class UDPTransport implements Transport {
     @Override
     public void send(String message) throws TransportException {
         try {
-            final byte[] bytes = message.getBytes();
+            if (message == null) {
+                // send a null message
+                ByteBuffer byteBuffer = ByteBuffer.allocate(INT_SIZE).
+                    putInt(NULL_SIZE);
+                byte[] data = byteBuffer.array();
+                SocketAddress remoteAddress = socket.getRemoteSocketAddress();
+                DatagramPacket packet = new DatagramPacket(data, data.length,
+                        remoteAddress);
 
-            // send size of data
-            ByteBuffer byteBuffer = ByteBuffer.allocate(INT_SIZE).
-                putInt(bytes.length);
-            byte[] data = byteBuffer.array();
-            //remoteAddress = (remoteAddress == null) ? socket.getRemoteSocketAddress() : remoteAddress;
-            SocketAddress remoteAddress = socket.getRemoteSocketAddress();
-            DatagramPacket packet = new DatagramPacket(data, data.length,
-                    remoteAddress);
+                socket.send(packet);
+            } else {
+                final byte[] bytes = message.getBytes();
 
-            socket.send(packet);
-
-            LOGGER.info("nb bytes sent : " + bytes.length);
-
-            // send data
-            packet = new DatagramPacket(bytes, bytes.length, remoteAddress);
-            socket.send(packet);
-
-//            ByteBuffer bb = ByteBuffer.allocate(command.length() * CHAR_SIZE + INT_SIZE);
-//            bb.putInt(command.length()).asCharBuffer().append(command);
-//            socket.getChannel().send(bb, socket.getRemoteSocketAddress());
+                // send size of data
+                ByteBuffer byteBuffer = ByteBuffer.allocate(INT_SIZE).
+                    putInt(bytes.length);
+                byte[] data = byteBuffer.array();
+                //remoteAddress = (remoteAddress == null) ? socket.getRemoteSocketAddress() : remoteAddress;
+                SocketAddress remoteAddress = socket.getRemoteSocketAddress();
+                DatagramPacket packet = new DatagramPacket(data, data.length,
+                        remoteAddress);
+    
+                socket.send(packet);
+    
+                LOGGER.info("nb bytes sent : " + bytes.length);
+    
+                // send data
+                packet = new DatagramPacket(bytes, bytes.length, remoteAddress);
+                socket.send(packet);
+    
+    //            ByteBuffer bb = ByteBuffer.allocate(command.length() * CHAR_SIZE + INT_SIZE);
+    //            bb.putInt(command.length()).asCharBuffer().append(command);
+    //            socket.getChannel().send(bb, socket.getRemoteSocketAddress());
+            }
         } catch (SocketTimeoutException e) {
             throw new TransportException("timeout in send", e);
         } catch (IOException e) {
@@ -99,19 +112,24 @@ public class UDPTransport implements Transport {
             socket.receive(packet);
             int size = ByteBuffer.wrap(data).getInt();
 
-            LOGGER.log(Level.INFO, "nb bytes received : " + size);
-            if (size > MAX_SIZE) {
-                throw new TransportException(
-                        "stream probably corrupted : received more than "
-                        + MAX_SIZE + " bytes (" + size + ")");
+            String message = null;
+            if (size != NULL_SIZE) {
+                LOGGER.log(Level.INFO, "nb bytes received : " + size);
+                if (size > MAX_SIZE) {
+                    throw new TransportException(
+                            "stream probably corrupted : received more than "
+                            + MAX_SIZE + " bytes (" + size + ")");
+                }
+
+                // receive actual data
+                data = new byte[size];
+                packet = new DatagramPacket(data, data.length);
+                socket.receive(packet);
+
+                message = new String(packet.getData());
             }
 
-            // receive actual data
-            data = new byte[size];
-            packet = new DatagramPacket(data, data.length);
-            socket.receive(packet);
-
-            return new String(packet.getData());
+            return message;
 
 //            ByteBuffer bb = ByteBuffer.allocate(INT_SIZE);
 //            socket.getChannel().read(bb);
