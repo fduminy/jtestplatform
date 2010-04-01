@@ -44,6 +44,7 @@ import java.util.Map;
 import java.util.Set;
 
 import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -96,6 +97,18 @@ public class TestFrameworkTest {
         TestFrameworkData data = (TestFrameworkData) TESTS.get(testFramework);
         return data.getExpectedTests(testClass);
     }
+    
+    public static List<String> getExpectedTests() {
+        List<String> tests = new ArrayList<String>();
+        for (TestFramework framework : TESTS.keySet()) {
+            TestFrameworkData data = TESTS.get(framework);
+            for (Class<?> testClass : data.getTestClasses()) {
+                tests.addAll(getExpectedTests(framework, testClass));
+            }
+        }
+        return tests;
+    }
+    
     /**
      * @param testFramework
      * @return
@@ -104,16 +117,16 @@ public class TestFrameworkTest {
         TestFrameworkData data = (TestFrameworkData) TESTS.get(testFramework);
         return data.getTestClasses();
     }
-    
+
     static {
         Utils.initLog4j();
-        
+
         try {
             // junit test framework
             addTest(JUNIT_TEST_FRAMEWORK, ParameterizedTestClass.class, FAIL, "aFailingTest");
             addTest(JUNIT_TEST_FRAMEWORK, ParameterizedTestClass.class, SUCCEED, "aTest");
             addTest(JUNIT_TEST_FRAMEWORK, TestClass.class, FAIL, "aFailingTest");
-            addTest(JUNIT_TEST_FRAMEWORK, TestClass.class, SUCCEED, "aTest");            
+            addTest(JUNIT_TEST_FRAMEWORK, TestClass.class, SUCCEED, "aTest");
             addTest(JUNIT_TEST_FRAMEWORK, JUnit3TestClassTest.class, FAIL, "testThatFails");
             addTest(JUNIT_TEST_FRAMEWORK, JUnit3TestClassTest.class, SUCCEED, "testThatWorks");
 
@@ -244,6 +257,10 @@ public class TestFrameworkTest {
         }
     }
 
+    //TODO add TestSuite and "static TestSuite suite()" to JUnit tests
+    public static class TestSuiteClass extends TestSuite {
+    }
+    
     public static class MauveTestClass implements Testlet {
 
         @Override

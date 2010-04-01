@@ -74,7 +74,10 @@ public class TestFrameworkManager {
         return testFrameworks.keySet();
     }
 
-    //String path = "/home/fabien/data/Projets/jtestplatform/server/target/test-classes";    
+    public Set<String> collectTests(File directory) {
+        return collectTests(directory, (String[]) null);
+    }
+
     public Set<String> collectTests(File directory, String... testFrameworkNames) {
         final Collection<TestFramework> frameworks;
         if ((testFrameworkNames == null) || (testFrameworkNames.length == 0)) {

@@ -51,5 +51,12 @@
             <version>4.8.1</version>
             <scope>compile</scope><!-- we need it since we use JUnit in our test framework -->
         </dependency>
+        
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <version>1.8.2</version>
+            <scope>test</scope>
+        </dependency>        
 	</dependencies>
 </project>
