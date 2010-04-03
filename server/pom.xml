@@ -10,18 +10,18 @@
 	<artifactId>jtestplatform-server</artifactId>
 	<name>JTestPlatform Server</name>
 	<version>0.0.1-SNAPSHOT</version>
-	
-    <licenses>
-        <license>
-            <name>GPL 3.0</name>
-            <url>http://www.gnu.org/licenses/gpl-3.0.html</url>
-        </license>
-    </licenses>
-	
-    <properties>
-       <project.root>${project.parent.basedir}</project.root>
-    </properties>
-	
+
+	<licenses>
+		<license>
+			<name>GPL 3.0</name>
+			<url>http://www.gnu.org/licenses/gpl-3.0.html</url>
+		</license>
+	</licenses>
+
+	<properties>
+		<project.root>${project.parent.basedir}</project.root>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>jtestplatform</groupId>
@@ -30,26 +30,54 @@
 			<scope>compile</scope>
 		</dependency>
 
-        <dependency>
-            <groupId>com.redhat.sources</groupId>
-            <artifactId>mauve</artifactId>
-            <version>0.1</version>
-            <scope>compile</scope>
-        </dependency>		
-        
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.8.1</version>
-            <scope>compile</scope><!-- we need it since we use JUnit in our test framework -->
-        </dependency>
-        
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <version>1.8.2</version>
-            <scope>test</scope>
-        </dependency>        
+		<dependency>
+			<groupId>com.redhat.sources</groupId>
+			<artifactId>mauve</artifactId>
+			<version>0.1</version>
+			<scope>compile</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.8.1</version>
+			<scope>compile</scope><!-- we need it since we use JUnit in our test framework -->
+		</dependency>
+
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+			<version>1.8.2</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
-		
+
+	<build>
+		<plugins>
+			<plugin> <!-- For JNode: do a packaging without JUnit, log4j... -->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>1.3.2</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<artifactSet>
+								<excludes>
+									<exclude>junit:junit</exclude>
+									<exclude>com.redhat.sources:mauve</exclude>
+									<exclude>log4j:log4j</exclude>
+								</excludes>
+							</artifactSet>
+							<shadedArtifactAttached>true</shadedArtifactAttached>
+							<shadedClassifierName>jnode</shadedClassifierName>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 </project>
