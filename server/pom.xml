@@ -10,6 +10,7 @@
 	<artifactId>jtestplatform-server</artifactId>
 	<name>JTestPlatform Server</name>
 	<version>0.0.1-SNAPSHOT</version>
+    <url>http://gitorious.org/jtestplatform/pages/Home</url>
 
 	<licenses>
 		<license>
@@ -93,4 +94,10 @@
 			</plugin>
 		</plugins>
 	</build>
+        
+    <scm>
+        <connection>scm:git:git://gitorious.org/jtestplatform/jtestplatform.git</connection>
+        <tag>HEAD</tag>
+        <url>http://gitorious.org/jtestplatform/jtestplatform/trees/master/server</url>
+    </scm>              
 </project>

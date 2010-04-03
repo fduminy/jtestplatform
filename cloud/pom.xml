@@ -12,6 +12,7 @@
 	<artifactId>jtestplatform-cloud</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>JTestPlatform-Cloud</name>
+    <url>http://gitorious.org/jtestplatform/pages/Home</url>
 
 	<licenses>
 		<license>
@@ -91,7 +92,6 @@
                         <phase>pre-site</phase>
                         <goals>
                             <goal>xdoc</goal>
-                            <goal>xsd</goal>
                         </goals>
                         <configuration>
                             <models>
@@ -112,4 +112,10 @@
             <url>http://www.libvirt.org/maven2/</url>
         </repository>
     </repositories>    
+    
+    <scm>
+        <connection>scm:git:git://gitorious.org/jtestplatform/jtestplatform.git</connection>
+        <tag>HEAD</tag>
+        <url>http://gitorious.org/jtestplatform/jtestplatform/trees/master/cloud</url>
+    </scm>      
 </project>

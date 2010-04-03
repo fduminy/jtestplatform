@@ -158,7 +158,6 @@
                         <phase>pre-site</phase>
                         <goals>
                             <goal>xdoc</goal>
-                            <goal>xsd</goal>
                         </goals>
                         <configuration>
                             <models>
@@ -191,5 +190,11 @@
             <id>maven2-repository.dev.java.net</id>
             <url>http://download.java.net/maven/2</url>
         </pluginRepository>
-    </pluginRepositories>    
+    </pluginRepositories>
+        
+    <scm>
+        <connection>scm:git:git://gitorious.org/jtestplatform/jtestplatform.git</connection>
+        <tag>HEAD</tag>
+        <url>http://gitorious.org/jtestplatform/jtestplatform/trees/master/libvirt-model</url>
+    </scm>              
 </project>

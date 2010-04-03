@@ -10,6 +10,7 @@
 	<artifactId>jtestplatform-common</artifactId>
 	<name>JTestPlatform Common</name>
 	<version>0.0.1-SNAPSHOT</version>
+    <url>http://gitorious.org/jtestplatform/pages/Home</url>
 	
     <licenses>
         <license>
@@ -21,4 +22,10 @@
     <properties>
        <project.root>${project.parent.basedir}</project.root>
     </properties>
+    
+    <scm>
+        <connection>scm:git:git://gitorious.org/jtestplatform/jtestplatform.git</connection>
+        <tag>HEAD</tag>
+        <url>http://gitorious.org/jtestplatform/jtestplatform/trees/master/common</url>
+    </scm>      
 </project>
