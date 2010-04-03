@@ -109,6 +109,19 @@
 					</systemPropertyVariables>
 				</configuration>
 			</plugin>
+			
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.2</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>org.jtestplatform.client.TestDriver</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>			
 		</plugins>
 	</build>
 

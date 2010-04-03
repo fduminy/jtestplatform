@@ -54,6 +54,19 @@
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.2</version>
+				<configuration>
+					<archive>
+						<manifest>
+							<mainClass>org.jtestplatform.server.TestServer</mainClass>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
+
 			<plugin> <!-- For JNode: do a packaging without JUnit, log4j... -->
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
