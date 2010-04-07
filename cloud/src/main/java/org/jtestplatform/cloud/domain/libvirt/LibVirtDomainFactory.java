@@ -87,7 +87,7 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
      */
     @Override
     public boolean support(Platform platform, Connection connection) throws DomainException {
-        LOGGER.debug("begin support"); //FIXME the trace level doesn't compile !
+        LOGGER.trace("begin support");
         boolean support = false;
         
         Connect connect = null;
@@ -104,7 +104,7 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
             ConnectManager.releaseConnect(connection);
         }
         
-        LOGGER.debug("end support"); //FIXME the trace level doesn't compile !        
+        LOGGER.trace("end support");        
         return support;
     }
     

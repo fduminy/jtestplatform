@@ -289,7 +289,7 @@ public class LibVirtModelFacade {
      * @throws IOException 
      */
     public static boolean support(Platform platform, Connect connect) throws LibvirtException, IOException, DocumentException {
-        LOGGER.debug("begin support"); //FIXME the trace level doesn't compile !
+        LOGGER.trace("begin support");
         
         boolean support;
         try {
@@ -328,7 +328,7 @@ public class LibVirtModelFacade {
             }
         }
         
-        LOGGER.debug("end support"); //FIXME the trace level doesn't compile !        
+        LOGGER.trace("end support");        
         return support;
     }
 }
