@@ -27,11 +27,9 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.jtestplatform.common.message.GetFrameworkTests;
-import org.jtestplatform.common.message.GetStatus;
 import org.jtestplatform.common.message.GetTestFrameworks;
 import org.jtestplatform.common.message.Message;
 import org.jtestplatform.common.message.RunTest;
@@ -42,7 +40,6 @@ import org.jtestplatform.common.transport.TransportFactory;
 import org.jtestplatform.common.transport.TransportHelper;
 import org.jtestplatform.common.transport.UDPTransport;
 import org.jtestplatform.server.commands.GetFrameworkTestsCommand;
-import org.jtestplatform.server.commands.GetStatusCommand;
 import org.jtestplatform.server.commands.GetTestFrameworksCommand;
 import org.jtestplatform.server.commands.RunTestCommand;
 import org.jtestplatform.server.commands.ShutdownCommand;
@@ -79,7 +76,6 @@ public class TestServer<T extends Message> {
 
         addCommand(RunTest.class, new RunTestCommand(this));
         addCommand(Shutdown.class, new ShutdownCommand(this));
-        addCommand(GetStatus.class, new GetStatusCommand());
         addCommand(GetTestFrameworks.class, new GetTestFrameworksCommand());
         addCommand(GetFrameworkTests.class, new GetFrameworkTestsCommand());
 
