@@ -63,13 +63,18 @@ public class TestServer<T extends Message> {
         }
     }
 
+    private static final int SERVER_PORT = 10000;
+    
     private final Map<Class<? extends Message>, TestServerCommand<? extends Message, ? extends Message>> messageClassToCommand;
-    private final Config config;
     private final TransportHelper transportManager;
     private final TransportFactory transportFactory;
     private Transport transport;
 
     public TestServer() throws Exception {
+        this(null);
+    }
+    
+    public TestServer(TransportFactory transportFactory) throws Exception {
         messageClassToCommand = new HashMap<Class<? extends Message>, TestServerCommand<? extends Message, ? extends Message>>();
 
         addCommand(RunTest.class, new RunTestCommand(this));
@@ -78,18 +83,21 @@ public class TestServer<T extends Message> {
         addCommand(GetTestFrameworks.class, new GetTestFrameworksCommand());
         addCommand(GetFrameworkTests.class, new GetFrameworkTestsCommand());
 
-        config = Config.read(); //TODO remove it ?
-
-        transportFactory = new TransportFactory() {
-            @Override
-            public Transport create() throws TransportException {
-                try {
-                    return new UDPTransport(new DatagramSocket(config.getPort()));
-                } catch (SocketException e) {
-                    throw new TransportException("unable to create a transport", e);
+        if (transportFactory == null) {
+            LOGGER.warn("no TransportFactory specified. Using default one (UDPTransport on port " + SERVER_PORT + ")");
+            this.transportFactory = new TransportFactory() {
+                @Override
+                public Transport create() throws TransportException {
+                    try {
+                        return new UDPTransport(new DatagramSocket(SERVER_PORT));
+                    } catch (SocketException e) {
+                        throw new TransportException("unable to create a transport", e);
+                    }
                 }
-            }
-        };
+            };
+        } else {
+            this.transportFactory = transportFactory;
+        }
         transportManager = new TransportHelper();
     }
 
