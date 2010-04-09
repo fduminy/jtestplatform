@@ -44,43 +44,43 @@ import org.jtestplatform.common.transport.TransportHelper;
 
 public class DefaultTestManager implements TestManager {
     private static final Logger LOGGER = Logger.getLogger(DefaultTestManager.class);
-    
+
     private final ExecutorService executor;
     private final TransportHelper transportHelper;
     private final ThreadGroup threadGroup;
-    
-    public DefaultTestManager(int corePoolSize, int maximumPoolSize, 
+
+    public DefaultTestManager(int corePoolSize, int maximumPoolSize,
             long keepAliveTime, TimeUnit unit) {
         transportHelper = new TransportHelper();
-        
+
         threadGroup = new ThreadGroup("DefaultTestManager threads");
-        
+
         ThreadFactory factory = new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
                 return new TestManagerThread(r);
             }
         };
-        
+
         //executor = Executors.newSingleThreadExecutor();
         executor = new ThreadPoolExecutor(corePoolSize, maximumPoolSize,
                 keepAliveTime, unit,
                 new LinkedBlockingQueue<Runnable>(), factory);
     }
-    
+
     /**
      * {@inheritDoc}
      */
     @Override
     public Future<TestResult> runTest(Message message,
-            TransportProvider transportProvider, Platform platform) 
+            TransportProvider transportProvider, Platform platform)
             throws Exception {
         return executor.submit(new TestCallable(message, transportProvider, platform));
     }
 
     /**
      * {@inheritDoc}
-     * @throws TransportException 
+     * @throws TransportException
      */
     @Override
     public Collection<String> getFrameworkTests(String testFramework, TransportProvider transportProvider, Platform platform) throws TransportException {
@@ -115,18 +115,18 @@ public class DefaultTestManager implements TestManager {
             Thread.currentThread().interrupt();
         }
     }
-    
+
     private class TestCallable implements Callable<TestResult> {
         private final Message message;
         private final TransportProvider transportProvider;
         private final Platform platform;
-        
+
         public TestCallable(Message message, TransportProvider transportProvider, Platform platform) {
             this.message = message;
             this.transportProvider = transportProvider;
             this.platform = platform;
         }
-        
+
         @Override
         public TestResult call() throws Exception {
             Transport transport = transportProvider.get(platform);
@@ -137,10 +137,10 @@ public class DefaultTestManager implements TestManager {
             return (TestResult) transportHelper.receive(transport);
         }
     }
-    
-    private class TestManagerThread extends Thread {
+
+    private final class TestManagerThread extends Thread {
         private TestManagerThread(Runnable r) {
-            super(threadGroup, r);            
+            super(threadGroup, r);
         }
     }
 }

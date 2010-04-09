@@ -20,9 +20,6 @@
  * USA.
  * -
  */
-/**
- * 
- */
 package org.jtestplatform.common.transport;
 
 import java.io.Closeable;

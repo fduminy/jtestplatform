@@ -22,7 +22,6 @@
 package org.jtestplatform.server;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
@@ -79,5 +78,5 @@ public class TestFrameworkManagerTest {
         // assert it's gettable by name
         TestFramework framework = manager.getTestFramework(name);
         assertEquals(testFramework, framework);
-    }    
+    }
 }

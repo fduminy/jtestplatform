@@ -29,7 +29,7 @@ import org.jtestplatform.server.TestServerCommand;
 
 public class ShutdownCommand implements TestServerCommand<Shutdown, Message> {
     private final TestServer<?> testServer;
-    
+
     public ShutdownCommand(TestServer<?> testServer) {
         this.testServer = testServer;
     }

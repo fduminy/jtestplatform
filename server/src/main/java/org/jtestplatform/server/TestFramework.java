@@ -19,9 +19,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
  * USA.
  */
-/**
- * 
- */
 package org.jtestplatform.server;
 
 import java.util.Collection;
@@ -38,7 +35,7 @@ public interface TestFramework {
      * @throws Exception
      */
     void addTestClass(Class<?> testClass) throws Exception;
-    
+
     String getName();
 
     Collection<String> getTests();
@@ -47,10 +44,9 @@ public interface TestFramework {
 
     /**
      * @param testClass
-     * @return a list of tests provided by the given class, 
-     * null if there is none or the class is not a valid 
-     * test class for the framework.  
-     * @throws ClassNotFoundException when 
+     * @return a list of tests provided by the given class,
+     * null if there is none or the class is not a valid
+     * test class for the framework.
      */
     Set<String> getTests(Class<?> testClass);
 }

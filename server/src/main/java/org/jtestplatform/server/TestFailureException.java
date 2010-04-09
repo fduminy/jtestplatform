@@ -25,7 +25,7 @@ package org.jtestplatform.server;
 public class TestFailureException extends Exception {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 

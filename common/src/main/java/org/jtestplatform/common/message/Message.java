@@ -28,5 +28,5 @@ import org.jtestplatform.common.transport.TransportException;
 
 public interface Message {
     void sendWith(Transport t) throws TransportException;
-    void receiveFrom(Transport t) throws TransportException; 
+    void receiveFrom(Transport t) throws TransportException;
 }

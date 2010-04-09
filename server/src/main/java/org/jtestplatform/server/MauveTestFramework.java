@@ -20,7 +20,7 @@
  * USA.
  */
 /**
- * 
+ *
  */
 package org.jtestplatform.server;
 

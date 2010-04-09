@@ -48,6 +48,7 @@ import org.jtestplatform.cloud.configuration.Connection;
 import org.jtestplatform.cloud.configuration.Platform;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.experimental.theories.DataPoint;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;

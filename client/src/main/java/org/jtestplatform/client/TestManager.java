@@ -20,9 +20,6 @@
  * USA.
  * -
  */
-/**
- * 
- */
 package org.jtestplatform.client;
 
 import java.util.Collection;
@@ -44,19 +41,19 @@ public interface TestManager {
      * @param message
      * @param transportProvider
      * @param platform
-     * @return
+     * @return The result of the test run.
      * @throws Exception
      */
     Future<TestResult> runTest(Message message,
-            TransportProvider transportProvider, Platform platform) 
+            TransportProvider transportProvider, Platform platform)
             throws Exception;
 
     void shutdown();
 
     /**
-     * @param testFramework
-     * @return
-     * @throws TransportException 
+     * @param testFramework The name of the framework.
+     * @return The collection of tests for the given framework.
+     * @throws TransportException
      */
     Collection<String> getFrameworkTests(String testFramework, TransportProvider transportProvider, Platform platform) throws TransportException;
 }

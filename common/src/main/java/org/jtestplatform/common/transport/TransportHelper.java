@@ -20,9 +20,6 @@
  * USA.
  * -
  */
-/**
- * 
- */
 package org.jtestplatform.common.transport;
 
 import java.io.IOException;
@@ -46,10 +43,10 @@ public class TransportHelper {
 
     public Message receive(Transport transport) throws TransportException {
         String className = transport.receive();
-        
+
         try {
             Class<? extends Message> clazz = Class.forName(className).asSubclass(Message.class);
-            
+
             Message message;
             if (clazz.isEnum()) {
                 String enumValue = transport.receive();
@@ -69,15 +66,15 @@ public class TransportHelper {
             throw new TransportException(className + " is not a message type", cce);
         }
     }
-    
+
     @SuppressWarnings("unchecked")
     private Message createEnum(Class<? extends Message> clazz, String enumValue) {
         return clazz.cast(Enum.valueOf(clazz.asSubclass(Enum.class), enumValue));
     }
 
     /**
-     * @throws IOException 
-     * 
+     * @throws IOException
+     *
      */
     public void stop(Transport transport) throws IOException {
         transport.close();

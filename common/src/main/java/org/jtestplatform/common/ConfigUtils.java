@@ -25,8 +25,8 @@ package org.jtestplatform.common;
 import java.io.File;
 import java.util.Properties;
 
-public class ConfigUtils {
-    private ConfigUtils() {        
+public final class ConfigUtils {
+    private ConfigUtils() {
     }
 
     public static boolean isBlank(String s) {
@@ -102,7 +102,7 @@ public class ConfigUtils {
         if (!isBlank(fileStr)) {
             file = new File(fileStr);
 
-            boolean validType = (directory && file.isDirectory()) || (!directory && file.isFile()); 
+            boolean validType = (directory && file.isDirectory()) || (!directory && file.isFile());
             if ((!file.exists() && mustExist) || !validType) {
                 file = null;
             }

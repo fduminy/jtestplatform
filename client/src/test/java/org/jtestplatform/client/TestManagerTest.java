@@ -20,9 +20,6 @@
  * USA.
  * -
  */
-/**
- * 
- */
 package org.jtestplatform.client;
 
 import static org.junit.Assert.assertNotNull;
@@ -64,7 +61,7 @@ public class TestManagerTest {
     private final int corePoolSize;
     private final int maximumPoolSize;
     private final long keepAliveTime;
-    private final TimeUnit unit = TimeUnit.MILLISECONDS; 
+    private final TimeUnit unit = TimeUnit.MILLISECONDS;
     private final int nbMessages;
 
     private TestManager testManager;
@@ -97,7 +94,7 @@ public class TestManagerTest {
     public void testRunTests() throws Exception {
         Transport transport = mock(Transport.class);
         when(transportProvider.get(any(Platform.class))).thenReturn(transport);
-        
+
         //TODO do tests with multiple platforms and check they are actually run on the proper platform
         Platform platform = new Platform();
 

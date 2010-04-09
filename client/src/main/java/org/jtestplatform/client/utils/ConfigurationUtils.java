@@ -20,9 +20,6 @@
  * USA.
  * -
  */
-/**
- * 
- */
 package org.jtestplatform.client.utils;
 
 import java.io.File;
@@ -32,18 +29,18 @@ import java.util.Properties;
 
 /**
  * This is a utility class for configuration.
- * 
+ *
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
  */
-public class ConfigurationUtils {
+public final class ConfigurationUtils {
 
     private static final String BEGIN_VARIABLE_REF = "${";
     private static final String END_VARIABLE_REF = "}";
 
-    private ConfigurationUtils() {        
+    private ConfigurationUtils() {
     }
-    
+
     /**
      * Read a properties file.
      *
@@ -52,15 +49,15 @@ public class ConfigurationUtils {
      * @throws IOException
      */
     public static Properties readProperties(File configFile) throws IOException {
-        Properties properties = new Properties(System.getProperties());        
+        Properties properties = new Properties(System.getProperties());
         properties.load(new FileInputStream(configFile));
         expandVariables(properties);
         return properties;
     }
-    
+
     private static void expandVariables(Properties properties) {
-        boolean replaced;        
-        
+        boolean replaced;
+
         do {
             replaced = false;
             for (String key : properties.stringPropertyNames()) {

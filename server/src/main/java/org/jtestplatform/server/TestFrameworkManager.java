@@ -19,9 +19,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
  * USA.
  */
-/**
- * 
- */
 package org.jtestplatform.server;
 
 import java.io.File;
@@ -39,11 +36,11 @@ import java.util.Set;
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
  */
-public class TestFrameworkManager {
+public final class TestFrameworkManager {
     private static final TestFrameworkManager INSTANCE = new TestFrameworkManager();
 
     public static TestFrameworkManager getInstance() {
-        return INSTANCE; 
+        return INSTANCE;
     }
 
     private final Map<String, TestFramework> testFrameworks;
@@ -60,7 +57,7 @@ public class TestFrameworkManager {
 
     /**
      * @param framework
-     * @return
+     * @return The test framework matching the given name.
      */
     public TestFramework getTestFramework(String framework) {
         return testFrameworks.get(framework);
@@ -68,7 +65,7 @@ public class TestFrameworkManager {
 
     /**
      * @param framework
-     * @return
+     * @return The set of test framework names.
      */
     public Set<String> getTestFrameworks() {
         return testFrameworks.keySet();

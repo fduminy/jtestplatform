@@ -19,9 +19,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
  * USA.
  */
-/**
- * 
- */
 package org.jtestplatform.common.transport;
 
 import static org.junit.Assert.assertEquals;
@@ -65,7 +62,7 @@ public class TransportTest {
             sb.append((char) i);
         }
         A_BIG_MESSAGE = sb.toString();
-        
+
         try {
             final int port = 12345;
             DatagramSocket ds = new DatagramSocket();
@@ -78,7 +75,7 @@ public class TransportTest {
             throw new Error(e);
         }
     }
-    
+
     @AfterClass
     public static void afterClass() {
         try {
@@ -92,7 +89,7 @@ public class TransportTest {
             e.printStackTrace();
         }
     }
-    
+
     @Theory
     public void testSendReceive(ClientTransport client, ServerTransport server, String message) throws IOException, TransportException {
         client.getTransport().send(message);

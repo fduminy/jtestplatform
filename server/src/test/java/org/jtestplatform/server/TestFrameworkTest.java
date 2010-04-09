@@ -19,9 +19,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
  * USA.
  */
-/**
- * 
- */
 package org.jtestplatform.server;
 
 import static org.jtestplatform.server.Utils.contains;
@@ -91,13 +88,13 @@ public class TestFrameworkTest {
 
     /**
      * @param testClass
-     * @return
+     * @return The list of expected tests.
      */
     private static List<String> getExpectedTests(TestFramework testFramework, Class<?> testClass) {
         TestFrameworkData data = (TestFrameworkData) TESTS.get(testFramework);
         return data.getExpectedTests(testClass);
     }
-    
+
     public static List<String> getExpectedTests() {
         List<String> tests = new ArrayList<String>();
         for (TestFramework framework : TESTS.keySet()) {
@@ -108,10 +105,10 @@ public class TestFrameworkTest {
         }
         return tests;
     }
-    
+
     /**
      * @param testFramework
-     * @return
+     * @return The collection of test classes.
      */
     private static Collection<Class<?>> getTestClasses(TestFramework testFramework) {
         TestFrameworkData data = (TestFrameworkData) TESTS.get(testFramework);
@@ -159,7 +156,7 @@ public class TestFrameworkTest {
     }
 
     @Theory
-    public void testGetTestsForClass(TestFramework testFramework) {        
+    public void testGetTestsForClass(TestFramework testFramework) {
         for (Class<?> testClass : getTestClasses(testFramework)) {
             String[] expectedTests = getExpectedTests(testFramework, testClass).toArray(new String[0]);
             String[] tests = testFramework.getTests(testClass).toArray(new String[0]);
@@ -170,13 +167,12 @@ public class TestFrameworkTest {
     }
 
     @Theory()
-    
     public void testGetTestsForWrongClass(TestFramework testFramework) {
         Class<?> aWrongClass = String.class; // must not be a valid test class for the framework
         Set<String> tests = testFramework.getTests(aWrongClass);
         assertNull("list of tests must be null for a wrong class", tests);
     }
-    
+
     @Theory
     public void testRunTest(TestFramework testFramework) throws UnknownTestException {
         for (String aTest : testFramework.getTests()) {
@@ -247,7 +243,7 @@ public class TestFrameworkTest {
         public JUnit3TestClassTest() {
             super();
         }
-        
+
         public void testThatWorks() {
 
         }
@@ -260,7 +256,7 @@ public class TestFrameworkTest {
     //TODO add TestSuite and "static TestSuite suite()" to JUnit tests
     public static class TestSuiteClass extends TestSuite {
     }
-    
+
     public static class MauveTestClass implements Testlet {
 
         @Override
@@ -276,27 +272,27 @@ public class TestFrameworkTest {
             harness.check(true, false); // will fail
         }
     }
-    
+
     private static class TestFrameworkData {
         private final TestFramework framework;
         private final List<String> failingTests = new ArrayList<String>();
         private final List<String> succeedingTests = new ArrayList<String>();
         private final Map<Class<?>, List<String>> tests = new HashMap<Class<?>, List<String>>();
-        
+
         public TestFrameworkData(TestFramework framework) {
             this.framework = framework;
         }
 
         /**
          * @param testClass
-         * @return
+         * @return The list of expected tests.
          */
         public List<String> getExpectedTests(Class<?> testClass) {
             return tests.get(testClass);
         }
 
         /**
-         * @return
+         * @return The collections of test classes.
          */
         public Collection<Class<?>> getTestClasses() {
             return tests.keySet();
@@ -304,11 +300,11 @@ public class TestFrameworkTest {
 
         /**
          * @param testName
-         * @return
+         * @return false if the given test must fail, true otherwise.
          */
         public boolean mustFail(String testName) {
             boolean result;
-            
+
             if (failingTests.contains(testName)) {
                 result = true;
             } else if (succeedingTests.contains(testName)) {
@@ -316,28 +312,28 @@ public class TestFrameworkTest {
             } else {
                 throw new AssertionError("unexpected test : " + testName);
             }
-            
+
             return result;
         }
 
         public void addTest(Class<?> testClass, boolean succeed, String method) throws Exception {
             String testName = makeTestName(testClass, method);
-            
+
             framework.addTestClass(testClass);
-            
+
             List<String> testsForClass = tests.get(testClass);
             if (testsForClass == null) {
                 testsForClass = new ArrayList<String>();
                 tests.put(testClass, testsForClass);
             }
             testsForClass.add(testName);
-            
+
             if (succeed) {
                 succeedingTests.add(testName);
             } else {
                 failingTests.add(testName);
             }
-            
+
             assertThat(framework.getTests(), contains(testClass, method));
         }
     }

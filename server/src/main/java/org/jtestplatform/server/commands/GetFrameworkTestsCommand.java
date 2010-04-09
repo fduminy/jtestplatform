@@ -27,7 +27,6 @@ import java.util.Collection;
 import org.jtestplatform.common.message.FrameworkTests;
 import org.jtestplatform.common.message.GetFrameworkTests;
 import org.jtestplatform.server.TestFrameworkManager;
-import org.jtestplatform.server.TestServer;
 import org.jtestplatform.server.TestServerCommand;
 
 /**

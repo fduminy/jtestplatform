@@ -34,12 +34,12 @@ import java.util.Date;
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
  */
-public class Run {
+public final class Run {
     private static final String ROOT_WORK_DIR_PREFIX = "run_";
-    
+
     private static final DateFormat TIMESTAMP_FORMAT = new SimpleDateFormat("yyyyMMdd_HHmmss_SSS");
-    
-    public static Run getLatest(File workDir) { 
+
+    public static Run getLatest(File workDir) {
         workDir.mkdirs();
         String[] runs = workDir.list(new FilenameFilter() {
             @Override
@@ -47,7 +47,7 @@ public class Run {
                 return name.startsWith(ROOT_WORK_DIR_PREFIX);
             }
         });
-        
+
         Date latest = null;
         String latestRun = null;
         for (String run : runs) {
@@ -62,14 +62,14 @@ public class Run {
                 }
             }
         }
-        
+
         Run result = null;
         if (latest != null) {
             result = new Run(new File(workDir, latestRun), latest);
         }
         return result;
-    }    
-    
+    }
+
     public static Run create(File workDir) {
         Date timestamp = Calendar.getInstance().getTime();
         String run = ROOT_WORK_DIR_PREFIX + TIMESTAMP_FORMAT.format(timestamp);
@@ -77,7 +77,7 @@ public class Run {
         rootWorkDir.mkdirs();
         return new Run(rootWorkDir, timestamp);
     }
-    
+
     private static Date getTimestamp(String run) {
         try {
             return TIMESTAMP_FORMAT.parse(run.substring(
@@ -90,13 +90,13 @@ public class Run {
     private final File rootWorkDir;
     private final Date timestamp;
     private final String timestampString;
-    
+
     private Run(File rootWorkDir, Date timestamp) {
         this.rootWorkDir = rootWorkDir;
         this.timestamp = timestamp;
-        this.timestampString = TIMESTAMP_FORMAT.format(timestamp); 
+        this.timestampString = TIMESTAMP_FORMAT.format(timestamp);
     }
-    
+
     public Date getTimestamp() {
         return timestamp;
     }
@@ -104,11 +104,11 @@ public class Run {
     public String getTimestampString() {
         return timestampString;
     }
-    
+
     public File getWorkingTests() {
         return new File(rootWorkDir, "working-tests.txt");
     }
-    
+
     public File getCrashingTests() {
         return new File(rootWorkDir, "crashing-tests.txt");
     }

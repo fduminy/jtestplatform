@@ -21,7 +21,7 @@
  * -
  */
 /**
- * 
+ *
  */
 package org.jtestplatform.common.message;
 
@@ -41,7 +41,7 @@ public class RunTest implements Message {
     }
 
     public RunTest(String framework, String test) {
-        this.framework = framework; 
+        this.framework = framework;
         this.test = test;
     }
 
@@ -53,7 +53,7 @@ public class RunTest implements Message {
     }
 
     /**
-     * @return
+     * @return The test.
      */
     public String getTest() {
         return test;

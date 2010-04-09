@@ -19,20 +19,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
  * USA.
  */
-/**
- * 
- */
 package org.jtestplatform.common.transport;
 
-import static org.junit.Assert.*;
-
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.jtestplatform.common.message.Message;
-import org.junit.Test;
 import org.junit.experimental.theories.DataPoint;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
@@ -66,7 +62,7 @@ public class TransportHelperTest {
 
     private static class ArrayTransport implements Transport {
         private final List<String> messages = new ArrayList<String>();
-        
+
         @Override
         public void send(String message) throws TransportException {
             messages.add(message);
@@ -84,27 +80,33 @@ public class TransportHelperTest {
 
     private static class TestMessage implements Message {
         private String message;
-        
+
         public TestMessage() {
-            
+
         }
-        
+
         public TestMessage(String message) {
             this.message = message;
         }
-        
+
         /**
-         * @return
+         * {@inheritDoc}
          */
         public String getMessage() {
             return message;
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public void sendWith(Transport t) throws TransportException {
             t.send(message);
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public void receiveFrom(Transport t) throws TransportException {
             message = t.receive();
@@ -116,23 +118,35 @@ public class TransportHelperTest {
 
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public void sendWith(Transport t) throws TransportException {
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public void receiveFrom(Transport t) throws TransportException {
         }
     }
-    
+
     private static enum EnumMessage implements Message {
         A_MESSAGE,
         ANOTHER_MESSAGE;
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public void sendWith(Transport t) throws TransportException {
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public void receiveFrom(Transport t) throws TransportException {
         }

@@ -20,7 +20,7 @@
  * USA.
  */
 /**
- * 
+ *
  */
 package org.jtestplatform.server;
 
@@ -47,7 +47,7 @@ import org.junit.runners.model.FrameworkMethod;
  */
 public class JUnitTestFramework implements TestFramework {
     private static final Logger LOGGER = Logger.getLogger(JUnitTestFramework.class);
-    
+
     private final Map<String, TestData> tests = new HashMap<String, TestData>();
 
     /**
@@ -82,7 +82,7 @@ public class JUnitTestFramework implements TestFramework {
     public Collection<String> getTests() {
         return tests.keySet();
     }
-    
+
     /**
      * {@inheritDoc}
      * @throws UnknownTestException
@@ -102,12 +102,12 @@ public class JUnitTestFramework implements TestFramework {
                 String wantedClass = t.getTestClass().getName();
                 String wantedMethod = t.getTestMethod();
 
-                boolean match = description.getClassName().equals(wantedClass) &&
-                    extractRealMethodName(description).equals(wantedMethod);
+                boolean match = description.getClassName().equals(wantedClass)
+                    && extractRealMethodName(description).equals(wantedMethod);
 
                 for (Description d : description.getChildren()) {
-                    match |= d.getClassName().equals(wantedClass) &&
-                        extractRealMethodName(d).equals(wantedMethod);
+                    match |= d.getClassName().equals(wantedClass)
+                        && extractRealMethodName(d).equals(wantedMethod);
                     if (match) {
                         break;
                     }
@@ -142,9 +142,9 @@ public class JUnitTestFramework implements TestFramework {
 
     @SuppressWarnings("unchecked")
     @Override
-    public Set<String> getTests(Class<?> testClass) {        
+    public Set<String> getTests(Class<?> testClass) {
         Set<String> tests = null;
-        
+
         Set<String> methods = getMethods(testClass);
         if (methods != null) {
             tests = new HashSet<String>(methods.size());
@@ -152,14 +152,14 @@ public class JUnitTestFramework implements TestFramework {
                 tests.add(generateTestName(testClass, method));
             }
         }
-        
+
         return tests;
     }
 
     @SuppressWarnings("unchecked")
     private Set<String> getMethods(Class<?> testClass) {
         final Set<String> methods = new HashSet<String>();
-        
+
         if (junit.framework.TestCase.class.isAssignableFrom(testClass)) {
             for (Method method : testClass.getMethods()) {
                 if (LOGGER.isDebugEnabled() && method.getName().startsWith("test")) {
@@ -170,7 +170,7 @@ public class JUnitTestFramework implements TestFramework {
                     methods.add(method.getName());
                 }
             }
-        } else if (testClass.getConstructors().length == 1) {            
+        } else if (testClass.getConstructors().length == 1) {
             org.junit.runners.model.TestClass tc = new org.junit.runners.model.TestClass(testClass);
             for (FrameworkMethod method : tc.getAnnotatedMethods(Test.class)) {
                 methods.add(method.getName());
@@ -182,7 +182,7 @@ public class JUnitTestFramework implements TestFramework {
 
         return methods.isEmpty() ? null : methods;
     }
-    
+
     private String generateTestName(Class<?> testClass, String method) {
         return testClass.getName() + '#' + method;
     }
@@ -206,8 +206,8 @@ public class JUnitTestFramework implements TestFramework {
     }
 
     private String toString(Description description) {
-        return "Description[className=" + description.getClassName() +
-        " methodName=" + description.getMethodName() +
-        " displayName=" + description.getDisplayName() + ']';
+        return "Description[className=" + description.getClassName()
+        + " methodName=" + description.getMethodName()
+        + " displayName=" + description.getDisplayName() + ']';
     }
 }

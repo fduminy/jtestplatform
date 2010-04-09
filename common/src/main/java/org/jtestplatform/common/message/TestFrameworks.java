@@ -20,13 +20,9 @@
  * USA.
  * -
  */
-/**
- * 
- */
 package org.jtestplatform.common.message;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.jtestplatform.common.transport.Transport;
@@ -53,7 +49,7 @@ public class TestFrameworks implements Message {
     public Set<String> getFrameworks() {
         return frameworks;
     }
-    
+
     /**
      * {@inheritDoc}
      */

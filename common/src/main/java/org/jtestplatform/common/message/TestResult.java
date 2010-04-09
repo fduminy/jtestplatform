@@ -20,9 +20,6 @@
  * USA.
  * -
  */
-/**
- * 
- */
 package org.jtestplatform.common.message;
 
 import org.jtestplatform.common.transport.Transport;

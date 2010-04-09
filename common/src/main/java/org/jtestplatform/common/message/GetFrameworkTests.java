@@ -21,7 +21,7 @@
  * -
  */
 /**
- * 
+ *
  */
 package org.jtestplatform.common.message;
 

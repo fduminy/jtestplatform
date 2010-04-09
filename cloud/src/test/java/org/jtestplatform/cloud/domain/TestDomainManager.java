@@ -42,6 +42,7 @@ import org.jtestplatform.cloud.configuration.io.dom4j.ConfigurationDom4jReader;
 import org.jtestplatform.common.transport.Transport;
 import org.jtestplatform.common.transport.TransportException;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**

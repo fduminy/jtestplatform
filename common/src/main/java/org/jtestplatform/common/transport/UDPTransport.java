@@ -83,18 +83,18 @@ public class UDPTransport implements Transport {
                 SocketAddress remoteAddress = socket.getRemoteSocketAddress();
                 DatagramPacket packet = new DatagramPacket(data, data.length,
                         remoteAddress);
-    
+
                 socket.send(packet);
-    
+
                 LOGGER.info("nb bytes sent : " + bytes.length);
-    
+
                 // send data
                 packet = new DatagramPacket(bytes, bytes.length, remoteAddress);
                 socket.send(packet);
-    
-    //            ByteBuffer bb = ByteBuffer.allocate(command.length() * CHAR_SIZE + INT_SIZE);
-    //            bb.putInt(command.length()).asCharBuffer().append(command);
-    //            socket.getChannel().send(bb, socket.getRemoteSocketAddress());
+
+//                ByteBuffer bb = ByteBuffer.allocate(command.length() * CHAR_SIZE + INT_SIZE);
+//                bb.putInt(command.length()).asCharBuffer().append(command);
+//                socket.getChannel().send(bb, socket.getRemoteSocketAddress());
             }
         } catch (SocketTimeoutException e) {
             throw new TransportException("timeout in send", e);
@@ -159,7 +159,7 @@ public class UDPTransport implements Transport {
     }
 
     /**
-     *
+     * {@inheritDoc}
      */
     @Override
     public String toString() {

@@ -32,17 +32,17 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 
 /**
- * 
+ *
  */
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
  */
-class Utils {
-    private Utils() {        
+final class Utils {
+    private Utils() {
     }
-    
+
     public static void initLog4j() {
         Enumeration<URL> enumeration;
         try {
@@ -55,24 +55,25 @@ class Utils {
                     break;
                 }
             }
-            
+
             PropertyConfigurator.configure(logConfig);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-    
+
     public static <T> Matcher<Collection<T>> contains(final T item) {
         return new BaseMatcher<Collection<T>>() {
             @Override
             public boolean matches(Object container) {
-                boolean result;                
+                boolean result;
                 if (container instanceof Collection<?>) {
                     result = ((Collection<?>) container).contains(item);
                 } else if ((container instanceof String) && (item instanceof String)) {
                     result = ((String) container).contains((String) item);
                 } else {
-                    throw new IllegalArgumentException("unsupported container class : " + container.getClass().getName());
+                    throw new IllegalArgumentException(
+                            "unsupported container class : " + container.getClass().getName());
                 }
                 return result;
             }
@@ -87,11 +88,11 @@ class Utils {
     public static String makeTestName(Class<?> testClass, String methodName) {
         return testClass.getName() + ((methodName == null) ? "" : ("#" + methodName));
     }
-    
+
     public static Matcher<Collection<String>> contains(Class<?> testClass, String methodName) {
         return contains(makeTestName(testClass, methodName));
     }
-    
+
     public static Matcher<Collection<String>> contains(Class<?> testClass) {
         return contains(testClass.getName());
     }

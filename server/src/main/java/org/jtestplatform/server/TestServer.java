@@ -46,7 +46,7 @@ import org.jtestplatform.server.commands.ShutdownCommand;
 
 public class TestServer<T extends Message> {
     private static final Logger LOGGER = Logger.getLogger(TestServer.class);
-        
+
     public static void main(String[] args) {
         try {
             TestServer<Message> server = new TestServer<Message>();
@@ -61,7 +61,7 @@ public class TestServer<T extends Message> {
     }
 
     private static final int SERVER_PORT = 10000;
-    
+
     private final Map<Class<? extends Message>, TestServerCommand<? extends Message, ? extends Message>> messageClassToCommand;
     private final TransportHelper transportManager;
     private final TransportFactory transportFactory;
@@ -70,7 +70,7 @@ public class TestServer<T extends Message> {
     public TestServer() throws Exception {
         this(null);
     }
-    
+
     public TestServer(TransportFactory transportFactory) throws Exception {
         messageClassToCommand = new HashMap<Class<? extends Message>, TestServerCommand<? extends Message, ? extends Message>>();
 
@@ -121,7 +121,7 @@ public class TestServer<T extends Message> {
             }
         }
     }
-    
+
     private void shutdown() {
         if (transport != null) {
             try {
@@ -132,9 +132,9 @@ public class TestServer<T extends Message> {
             }
         }
     }
-    
+
     public void requestShutdown() {
         LOGGER.info("shutdown requested");
-        shutdown();    
+        shutdown();
     }
 }

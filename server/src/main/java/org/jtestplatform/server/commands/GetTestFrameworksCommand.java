@@ -27,7 +27,6 @@ import java.util.Set;
 import org.jtestplatform.common.message.GetTestFrameworks;
 import org.jtestplatform.common.message.TestFrameworks;
 import org.jtestplatform.server.TestFrameworkManager;
-import org.jtestplatform.server.TestServer;
 import org.jtestplatform.server.TestServerCommand;
 
 /**
@@ -41,7 +40,7 @@ public class GetTestFrameworksCommand implements TestServerCommand<GetTestFramew
      */
     @Override
     public TestFrameworks execute(GetTestFrameworks message) throws Exception {
-        TestFrameworkManager manager = TestFrameworkManager.getInstance();        
+        TestFrameworkManager manager = TestFrameworkManager.getInstance();
         Set<String> frameworks = manager.getTestFrameworks();
         return new TestFrameworks(frameworks);
     }

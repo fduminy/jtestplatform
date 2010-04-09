@@ -39,7 +39,7 @@ import org.jtestplatform.configuration.io.dom4j.ConfigurationDom4jReader;
  */
 public class ConfigReader {
     private static final String HOME_DIRECTORY_PROPERTY = "jtestplatform.home";
-        
+
     /**
      * Read the configuration.
      * @return the configuration.
@@ -48,23 +48,23 @@ public class ConfigReader {
     public Configuration read() throws ConfigurationException {
         try {
             File homeDirectory = findHome();
-            File configurationDirectory = new File(homeDirectory, "config");            
+            File configurationDirectory = new File(homeDirectory, "config");
             File configFile = new File(configurationDirectory, "config.xml");
-            
+
             // init log4j
             File logConfigFile = new File(configurationDirectory, "log4j.properties");
             PropertyConfigurator.configure(logConfigFile.getAbsolutePath());
-            
+
             ConfigurationDom4jReader reader = new ConfigurationDom4jReader();
-            
+
             Configuration config = reader.read(new FileReader(configFile));
-            
+
             File workDir = new File(config.getWorkDir());
             if (!workDir.isAbsolute()) {
                 workDir = new File(homeDirectory, config.getWorkDir());
             }
             config.setWorkDir(workDir.getAbsolutePath());
-            
+
             return config;
         } catch (IOException e) {
             throw new ConfigurationException("can't read config", e);
@@ -72,18 +72,18 @@ public class ConfigReader {
             throw new ConfigurationException("can't read config", e);
         }
     }
-    
+
     /**
      * Search for home directory.
      * @throw RuntimeException if something is wrong (typically the home directory can't be found).
      */
     private File findHome() {
-        // search home directory 
+        // search home directory
         String homeProperty = System.getProperty(HOME_DIRECTORY_PROPERTY);
         if (ConfigUtils.isBlank(homeProperty)) {
             throw new RuntimeException(HOME_DIRECTORY_PROPERTY + " system property not set");
         }
-        
+
         return new File(homeProperty.trim());
     }
 }
