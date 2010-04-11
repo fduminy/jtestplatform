@@ -56,6 +56,7 @@
         <!-- module>mauve</module-->
         <module>libvirt-model</module>
         <module>cloud</module>
+        <module>server-utils</module>
 	</modules>
 
 	<dependencies>

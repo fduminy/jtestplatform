@@ -43,22 +43,6 @@ import org.mockito.Mockito;
  */
 public class TestFrameworkManagerTest {
     @Test
-    public void testCollectTests() {
-        TestFrameworkManager manager = TestFrameworkManager.getInstance();
-        String path = '/' + getClass().getName().replace('.', '/') + ".class";
-        URL url = getClass().getResource(path);
-        String p = url.getPath();
-        File directory = new File(p.substring(0, p.length() - path.length()));
-        Set<String> tests = manager.collectTests(directory);
-
-        assertTrue(tests.contains(getClass().getName() + "#testCollectTests"));
-        assertTrue(tests.contains(getClass().getName() + "#testAddAndGetTestFramework"));
-        for (String test : TestFrameworkTest.getExpectedTests()) {
-            assertTrue(tests.contains(test));
-        }
-    }
-
-    @Test
     public void testAddAndGetTestFramework() {
         TestFrameworkManager manager = TestFrameworkManager.getInstance();
         int initNumberOfFrameworks = manager.getTestFrameworks().size();
