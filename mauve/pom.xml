@@ -7,7 +7,6 @@
     <artifactId>mauve</artifactId>
     <version>0.1</version>
     <name>Mauve</name>
-    <url>http://sources.redhat.com/mauve</url>    
 
     <licenses>
         <license>
