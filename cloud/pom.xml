@@ -8,9 +8,7 @@
 		<groupId>jtestplatform</groupId>
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
-	<groupId>jtestplatform</groupId>
 	<artifactId>jtestplatform-cloud</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
 	<name>JTestPlatform-Cloud</name>
     <url>http://gitorious.org/jtestplatform/pages/Home</url>
 

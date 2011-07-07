@@ -6,10 +6,8 @@
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>jtestplatform</groupId>
 	<artifactId>jtestplatform-client</artifactId>
 	<name>JTestPlatform Client</name>
-	<version>0.0.1-SNAPSHOT</version>
     <url>http://gitorious.org/jtestplatform/pages/Home</url>
 
 	<licenses>
