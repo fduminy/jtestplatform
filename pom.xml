@@ -35,20 +35,18 @@
 	</properties>
 
 	<repositories>
-		<repository>
-		  <id>maven2-repository.dev.java.net</id>
-		  <name>Java.net Repository for Maven</name>
-		  <url>http://download.java.net/maven/2/</url>
-		  <layout>default</layout>
-		</repository>
-			    
+        <repository>
+            <id>sonatype-repo</id>
+            <name>Sonatype Repository</name>
+            <url>https://repository.sonatype.org/content/groups/forge/</url>
+        </repository>
         <repository>
             <id>geotools-maven2-repository</id>
             <name>geotools Maven 2 Repository</name>
             <url>http://maven.geotools.fr/repository/</url>
-        </repository> 
+        </repository>
 	</repositories>
-
+	
 	<modules>
 		<module>common</module>
 		<module>client</module>

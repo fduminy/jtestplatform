@@ -36,12 +36,12 @@
             <version>1.6</version>
         </dependency>
 
-        <dependency>
-            <groupId>net.java.dev.jna</groupId>
-            <artifactId>jna</artifactId>
-            <version>3.2.4</version>
-        </dependency>
-
+		<dependency>
+		    <groupId>com.sun.jna</groupId>
+		    <artifactId>jna</artifactId>
+		    <version>3.0.9</version>
+		</dependency>
+		
         <dependency>
             <groupId>org.libvirt</groupId>
             <artifactId>libvirt</artifactId>
