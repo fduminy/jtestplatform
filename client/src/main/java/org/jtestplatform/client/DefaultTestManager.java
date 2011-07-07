@@ -30,7 +30,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.jtestplatform.cloud.TransportProvider;
 import org.jtestplatform.cloud.configuration.Platform;
 import org.jtestplatform.common.message.FrameworkTests;
@@ -42,7 +43,7 @@ import org.jtestplatform.common.transport.TransportException;
 import org.jtestplatform.common.transport.TransportHelper;
 
 public class DefaultTestManager implements TestManager {
-    private static final Logger LOGGER = Logger.getLogger(DefaultTestManager.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultTestManager.class);
 
     private final ExecutorService executor;
     private final TransportHelper transportHelper;
@@ -85,9 +86,8 @@ public class DefaultTestManager implements TestManager {
     public Collection<String> getFrameworkTests(String testFramework, TransportProvider transportProvider, Platform platform) throws TransportException {
         //TODO we assume here that the available tests/test frameworks are all the same on each server. check it ?
         Transport transport = transportProvider.get(platform);
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("call: transport=" + transport);
-        }
+        LOGGER.debug("call: transport={}", transport);
+        
         transportHelper.send(transport, new GetFrameworkTests());
         return ((FrameworkTests) transportHelper.receive(transport)).getTests();
     }
@@ -129,9 +129,8 @@ public class DefaultTestManager implements TestManager {
         @Override
         public TestResult call() throws Exception {
             Transport transport = transportProvider.get(platform);
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("call: transport=" + transport);
-            }
+            LOGGER.debug("call: transport={}", transport);
+            
             transportHelper.send(transport, message);
             return (TestResult) transportHelper.receive(transport);
         }

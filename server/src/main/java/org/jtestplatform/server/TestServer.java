@@ -27,7 +27,8 @@ import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.jtestplatform.common.message.GetFrameworkTests;
 import org.jtestplatform.common.message.GetTestFrameworks;
 import org.jtestplatform.common.message.Message;
@@ -44,17 +45,17 @@ import org.jtestplatform.server.commands.RunTestCommand;
 import org.jtestplatform.server.commands.ShutdownCommand;
 
 public class TestServer<T extends Message> {
-    private static final Logger LOGGER = Logger.getLogger(TestServer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TestServer.class);
 
     public static void main(String[] args) {
         try {
             TestServer<Message> server = new TestServer<Message>();
             server.start();
         } catch (IOException e) {
-            LOGGER.fatal("unable to read config", e);
+            LOGGER.error("unable to read config", e);
             System.exit(1);
         } catch (Exception e) {
-            LOGGER.fatal("unable to create server", e);
+            LOGGER.error("unable to create server", e);
             System.exit(2);
         }
     }
@@ -79,7 +80,7 @@ public class TestServer<T extends Message> {
         addCommand(GetFrameworkTests.class, new GetFrameworkTestsCommand());
 
         if (transportFactory == null) {
-            LOGGER.warn("no TransportFactory specified. Using default one (UDPTransport on port " + SERVER_PORT + ")");
+            LOGGER.warn("no TransportFactory specified. Using default one (UDPTransport on port {})", SERVER_PORT);
             this.transportFactory = new TransportFactory() {
                 @Override
                 public Transport create() throws TransportException {

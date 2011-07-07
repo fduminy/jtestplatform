@@ -27,7 +27,8 @@ package org.jtestplatform.cloud.domain.libvirt;
 import java.util.Hashtable;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.jtestplatform.cloud.domain.DomainException;
 import org.libvirt.Connect;
 import org.libvirt.LibvirtException;
@@ -37,7 +38,7 @@ import org.libvirt.LibvirtException;
  *
  */
 class ConnectManager {
-    private static final Logger LOGGER = Logger.getLogger(ConnectManager.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConnectManager.class);
     
     private static final Map<org.jtestplatform.cloud.configuration.Connection, ConnectData> CONNECTIONS =
             new Hashtable<org.jtestplatform.cloud.configuration.Connection, ConnectData>();
@@ -48,7 +49,7 @@ class ConnectManager {
             public void run() {
                 org.jtestplatform.cloud.configuration.Connection[] connections = CONNECTIONS.keySet().toArray(new org.jtestplatform.cloud.configuration.Connection[CONNECTIONS.size()]);
                 if (connections.length > 0) {
-                    LOGGER.warn("There are unclosed " + connections.length + " connections");
+                    LOGGER.warn("There are {} unclosed connections", connections.length);
                 }
                 
                 for (org.jtestplatform.cloud.configuration.Connection connection : connections) {
@@ -91,14 +92,14 @@ class ConnectManager {
         ConnectData connectData = CONNECTIONS.remove(connection);
         if (connectData != null) {
             try {
-                LOGGER.info("closing connection to " + connection.getUri());
+                LOGGER.info("closing connection to {}",  connection.getUri());
                 if (connectData.getReferenceCounter() > 0) {
-                    LOGGER.warn("The connection to " + connection.getUri() + " has " + connectData.getReferenceCounter() + " unreleased references");
+                    LOGGER.warn("The connection to {} has {} unreleased references", connection.getUri(), connectData.getReferenceCounter());
                 }
                 // note : return -1 on error, or >= 0 on success where the value is the number of references to the connection
                 int result = connectData.getConnect().close();
-                LOGGER.debug("Connect.close() returned " + result);
-                LOGGER.info("closed connection to " + connection.getUri());
+                LOGGER.debug("Connect.close() returned {}", result);
+                LOGGER.info("closed connection to {}", connection.getUri());
             } catch (LibvirtException e) {
                 LOGGER.error("failed to close connection to " + connection.getUri(), e);
             }

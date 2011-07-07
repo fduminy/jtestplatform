@@ -82,11 +82,6 @@ public class TestWatchDog {
     
     private WatchDog watchDog;
     
-    @Before
-    public void setUp() {
-        DomainUtils.initLog4j();
-    }
-    
     @After
     public void tearDown() {
         watchDog.stopWatching();

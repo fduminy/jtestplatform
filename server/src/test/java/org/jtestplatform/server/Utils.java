@@ -26,7 +26,8 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.Enumeration;
 
-import org.apache.log4j.PropertyConfigurator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -41,25 +42,6 @@ import org.hamcrest.Matcher;
  */
 final class Utils {
     private Utils() {
-    }
-
-    public static void initLog4j() {
-        Enumeration<URL> enumeration;
-        try {
-            enumeration = Utils.class.getClassLoader().getResources("log4j.properties");
-            URL logConfig = null;
-            while (enumeration.hasMoreElements()) {
-                URL url = enumeration.nextElement();
-                if (!"jar".equals(url.getProtocol())) {
-                    logConfig = url;
-                    break;
-                }
-            }
-
-            PropertyConfigurator.configure(logConfig);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     public static <T> Matcher<Collection<T>> contains(final T item) {

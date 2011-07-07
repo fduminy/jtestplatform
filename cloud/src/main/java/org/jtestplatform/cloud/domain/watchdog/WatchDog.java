@@ -28,7 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.jtestplatform.cloud.domain.Domain;
 import org.jtestplatform.cloud.domain.DomainException;
 import org.jtestplatform.cloud.configuration.Configuration;
@@ -40,7 +41,7 @@ import org.jtestplatform.cloud.configuration.Configuration;
  *
  */
 public class WatchDog {
-    private static final Logger LOGGER = Logger.getLogger(WatchDog.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(WatchDog.class);
     
     private static final long MAX_ZOMBIE_TIME_MILLIS = 10000;
         

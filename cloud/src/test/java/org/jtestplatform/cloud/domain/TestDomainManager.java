@@ -49,11 +49,6 @@ import org.junit.Test;
  *
  */
 public class TestDomainManager {
-    @Before
-    public void setUp() {
-        DomainUtils.initLog4j();        
-    }
-
     @Test
     public void testReadConfigFile() throws FileNotFoundException, IOException, DocumentException {
         ConfigurationDom4jReader dom4jReader = new ConfigurationDom4jReader();            

@@ -24,13 +24,11 @@
  */
 package org.jtestplatform.server.utils;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -40,9 +38,10 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.log4j.Logger;
 import org.jtestplatform.server.TestFramework;
 import org.jtestplatform.server.TestFrameworkManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xeustechnologies.jcl.JarClassLoader;
 import org.xeustechnologies.jcl.JarResources;
 
@@ -51,7 +50,7 @@ import org.xeustechnologies.jcl.JarResources;
  *
  */
 public class TestList {
-    private static final Logger LOGGER = Logger.getLogger(TestList.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TestList.class);
 
     private static final String CLASS_EXTENSION = ".class";
     private static final String JAR_EXTENSION = ".jar";
@@ -122,7 +121,7 @@ public class TestList {
                 Class<?> clazz = Class.forName(test);
                 testFramework.addTestClass(clazz);
             } catch (Throwable t) {
-                LOGGER.error(t);
+                LOGGER.error("Error while adding test class " + test, t);
             }
 
             scanner.nextLine();
@@ -131,7 +130,7 @@ public class TestList {
 
     private void collectTests(JarClassLoader jcl, File baseDirectory, TestSource testSource, Collection<TestFramework> frameworks) throws FileNotFoundException {
         final File directory = testSource.getFile();
-        LOGGER.debug("collecting test classes from " + directory.getAbsolutePath());
+        LOGGER.debug("collecting test classes from {}", directory.getAbsolutePath());
 
         File[] files;
         if (directory.isFile() && directory.getName().endsWith(JAR_EXTENSION)) {
@@ -186,7 +185,7 @@ public class TestList {
                         }
                     }
                 } catch (Throwable t) {
-                    LOGGER.error(t);
+                    LOGGER.error("Error collecting tests for class " + className, t);
                 }
             }
         }

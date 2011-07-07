@@ -23,7 +23,8 @@ package org.jtestplatform.server.commands;
 
 
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.jtestplatform.common.message.RunTest;
 import org.jtestplatform.common.message.TestResult;
 import org.jtestplatform.server.TestFramework;
@@ -32,7 +33,7 @@ import org.jtestplatform.server.TestServer;
 import org.jtestplatform.server.TestServerCommand;
 
 public class RunTestCommand implements TestServerCommand<RunTest, TestResult> {
-    private static final Logger LOGGER = Logger.getLogger(RunTestCommand.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RunTestCommand.class);
 
     private final TestServer<?> testServer;
 
@@ -43,7 +44,7 @@ public class RunTestCommand implements TestServerCommand<RunTest, TestResult> {
     @Override
     public TestResult execute(RunTest message) throws Exception {
         String test = message.getTest();
-        LOGGER.debug("running test " + test + " on framework " + message.getFramework());
+        LOGGER.debug("running test {} on framework {}", test, message.getFramework());
 
         TestFrameworkManager manager = TestFrameworkManager.getInstance();
         TestFramework testFramework = manager.getTestFramework(message.getFramework());

@@ -28,15 +28,17 @@ import java.net.SocketAddress;
 import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
  */
 public class UDPTransport implements Transport {
-    private static final Logger LOGGER = Logger.getLogger(UDPTransport.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(UDPTransport.class);
 
     private static final int NULL_SIZE = Integer.MIN_VALUE;
     private static final int MAX_SIZE = Integer.MAX_VALUE;
@@ -85,7 +87,7 @@ public class UDPTransport implements Transport {
 
                 socket.send(packet);
 
-                LOGGER.info("nb bytes sent : " + bytes.length);
+                LOGGER.info("nb bytes sent : {}", bytes.length);
 
                 // send data
                 packet = new DatagramPacket(bytes, bytes.length, remoteAddress);
@@ -113,7 +115,7 @@ public class UDPTransport implements Transport {
 
             String message = null;
             if (size != NULL_SIZE) {
-                LOGGER.log(Level.INFO, "nb bytes received : " + size);
+                LOGGER.info("nb bytes received : {}", size);
                 if (size > MAX_SIZE) {
                     throw new TransportException(
                             "stream probably corrupted : received more than "

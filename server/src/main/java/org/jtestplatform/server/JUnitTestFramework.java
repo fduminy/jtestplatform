@@ -31,7 +31,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.junit.Test;
 import org.junit.experimental.theories.Theory;
 import org.junit.runner.Description;
@@ -46,7 +47,7 @@ import org.junit.runners.model.FrameworkMethod;
  *
  */
 public class JUnitTestFramework implements TestFramework {
-    private static final Logger LOGGER = Logger.getLogger(JUnitTestFramework.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JUnitTestFramework.class);
 
     private final Map<String, TestData> tests = new HashMap<String, TestData>();
 
@@ -113,9 +114,7 @@ public class JUnitTestFramework implements TestFramework {
                     }
                 }
 
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug(JUnitTestFramework.this.toString(description) + " match=" + match);
-                }
+                LOGGER.debug("{} match={}", LOGGER.isDebugEnabled() ? JUnitTestFramework.this.toString(description) : null, match);
                 return match;
             }
 
@@ -162,8 +161,8 @@ public class JUnitTestFramework implements TestFramework {
 
         if (junit.framework.TestCase.class.isAssignableFrom(testClass)) {
             for (Method method : testClass.getMethods()) {
-                if (LOGGER.isDebugEnabled() && method.getName().startsWith("test")) {
-                    LOGGER.debug("class=" + testClass.getName() + " method=" + method.getName());
+                if (method.getName().startsWith("test")) {
+                    LOGGER.debug("class={} method={}", testClass.getName(), method.getName());
                 }
 
                 if (method.getName().startsWith("test") && (method.getParameterTypes().length == 0)) {

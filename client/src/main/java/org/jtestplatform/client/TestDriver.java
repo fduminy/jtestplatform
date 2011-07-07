@@ -34,7 +34,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.jtestplatform.client.report.PlatformReport;
 import org.jtestplatform.client.report.RunReport;
 import org.jtestplatform.client.report.TestFrameworkReport;
@@ -52,7 +53,7 @@ import org.jtestplatform.common.transport.TransportHelper;
 import org.jtestplatform.configuration.Configuration;
 
 public final class TestDriver {
-    private static final Logger LOGGER = Logger.getLogger(TestDriver.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TestDriver.class);
 
     public static void main(String[] args) {
         TestDriver testDriver = null;

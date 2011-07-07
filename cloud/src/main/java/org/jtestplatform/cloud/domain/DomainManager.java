@@ -32,7 +32,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.dom4j.DocumentException;
 import org.jtestplatform.cloud.TransportProvider;
 import org.jtestplatform.cloud.configuration.Configuration;
@@ -48,7 +49,7 @@ import org.jtestplatform.common.transport.TransportException;
 import org.jtestplatform.common.transport.UDPTransport;
 
 public class DomainManager implements TransportProvider {
-    private static final Logger LOGGER = Logger.getLogger(DomainManager.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DomainManager.class);
 
     private final Configuration config;
     private final LoadBalancer<DomainManagerDelegate> delegates;
@@ -199,7 +200,7 @@ public class DomainManager implements TransportProvider {
         for (Factory factory : config.getDomains().getFactories()) {
             DomainFactory<? extends Domain> domainFactory = knownFactories.get(factory.getType());
             if (domainFactory == null) {
-                LOGGER.error("no DomainFactory for type " + factory.getType());
+                LOGGER.error("no DomainFactory for type {}", factory.getType());
 
                 if (wrongTypes.length() != 0) {
                     wrongTypes.append(", ");
@@ -210,7 +211,7 @@ public class DomainManager implements TransportProvider {
 
             if ((factory.getConnections() == null) || factory.getConnections()
                     .isEmpty()) {
-                LOGGER.error("no connection for type " + factory.getType());
+                LOGGER.error("no connection for type {}", factory.getType());
 
                 if (typesWithoutConnection.length() != 0) {
                     typesWithoutConnection.append(", ");

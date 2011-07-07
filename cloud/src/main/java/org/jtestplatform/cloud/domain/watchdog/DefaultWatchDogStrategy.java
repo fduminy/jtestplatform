@@ -24,7 +24,8 @@
  */
 package org.jtestplatform.cloud.domain.watchdog;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.jtestplatform.cloud.domain.Domain;
 import org.jtestplatform.cloud.domain.DomainException;
 
@@ -33,7 +34,7 @@ import org.jtestplatform.cloud.domain.DomainException;
  *
  */
 public class DefaultWatchDogStrategy implements WatchDogStrategy {
-    private static final Logger LOGGER = Logger.getLogger(DefaultWatchDogStrategy.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultWatchDogStrategy.class);
     
     private final long maxZombieTimeMillis;
     public DefaultWatchDogStrategy(long maxZombieTimeMillis) {

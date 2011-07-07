@@ -20,7 +20,7 @@
     <properties>
        <project.root>${project.parent.basedir}</project.root>
     </properties>
-    
+     
     <scm>
         <connection>scm:git:git://gitorious.org/jtestplatform/jtestplatform.git</connection>
         <tag>HEAD</tag>

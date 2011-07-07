@@ -27,9 +27,9 @@ package org.jtestplatform.server;
 import gnu.testlet.Testlet;
 import gnu.testlet.runner.CheckResult;
 import gnu.testlet.runner.Filter;
+import gnu.testlet.runner.Filter.LineProcessor;
 import gnu.testlet.runner.Mauve;
 import gnu.testlet.runner.RunResult;
-import gnu.testlet.runner.Filter.LineProcessor;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -38,16 +38,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
-
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
  */
 public class MauveTestFramework implements TestFramework {
-    private static final Logger LOGGER = Logger.getLogger(MauveTestFramework.class);
-
     private final List<String> testList;
 
     /**

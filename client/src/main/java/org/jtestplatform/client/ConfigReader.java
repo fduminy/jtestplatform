@@ -25,7 +25,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
-import org.apache.log4j.PropertyConfigurator;
 import org.dom4j.DocumentException;
 import org.jtestplatform.common.ConfigUtils;
 import org.jtestplatform.configuration.Configuration;
@@ -49,10 +48,6 @@ public class ConfigReader {
             File homeDirectory = findHome();
             File configurationDirectory = new File(homeDirectory, "config");
             File configFile = new File(configurationDirectory, "config.xml");
-
-            // init log4j
-            File logConfigFile = new File(configurationDirectory, "log4j.properties");
-            PropertyConfigurator.configure(logConfigFile.getAbsolutePath());
 
             ConfigurationDom4jReader reader = new ConfigurationDom4jReader();
 

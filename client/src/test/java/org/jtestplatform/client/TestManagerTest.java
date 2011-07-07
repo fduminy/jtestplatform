@@ -76,7 +76,7 @@ public class TestManagerTest {
 
     @Before
     public void setUp() throws ConfigurationException {
-        new ConfigReader().read(); // will initialize log4j
+        new ConfigReader().read();
 
         transportProvider = mock(TransportProvider.class);
 

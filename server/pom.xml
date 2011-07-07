@@ -66,7 +66,7 @@
 				</configuration>
 			</plugin>
 
-			<plugin> <!-- For JNode: do a packaging without JUnit, log4j... -->
+			<plugin> <!-- For JNode: do a packaging without JUnit, logback... -->
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
 				<version>1.3.2</version>
@@ -81,7 +81,7 @@
 								<excludes>
 									<exclude>junit:junit</exclude>
 									<exclude>com.redhat.sources:mauve</exclude>
-									<exclude>log4j:log4j</exclude>
+									<exclude>ch.qos.logback:logback-classic</exclude>
 								</excludes>
 							</artifactSet>
 							<shadedArtifactAttached>true</shadedArtifactAttached>

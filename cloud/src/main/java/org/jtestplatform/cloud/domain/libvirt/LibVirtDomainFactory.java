@@ -29,7 +29,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.dom4j.DocumentException;
 import org.jtestplatform.cloud.domain.DomainConfig;
 import org.jtestplatform.cloud.domain.DomainException;
@@ -55,7 +56,7 @@ import com.sun.jna.Pointer;
  *
  */
 public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
-    private static final Logger LOGGER = Logger.getLogger(LibVirtDomainFactory.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(LibVirtDomainFactory.class);
 
     private static final String NETWORK_NAME = "default";
     //private static final String NETWORK_NAME = "jtestplatform-network";
@@ -65,7 +66,7 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
             Connect.setErrorCallback(new VirErrorCallback() {           
                 @Override
                 public void errorCallback(Pointer pointer, virError error) {
-                    LOGGER.error("pointer=" + pointer + " error=" + error);
+                    LOGGER.error("pointer={} error={}", pointer, error);
                 }
             });
         } catch (LibvirtException e) {
@@ -193,18 +194,18 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
                 network = networkLookupByName(connect, NETWORK_NAME);
                 if (network != null) {
                     if (LibVirtModelFacade.sameNetwork(wantedNetworkXML, network)) {
-                        LOGGER.debug("network '" + NETWORK_NAME + "' already exists with proper characteristics");
+                        LOGGER.debug("network '{}' already exists with proper characteristics", NETWORK_NAME);
                     } else {
                         network.destroy();
                         //network.undefine();
-                        LOGGER.debug("destroyed network '" + NETWORK_NAME + "'");
+                        LOGGER.debug("destroyed network '{}'", NETWORK_NAME);
                         network = null; 
                     }
                 }
                 
                 if (network == null) {
                     network = connect.networkCreateXML(wantedNetworkXML);
-                    LOGGER.debug("created network '" + NETWORK_NAME + "'");            
+                    LOGGER.debug("created network '{}'", NETWORK_NAME);            
                 }
             } finally {
                 if (network != null) {
@@ -328,7 +329,7 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
             throw new DomainException("unable to find a unique " + valueName);
         }
         
-        LOGGER.debug("found a unique " + valueName + " : " + value);
+        LOGGER.debug("found a unique {} : {}", valueName, value);
         return value;
     }
     
@@ -337,9 +338,8 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
     
         // get defined but inactive domains
         for (String name : connect.listDefinedDomains()) {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("name=" + name);
-            }
+            LOGGER.debug("name={}", name);
+            
             if (name != null) {
                 domains.add(connect.domainLookupByName(name));
             }

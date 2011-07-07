@@ -38,7 +38,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.jtestplatform.cloud.configuration.Connection;
 import org.jtestplatform.cloud.configuration.Platform;
 import org.jtestplatform.cloud.domain.Domain;
@@ -60,7 +61,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Theories.class)
 public class TestLibVirt {
-    private static final Logger LOGGER = Logger.getLogger(TestLibVirt.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TestLibVirt.class);
     
     private static final int NB_PINGS = 5;
 
@@ -78,8 +79,6 @@ public class TestLibVirt {
     
     @Before
     public void setUp() {
-        DomainUtils.initLog4j();
-        
         factory = new LibVirtDomainFactory();
         connection = new Connection();
         connection.setUri("qemu:///system");
@@ -96,7 +95,7 @@ public class TestLibVirt {
             try {
                 domain.stop();
             } catch (Throwable t) {
-                LOGGER.error(t);
+                LOGGER.error("Error while stopping domain", t);
                 error = true;
             }
         }
@@ -118,16 +117,16 @@ public class TestLibVirt {
         public Object call() throws Exception {
             try {
                 //TODO also check createDomain/support methods work well together
-                LOGGER.debug(name + ": creating domain");
+                LOGGER.debug("{}: creating domain", name);
                 Domain domain = factory.createDomain(createDomainConfig(), connection);
-                LOGGER.debug(name + ": domain created");
+                LOGGER.debug("{}: domain created", name);
                 String ip = domain.getIPAddress();
                 org.junit.Assert.assertNull(ip);
                 
                 domains.add(domain);
                 
                 // start
-                LOGGER.debug(name + ": starting domain");
+                LOGGER.debug("{}: starting domain", name);
                 ip = domain.start();                
                 sleep(estimatedBootTime); // wait a bit that the system has started
                 
@@ -137,7 +136,7 @@ public class TestLibVirt {
                 ipList.add(ip);
                 
                 // stop
-                LOGGER.debug(name + ": stopping domain");
+                LOGGER.debug("{}: stopping domain", name);
                 domain.stop();
                 org.junit.Assert.assertNull(domain.getIPAddress());
                 org.junit.Assert.assertEquals("after stop, domain must not be pingable", 0, ping(ip));
@@ -190,7 +189,7 @@ public class TestLibVirt {
     }
     
     private static int ping(String host) throws IOException {
-        LOGGER.debug("pinging " + host);
+        LOGGER.debug("pinging {}", host);
         
         final int timeOut = 600000;
         final InetAddress addr = InetAddress.getByName(host);
@@ -199,7 +198,7 @@ public class TestLibVirt {
         for (int i = 0; i < NB_PINGS; i++) {
             if (addr.isReachable(timeOut)) {
                 counter++;
-                LOGGER.debug("received pong from " + host);
+                LOGGER.debug("received pong from {}", host);
             }
         }
         

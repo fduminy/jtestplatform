@@ -116,8 +116,6 @@ public class TestFrameworkTest {
     }
 
     static {
-        Utils.initLog4j();
-
         try {
             // junit test framework
             addTest(JUNIT_TEST_FRAMEWORK, ParameterizedTestClass.class, FAIL, "aFailingTest");

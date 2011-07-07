@@ -31,7 +31,6 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.net.URL;
 
-import org.apache.log4j.PropertyConfigurator;
 import org.jtestplatform.cloud.domain.watchdog.WatchDog;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -53,11 +52,6 @@ public class DomainUtils {
         return f;
     }
     
-    public static void initLog4j() {
-        File logConfigFile = getResource("log4j.properties");
-        PropertyConfigurator.configure(logConfigFile.getAbsolutePath());        
-    }
-
     public static String getCDROM() {
         return getResource("microcore_2.7.iso").getAbsolutePath();
     }

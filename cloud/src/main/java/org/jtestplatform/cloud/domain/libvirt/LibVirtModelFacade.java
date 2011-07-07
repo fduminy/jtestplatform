@@ -28,7 +28,8 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.dom4j.DocumentException;
 import org.jtestplatform.cloud.domain.DomainConfig;
 import org.jtestplatform.cloud.domain.DomainException;
@@ -56,7 +57,7 @@ import org.libvirt.model.network.io.dom4j.NetworkDom4jWriter;
  *
  */
 public class LibVirtModelFacade {
-    private static final Logger LOGGER = Logger.getLogger(LibVirtModelFacade.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(LibVirtModelFacade.class);
     
     static final String BASE_MAC_ADDRESS = "54:52:00:77:58:";
     static final String BASE_IP_ADDRESS = "192.168.121.";
@@ -109,7 +110,7 @@ public class LibVirtModelFacade {
         }
         String result = writer.toString();
 
-        LOGGER.debug("generateNetwork:\n" + result);
+        LOGGER.debug("generateNetwork:\n{}", result);
         return result;
     }
         
@@ -172,10 +173,8 @@ public class LibVirtModelFacade {
         
         String result = sb.toString();
         
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("generateDomain: config=" + config + " macAddress=" + macAddress
-                    + " networkName=" + networkName + " Result=\n" + result);
-        }
+        LOGGER.debug("generateDomain: config={} macAddress={} networkName={} Result=\n{}",
+        		new Object[]{config, macAddress, networkName, result});
         
         return result;
     }
@@ -297,15 +296,14 @@ public class LibVirtModelFacade {
             // an exception might be thrown if the function is not supported by the hypervisor
             // then, we assume there is enough memory
             
-            LOGGER.error(lve);
+            LOGGER.error("Error while calling nodeInfo()", lve);
             support = true;
         }
         
         if (support) {
             String capabilitiesXML = connect.getCapabilities();
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("support: capabilitiesXML=" + capabilitiesXML);
-            }
+            LOGGER.debug("support: capabilitiesXML={}", capabilitiesXML);
+            
             Capabilities capabilities = new CapabilitiesDom4jReader().read(new StringReader(capabilitiesXML));
             
             outloop:
