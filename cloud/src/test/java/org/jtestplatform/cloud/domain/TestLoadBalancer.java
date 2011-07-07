@@ -20,7 +20,7 @@
 /**
  * 
  */
-package org.jtestplatform.client.domain;
+package org.jtestplatform.cloud.domain;
 
 import static org.junit.Assert.assertEquals;
 
