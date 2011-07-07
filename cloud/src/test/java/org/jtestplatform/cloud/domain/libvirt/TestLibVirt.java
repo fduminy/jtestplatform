@@ -25,30 +25,30 @@
  */
 package org.jtestplatform.cloud.domain.libvirt;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Vector;
-
-import net.sourceforge.groboutils.junit.v1.MultiThreadedTestRunner;
-import net.sourceforge.groboutils.junit.v1.TestRunnable;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.apache.log4j.Logger;
+import org.jtestplatform.cloud.configuration.Connection;
+import org.jtestplatform.cloud.configuration.Platform;
 import org.jtestplatform.cloud.domain.Domain;
 import org.jtestplatform.cloud.domain.DomainConfig;
 import org.jtestplatform.cloud.domain.DomainException;
 import org.jtestplatform.cloud.domain.DomainUtils;
 import org.jtestplatform.common.ConfigUtils;
-import org.jtestplatform.cloud.configuration.Configuration;
-import org.jtestplatform.cloud.configuration.Connection;
-import org.jtestplatform.cloud.configuration.Platform;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.experimental.theories.DataPoint;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
@@ -106,7 +106,7 @@ public class TestLibVirt {
         }
     }
     
-    private class TestStartAndStop extends TestRunnable {
+    private class TestStartAndStop implements Callable<Object> {
         private final String name;
         private final int estimatedBootTime;
         
@@ -116,7 +116,7 @@ public class TestLibVirt {
         }
         
         @Override
-        public void runTest() throws Throwable {
+        public Object call() throws Exception {
             try {
                 //TODO also check createDomain/support methods work well together
                 LOGGER.debug(name + ": creating domain");
@@ -142,9 +142,11 @@ public class TestLibVirt {
                 domain.stop();
                 org.junit.Assert.assertNull(domain.getIPAddress());
                 org.junit.Assert.assertEquals("after stop, domain must not be pingable", 0, ping(ip));
-            } catch (Throwable t) {
-                LOGGER.error("error in " + name, t);
-                throw t;
+                
+                return null;
+            } catch (Exception e) {
+                LOGGER.error("error in " + name, e);
+                throw e;
             }
         }
     }
@@ -152,27 +154,17 @@ public class TestLibVirt {
     @Theory
     public void testStartAndStop(Integer nbDomains) throws Throwable {
         final int estimatedBootTime = 40000;
-        TestStartAndStop[] tests = new TestStartAndStop[nbDomains];
+        List<TestStartAndStop> tasks = new ArrayList<TestStartAndStop>(nbDomains);
         for (int i = 0; i < nbDomains; i++) {
-            tests[i] = new TestStartAndStop(i, estimatedBootTime);
+        	tasks.add(new TestStartAndStop(i, estimatedBootTime));
         }
 
         // run each test in its own thread
-        MultiThreadedTestRunner mttr = new MultiThreadedTestRunner(tests);
-        mttr.runTestRunnables(600000); // 10 minutes
-        
-        // now assert that the list of IPs is valid
-        assertEquals("each domain must have an IP address", tests.length, ipList.size());
-        for (int i = 0; i < ipList.size(); i++) {
-            boolean unique = true;
-            for (int j = 0; j < ipList.size(); j++) {
-                if ((i != j) && ipList.get(i).equals(ipList.get(j))) {
-                    unique = false;
-                    break;
-                }
-            }
-            assertTrue("each domain must have a unique IP address", unique);
-        }
+        ExecutorService executorService = Executors.newFixedThreadPool(nbDomains);
+        // invokeAll() blocks until all tasks have run...
+        List<Future<Object>> futures = executorService.invokeAll(tasks);
+        assertThat(futures.size(), is(nbDomains));
+        assertThat(new HashSet<String>(ipList).size(), is(nbDomains));
     }
 
     private void sleep(long timeMillis) {
