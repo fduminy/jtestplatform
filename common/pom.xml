@@ -8,8 +8,8 @@
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>jtestplatform-common</artifactId>
 	<name>JTestPlatform Common</name>
-    <url>http://gitorious.org/jtestplatform/pages/Home</url>
-	
+    <url>https://github.com/fduminy/jtestplatform</url>
+
     <licenses>
         <license>
             <name>GPL 3.0</name>
@@ -22,8 +22,8 @@
     </properties>
      
     <scm>
-        <connection>scm:git:git://gitorious.org/jtestplatform/jtestplatform.git</connection>
+        <connection>scm:git:git@github.com:fduminy/jtestplatform.git</connection>
         <tag>HEAD</tag>
-        <url>http://gitorious.org/jtestplatform/jtestplatform/trees/master/common</url>
+        <url>https://github.com/fduminy/jtestplatform/tree/master/common</url>
     </scm>      
 </project>

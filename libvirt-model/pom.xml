@@ -182,8 +182,8 @@
     </repositories>
         
     <scm>
-        <connection>scm:git:git://gitorious.org/jtestplatform/jtestplatform.git</connection>
+        <connection>scm:git:git@github.com:fduminy/jtestplatform.git</connection>
         <tag>HEAD</tag>
-        <url>http://gitorious.org/jtestplatform/jtestplatform/trees/master/libvirt-model</url>
+        <url>https://github.com/fduminy/jtestplatform/tree/master/libvirt-model</url>
     </scm>              
 </project>

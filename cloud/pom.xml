@@ -10,9 +10,9 @@
 	</parent>
 	<artifactId>jtestplatform-cloud</artifactId>
 	<name>JTestPlatform-Cloud</name>
-    <url>http://gitorious.org/jtestplatform/pages/Home</url>
+    <url>https://github.com/fduminy/jtestplatform</url>
 
-	<licenses>
+    <licenses>
 		<license>
 			<name>GPL 3.0</name>
 			<url>http://www.gnu.org/licenses/gpl-3.0.html</url>
@@ -112,8 +112,8 @@
     </repositories>    
     
     <scm>
-        <connection>scm:git:git://gitorious.org/jtestplatform/jtestplatform.git</connection>
+        <connection>scm:git:git@github.com:fduminy/jtestplatform.git</connection>
         <tag>HEAD</tag>
-        <url>http://gitorious.org/jtestplatform/jtestplatform/trees/master/cloud</url>
+        <url>https://github.com/fduminy/jtestplatform/tree/master/cloud</url>
     </scm>      
 </project>

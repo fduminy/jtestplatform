@@ -51,7 +51,7 @@
 		<module>common</module>
 		<module>client</module>
 		<module>server</module>
-        <!-- module>mauve</module-->
+        <module>mauve</module>
         <module>libvirt-model</module>
         <module>cloud</module>
         <module>server-utils</module>

@@ -9,7 +9,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>jtestplatform-server-utils</artifactId>
     <name>JTestPlatform Server Utils</name>
-    <url>http://gitorious.org/jtestplatform/pages/Home</url>
+    <url>https://github.com/fduminy/jtestplatform</url>
 
     <licenses>
         <license>
@@ -45,9 +45,9 @@
     </dependencies>
 
     <scm>
-        <connection>scm:git:git://gitorious.org/jtestplatform/jtestplatform.git</connection>
+        <connection>scm:git:git@github.com:fduminy/jtestplatform.git</connection>
         <tag>HEAD</tag>
-        <url>http://gitorious.org/jtestplatform/jtestplatform/trees/master/server-utils</url>
+        <url>https://github.com/fduminy/jtestplatform/tree/master/server-utils</url>
     </scm>
 
 	<repositories>
