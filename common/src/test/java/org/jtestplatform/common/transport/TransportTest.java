@@ -21,7 +21,11 @@
  */
 package org.jtestplatform.common.transport;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.AfterClass;
+import org.junit.experimental.theories.DataPoint;
+import org.junit.experimental.theories.Theories;
+import org.junit.experimental.theories.Theory;
+import org.junit.runner.RunWith;
 
 import java.io.IOException;
 import java.net.DatagramSocket;
@@ -29,11 +33,7 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
-import org.junit.AfterClass;
-import org.junit.experimental.theories.DataPoint;
-import org.junit.experimental.theories.Theories;
-import org.junit.experimental.theories.Theory;
-import org.junit.runner.RunWith;
+import static org.junit.Assert.assertEquals;
 
 
 /**
@@ -47,22 +47,32 @@ public class TransportTest {
     @DataPoint
     public static final ServerTransport SERVER_UDP_TRANSPORT;
 
-    @DataPoint
-    public static final String MESSAGE = "a message";
-    @DataPoint
-    public static final String NULL_MESSAGE = null;
-    @DataPoint
-    public static final String EMPTY_MESSAGE = "";
-    //@DataPoint //TODO handle case of a big message
-    public static final String A_BIG_MESSAGE;
-    static {
+    public static enum StringMessage {
+        MESSAGE("a value"),
+        NULL_MESSAGE(null),
+        EMPTY_MESSAGE("");
+/*
+       //TODO handle case of a big message
+        A_BIG_MESSAGE(createBigMessage());
+
+        private static String createBigMessage() {
         int size = 10 * 1024 * 1024;
         StringBuilder sb = new StringBuilder(size);
         for (int i = 0; i < size; i++) {
             sb.append((char) i);
         }
-        A_BIG_MESSAGE = sb.toString();
+            return sb.toString();
+        }
+*/
 
+        private final String value;
+
+        StringMessage(String value) {
+            this.value = value;
+        }
+    }
+
+    static {
         try {
             final int port = 12345;
             DatagramSocket ds = new DatagramSocket();
@@ -91,10 +101,10 @@ public class TransportTest {
     }
 
     @Theory
-    public void testSendReceive(ClientTransport client, ServerTransport server, String message) throws IOException, TransportException {
-        client.getTransport().send(message);
+    public void testSendReceive(ClientTransport client, ServerTransport server, StringMessage message) throws IOException, TransportException {
+        client.getTransport().send(message.value);
         String serverMsg = server.getTransport().receive();
-        assertEquals(message, serverMsg);
+        assertEquals(message.value, serverMsg);
     }
 
     private static class ClientTransport {

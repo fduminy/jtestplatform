@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>jtestplatform</groupId>
-	<artifactId>jtestplatform</artifactId>
-	<packaging>pom</packaging>
-	<name>JTestPlatform</name>
-	<version>0.0.1-SNAPSHOT</version>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>jtestplatform</groupId>
+    <artifactId>jtestplatform</artifactId>
+    <packaging>pom</packaging>
+    <name>JTestPlatform</name>
+    <version>0.0.1-SNAPSHOT</version>
     <url>https://github.com/fduminy/jtestplatform</url>
 
     <licenses>
@@ -15,157 +16,168 @@
         </license>
     </licenses>
 
-	<developers>
-		<developer>
-			<id>fabien_duminy</id>
-			<name>Fabien DUMINY</name>
-			<email>fduminy at jnode dot org</email>
-			<url>http://www.duminy.fr/</url>
-			<roles>
-				<role>project-leader</role>
-				<role>developer</role>
-			</roles>
-			<timezone>+1</timezone>
-		</developer>
-	</developers>
+    <developers>
+        <developer>
+            <id>fabien_duminy</id>
+            <name>Fabien DUMINY</name>
+            <email>fduminy at jnode dot org</email>
+            <url>http://www.duminy.fr/</url>
+            <roles>
+                <role>project-leader</role>
+                <role>developer</role>
+            </roles>
+            <timezone>+1</timezone>
+        </developer>
+    </developers>
 
     <properties>
         <project.root>${basedir}</project.root>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	</properties>
+    </properties>
 
-	<repositories>
+    <repositories>
         <repository>
             <id>sonatype-repo</id>
             <name>Sonatype Repository</name>
             <url>https://repository.sonatype.org/content/groups/forge/</url>
         </repository>
-	</repositories>
-	
-	<modules>
-		<module>common</module>
-		<module>client</module>
-		<module>server</module>
+    </repositories>
+
+    <modules>
+        <module>common</module>
+        <module>client</module>
+        <module>server</module>
         <module>mauve</module>
         <module>libvirt-model</module>
         <module>cloud</module>
         <module>server-utils</module>
-	</modules>
+    </modules>
 
-	<dependencies>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.8.1</version>
-			<scope>test</scope>
-		</dependency>
-		
-		<!--  Logging -->        
-        <dependency>
-        	<groupId>org.slf4j</groupId>
-        	<artifactId>slf4j-api</artifactId>
-        	<version>1.6.1</version>
-        </dependency>
-        <dependency>
-        	<groupId>ch.qos.logback</groupId>
-        	<artifactId>logback-classic</artifactId>
-        	<version>0.9.29</version>
-        </dependency>
-	</dependencies>
+    <dependencyManagement>
+        <dependencies>
+            <!-- tests -->
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>4.12</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-all</artifactId>
+                <version>1.10.8</version>
+                <scope>test</scope>
+            </dependency>
 
-	<build>
-		<plugins>
-		
-	        <plugin>
-	            <groupId>org.apache.maven.plugins</groupId>
-	            <artifactId>maven-surefire-plugin</artifactId>
+            <!--  Logging -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>1.6.1</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>0.9.29</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <plugins>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.5</version>
-	        </plugin>    
-		
-			<plugin>
-				<inherited>true</inherited>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.3.2</version>
-				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<version>1.1.1</version>
-				<configuration>
-<!--				
-		          <includeProjectDependencies>true</includeProjectDependencies>
-		          <includePluginDependencies>true</includePluginDependencies>
-		          <executableDependency>
-		            <groupId>jtestplatform</groupId>
-		            <artifactId>jtestplatform-client</artifactId>
-		          </executableDependency>				
-		          <mainClass>org.jtestplatform.client.TestDriver</mainClass>
-		          <systemProperties>
-		            <systemProperty>
-		              <key>vmware.server.username</key>
-		              <value>fabien</value>
-		            </systemProperty>
-                    <systemProperty>
-                      <key>vmware.server.password</key>
-                      <value>fabien</value>
-                    </systemProperty>
-                    <systemProperty>
-                      <key>jtestplatform.home</key>
-                      <value>client/src/main/resources/home</value>
-                    </systemProperty>
-                    <systemProperty>
-                      <key>java.net.preferIPv4Stack</key>
-                      <value>true</value>
-                    </systemProperty>
-		          </systemProperties>				
--->
-		          <executable>java</executable>
-		          <arguments>
-                    <argument>-Dvmware.server.username=fabien</argument>
-                    <argument>-Dvmware.server.password=fabien</argument>
-                    <argument>-Djtestplatform.home=client/src/main/resources/home</argument>
-                    <argument>-Djava.net.preferIPv4Stack=true</argument>
-		            <argument>-classpath</argument>
-                    <argument>client/target/classes:common/target/classes:/home/fabien/.m2/repository/gnu-classpath/mauve/0.1/mauve-0.1.jar:/home/fabien/.m2/repository/javagroups/jgroups-all/2.8.Beta2/jgroups-all-2.8.Beta2.jar</argument>
-		            <argument>org.jtestplatform.client.TestDriver</argument>
-		          </arguments>		          
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>com.google.code.maven-license-plugin</groupId>
-				<artifactId>maven-license-plugin</artifactId>
-				<version>1.4.0</version>
-				<configuration>
-					<header>${project.root}/src/etc/header.txt</header>
-			        <excludes>
-			            <exclude>LICENSE.txt</exclude>
-			            <exclude>**/src/test/resources/**</exclude>
+            </plugin>
+
+            <plugin>
+                <inherited>true</inherited>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.1.1</version>
+                <configuration>
+                    <!--
+                                      <includeProjectDependencies>true</includeProjectDependencies>
+                                      <includePluginDependencies>true</includePluginDependencies>
+                                      <executableDependency>
+                                        <groupId>jtestplatform</groupId>
+                                        <artifactId>jtestplatform-client</artifactId>
+                                      </executableDependency>
+                                      <mainClass>org.jtestplatform.client.TestDriver</mainClass>
+                                      <systemProperties>
+                                        <systemProperty>
+                                          <key>vmware.server.username</key>
+                                          <value>fabien</value>
+                                        </systemProperty>
+                                        <systemProperty>
+                                          <key>vmware.server.password</key>
+                                          <value>fabien</value>
+                                        </systemProperty>
+                                        <systemProperty>
+                                          <key>jtestplatform.home</key>
+                                          <value>client/src/main/resources/home</value>
+                                        </systemProperty>
+                                        <systemProperty>
+                                          <key>java.net.preferIPv4Stack</key>
+                                          <value>true</value>
+                                        </systemProperty>
+                                      </systemProperties>
+                    -->
+                    <executable>java</executable>
+                    <arguments>
+                        <argument>-Dvmware.server.username=fabien</argument>
+                        <argument>-Dvmware.server.password=fabien</argument>
+                        <argument>-Djtestplatform.home=client/src/main/resources/home</argument>
+                        <argument>-Djava.net.preferIPv4Stack=true</argument>
+                        <argument>-classpath</argument>
+                        <argument>
+                            client/target/classes:common/target/classes:/home/fabien/.m2/repository/gnu-classpath/mauve/0.1/mauve-0.1.jar:/home/fabien/.m2/repository/javagroups/jgroups-all/2.8.Beta2/jgroups-all-2.8.Beta2.jar
+                        </argument>
+                        <argument>org.jtestplatform.client.TestDriver</argument>
+                    </arguments>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.google.code.maven-license-plugin</groupId>
+                <artifactId>maven-license-plugin</artifactId>
+                <version>1.4.0</version>
+                <configuration>
+                    <header>${project.root}/src/etc/header.txt</header>
+                    <excludes>
+                        <exclude>LICENSE.txt</exclude>
+                        <exclude>**/src/test/resources/**</exclude>
                         <exclude>**/src/main/mdo/**</exclude>
                         <exclude>**/src/main/schema/**</exclude>
-			            <exclude>**/.git/**</exclude>			            
-			        </excludes>
-				</configuration>
-				<executions>
-					<execution>
-						<phase>process-sources</phase>
-						<goals>
-							<goal>format</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
-	
+                        <exclude>**/.git/**</exclude>
+                    </excludes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>format</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
     <scm>
         <connection>scm:git:git@github.com:fduminy/jtestplatform.git</connection>
         <tag>HEAD</tag>
         <url>https://github.com/fduminy/jtestplatform.git</url>
     </scm>
-	
+
 </project>
