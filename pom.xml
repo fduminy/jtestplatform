@@ -40,11 +40,6 @@
             <name>Sonatype Repository</name>
             <url>https://repository.sonatype.org/content/groups/forge/</url>
         </repository>
-        <repository>
-            <id>geotools-maven2-repository</id>
-            <name>geotools Maven 2 Repository</name>
-            <url>http://maven.geotools.fr/repository/</url>
-        </repository>
 	</repositories>
 	
 	<modules>
