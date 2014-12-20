@@ -24,17 +24,17 @@
  */
 package org.jtestplatform.cloud.domain.libvirt;
 
+import org.jtestplatform.cloud.configuration.Connection;
 import org.jtestplatform.cloud.domain.Domain;
 import org.jtestplatform.cloud.domain.DomainConfig;
 import org.jtestplatform.cloud.domain.DomainException;
 import org.jtestplatform.common.ConfigUtils;
-import org.jtestplatform.cloud.configuration.Connection;
 import org.libvirt.Connect;
-import org.libvirt.LibvirtException;
 import org.libvirt.DomainInfo.DomainState;
+import org.libvirt.LibvirtException;
 
 /**
- * Implementation of {@link ServerProcess} for <a href="http://www.virtualbox.org/">VirtualBox</a>.
+ * Implementation for a {@link org.jtestplatform.cloud.domain.Domain} based on <a href="http://www.libvirt.org/">libvirt</a>.
  * 
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
