@@ -24,22 +24,6 @@
  */
 package org.jtestplatform.cloud.domain.libvirt;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-
-import java.io.IOException;
-import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Vector;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.jtestplatform.cloud.configuration.Connection;
 import org.jtestplatform.cloud.configuration.Platform;
 import org.jtestplatform.cloud.domain.Domain;
@@ -53,6 +37,22 @@ import org.junit.experimental.theories.DataPoint;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Vector;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.*;
 
 
 /**
@@ -62,21 +62,21 @@ import org.junit.runner.RunWith;
 @RunWith(Theories.class)
 public class TestLibVirt {
     private static final Logger LOGGER = LoggerFactory.getLogger(TestLibVirt.class);
-    
+
+    private static final String ERROR_TAG = "ERROR: ";
     private static final int NB_PINGS = 5;
 
     
     @DataPoint
-    public static final Integer _1_DOMAIN = Integer.valueOf(1);
+    public static final Integer _1_DOMAIN = 1;
     @DataPoint
-    public static final Integer _10_DOMAINS = Integer.valueOf(10);
+    public static final Integer _3_DOMAINS = 3;
     
     private Connection connection;
     
     private LibVirtDomainFactory factory;
     private List<Domain> domains;
-    private List<String> ipList;
-    
+
     @Before
     public void setUp() {
         factory = new LibVirtDomainFactory();
@@ -85,7 +85,6 @@ public class TestLibVirt {
         
         // must be a synchronized List since we run multiple threads
         domains = new Vector<Domain>();
-        ipList = new Vector<String>();
     }
     
     @After
@@ -103,69 +102,75 @@ public class TestLibVirt {
             throw new RuntimeException("at least one error happened. look at logs");
         }
     }
-    
-    private class TestStartAndStop implements Callable<Object> {
+
+    private class TestStartAndStop implements Callable<String> {
         private final String name;
-        private final int estimatedBootTime;
-        
-        public TestStartAndStop(int index, int estimatedBootTime) {
+
+        public TestStartAndStop(int index) {
             this.name = "TestStartAndStop[" + index + ']';
-            this.estimatedBootTime = estimatedBootTime;
         }
         
         @Override
-        public Object call() throws Exception {
+        public String call() throws Exception {
+            Domain domain = null;
+            String ip = null;
             try {
                 //TODO also check createDomain/support methods work well together
                 LOGGER.debug("{}: creating domain", name);
-                Domain domain = factory.createDomain(createDomainConfig(), connection);
+                domain = factory.createDomain(createDomainConfig(), connection);
                 LOGGER.debug("{}: domain created", name);
-                String ip = domain.getIPAddress();
-                org.junit.Assert.assertNull(ip);
+                ip = domain.getIPAddress();
+                assertNull(ip);
                 
                 domains.add(domain);
                 
                 // start
                 LOGGER.debug("{}: starting domain", name);
-                ip = domain.start();                
-                sleep(estimatedBootTime); // wait a bit that the system has started
-                
-                org.junit.Assert.assertFalse("ip must not be null, empty or blank", ConfigUtils.isBlank(ip));
-                org.junit.Assert.assertEquals("domain must be pingable", NB_PINGS, ping(ip));
-                org.junit.Assert.assertEquals("domain.start() must return same ip address as domain.getIpAddress()", ip, domain.getIPAddress());
-                ipList.add(ip);
-                
+                ip = domain.start();
+                assertFalse("ip must not be null, empty or blank", ConfigUtils.isBlank(ip));
+
+                assertEquals("domain must be pingable", NB_PINGS, ping(ip));
+                assertEquals("domain.start() must return same ip address as domain.getIpAddress()", ip, domain.getIPAddress());
+                return ip;
+            } catch (Exception e) {
+                LOGGER.error("error in " + name, e);
+                return ERROR_TAG + e.getMessage();
+            } finally {
                 // stop
                 LOGGER.debug("{}: stopping domain", name);
                 domain.stop();
-                org.junit.Assert.assertNull(domain.getIPAddress());
-                org.junit.Assert.assertEquals("after stop, domain must not be pingable", 0, ping(ip));
-                
-                return null;
-            } catch (Exception e) {
-                LOGGER.error("error in " + name, e);
-                throw e;
             }
         }
     }
     
     @Theory
     public void testStartAndStop(Integer nbDomains) throws Throwable {
-        final int estimatedBootTime = 40000;
         List<TestStartAndStop> tasks = new ArrayList<TestStartAndStop>(nbDomains);
         for (int i = 0; i < nbDomains; i++) {
-        	tasks.add(new TestStartAndStop(i, estimatedBootTime));
+            tasks.add(new TestStartAndStop(i));
         }
 
         // run each test in its own thread
         ExecutorService executorService = Executors.newFixedThreadPool(nbDomains);
+
         // invokeAll() blocks until all tasks have run...
-        List<Future<Object>> futures = executorService.invokeAll(tasks);
-        assertThat(futures.size(), is(nbDomains));
-        assertThat(new HashSet<String>(ipList).size(), is(nbDomains));
+        List<Future<String>> ipAddresses = executorService.invokeAll(tasks);
+        assertThat(ipAddresses.size(), is(nbDomains));
+        assertThat(new HashSet<Future<String>>(ipAddresses).size(), is(nbDomains));
+
+        StringBuilder errorMessage = new StringBuilder();
+        for (int i = 0; i < ipAddresses.size(); i++) {
+            Future<String> ipFuture = ipAddresses.get(i);
+            if (ipFuture.get().startsWith(ERROR_TAG)) {
+                errorMessage.append("domain[").append(0).append("]: ").append(ipFuture.get()).append('\n');
+            }
+        }
+        if (errorMessage.length() > 0) {
+            fail(errorMessage.toString());
+        }
     }
 
-    private void sleep(long timeMillis) {
+    private static void sleep(long timeMillis) {
         try {
             Thread.sleep(timeMillis);
         } catch (InterruptedException e) {
@@ -187,21 +192,35 @@ public class TestLibVirt {
         
         return cfg;
     }
-    
+
     private static int ping(String host) throws IOException {
         LOGGER.debug("pinging {}", host);
-        
-        final int timeOut = 600000;
+
+        final int timeOut = 1000;
         final InetAddress addr = InetAddress.getByName(host);
-        
+
+        LOGGER.info("waiting domain {} has started", host);
+        long start = System.currentTimeMillis();
+        boolean pong = false;
+        while (((System.currentTimeMillis() - start) < 60000) && !pong) {
+            pong = addr.isReachable(timeOut);
+            sleep(500);
+        }
+        if (!pong) {
+            LOGGER.info("domain {} NOT started", host);
+            return 0;
+        }
+
+        LOGGER.info("domain {} started", host);
+
         int counter = 0;
-        for (int i = 0; i < NB_PINGS; i++) {
+        while (counter < NB_PINGS) {
             if (addr.isReachable(timeOut)) {
                 counter++;
                 LOGGER.debug("received pong from {}", host);
             }
         }
-        
+
         return counter;
-    }    
+    }
 }

@@ -36,34 +36,44 @@
             <version>1.6</version>
         </dependency>
 
-		<dependency>
-		    <groupId>com.sun.jna</groupId>
-		    <artifactId>jna</artifactId>
-		    <version>3.0.9</version>
-		</dependency>
-		
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.4</version>
+        </dependency>
+
+        <!-- libvirt -->
+        <dependency>
+            <groupId>net.java.dev.jna</groupId>
+            <artifactId>jna</artifactId>
+            <scope>provided</scope>
+            <version>3.5.0</version>
+        </dependency>
         <dependency>
             <groupId>org.libvirt</groupId>
             <artifactId>libvirt</artifactId>
-            <version>0.4.2</version>
+            <version>${libvirt.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.libvirt</groupId>
+            <artifactId>libvirt-model</artifactId>
+            <version>${libvirt.version}</version>
         </dependency>
 
+        <!-- tests -->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
             <scope>test</scope>
         </dependency>
-
-        <dependency>
-          <groupId>org.libvirt</groupId>
-          <artifactId>libvirt-model</artifactId>
-          <version>0.4.2</version>
-        </dependency>
-
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
         </dependency>
     </dependencies>
 	

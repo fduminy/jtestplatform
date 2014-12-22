@@ -24,16 +24,10 @@
  */
 package org.jtestplatform.cloud.domain.libvirt;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.dom4j.DocumentException;
+import org.jtestplatform.cloud.configuration.Platform;
 import org.jtestplatform.cloud.domain.DomainConfig;
 import org.jtestplatform.cloud.domain.DomainException;
-import org.jtestplatform.cloud.configuration.Platform;
 import org.libvirt.Connect;
 import org.libvirt.LibvirtException;
 import org.libvirt.model.capabilities.Arch;
@@ -41,15 +35,15 @@ import org.libvirt.model.capabilities.Capabilities;
 import org.libvirt.model.capabilities.Domain;
 import org.libvirt.model.capabilities.Guest;
 import org.libvirt.model.capabilities.io.dom4j.CapabilitiesDom4jReader;
-import org.libvirt.model.network.Bridge;
-import org.libvirt.model.network.DHCP;
-import org.libvirt.model.network.Forward;
-import org.libvirt.model.network.Host;
-import org.libvirt.model.network.IP;
-import org.libvirt.model.network.Network;
-import org.libvirt.model.network.Range;
+import org.libvirt.model.network.*;
 import org.libvirt.model.network.io.dom4j.NetworkDom4jReader;
 import org.libvirt.model.network.io.dom4j.NetworkDom4jWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
 
 
 /**
@@ -58,7 +52,9 @@ import org.libvirt.model.network.io.dom4j.NetworkDom4jWriter;
  */
 public class LibVirtModelFacade {
     private static final Logger LOGGER = LoggerFactory.getLogger(LibVirtModelFacade.class);
-    
+
+    private static final boolean STRICT = false; // when set to true, some tags throws an exception
+
     static final String BASE_MAC_ADDRESS = "54:52:00:77:58:";
     static final String BASE_IP_ADDRESS = "192.168.121.";
     static final int MIN_SUBNET_IP_ADDRESS = 2;
@@ -165,10 +161,6 @@ public class LibVirtModelFacade {
         sb.append("      <model type='cirrus' vram='9216' heads='1'/>");
         sb.append("    </video>");
         sb.append("  </devices>");
-        sb.append("  <seclabel type='dynamic' model='apparmor'>");
-        sb.append("    <label>libvirt-1557e204-10f8-3c1f-ac60-3dc6f46e85f5</label>");
-        sb.append("    <imagelabel>libvirt-1557e204-10f8-3c1f-ac60-3dc6f46e85f5</imagelabel>");
-        sb.append("  </seclabel>");
         sb.append("</domain>");
         
         String result = sb.toString();
@@ -201,7 +193,8 @@ public class LibVirtModelFacade {
     
     public static String getIPAddress(org.libvirt.Network network, String macAddress) throws IOException, DocumentException, LibvirtException {
         String ipAddress = null;
-        org.libvirt.model.network.Network net = new NetworkDom4jReader().read(new StringReader(network.getXMLDesc(0)));
+        // FIXME when STRICT is set to true, the tag 'nat' throws an exception
+        org.libvirt.model.network.Network net = new NetworkDom4jReader().read(new StringReader(network.getXMLDesc(0)), STRICT);
         for (Host host : net.getIp().getDhcp().getHost()) {
             if (macAddress.equals(host.getMac())) {
                 ipAddress = host.getIp();
@@ -270,7 +263,8 @@ public class LibVirtModelFacade {
 
     private static org.libvirt.model.network.Network toNetwork(String networkXML) throws DomainException {
         try {
-            return new NetworkDom4jReader().read(new StringReader(networkXML));
+            // FIXME when STRICT is set to true, the tag 'nat' throws an exception
+            return new NetworkDom4jReader().read(new StringReader(networkXML), STRICT);
         } catch (IOException e) {
             throw new DomainException(e);
         } catch (DocumentException e) {
@@ -303,8 +297,9 @@ public class LibVirtModelFacade {
         if (support) {
             String capabilitiesXML = connect.getCapabilities();
             LOGGER.debug("support: capabilitiesXML={}", capabilitiesXML);
-            
-            Capabilities capabilities = new CapabilitiesDom4jReader().read(new StringReader(capabilitiesXML));
+
+            // FIXME when STRICT is set to true the tag 'uuid' throws an exception
+            Capabilities capabilities = new CapabilitiesDom4jReader().read(new StringReader(capabilitiesXML), STRICT);
             
             outloop:
             for (Guest guest : capabilities.getGuests()) {

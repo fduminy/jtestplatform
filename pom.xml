@@ -33,6 +33,7 @@
     <properties>
         <project.root>${basedir}</project.root>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <libvirt.version>0.5.1</libvirt.version>
     </properties>
 
     <repositories>

@@ -52,7 +52,7 @@
               <name>secmodel</name>
               <association xml.itemsStyle="flat">
                 <type>SecModel</type>
-                <multiplicity>1</multiplicity>
+                  <multiplicity>*</multiplicity>
               </association>
             </field>
          </fields>
