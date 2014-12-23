@@ -24,30 +24,25 @@
  */
 package org.jtestplatform.cloud.domain.libvirt;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.sun.jna.Pointer;
 import org.dom4j.DocumentException;
+import org.jtestplatform.cloud.configuration.Connection;
+import org.jtestplatform.cloud.configuration.Platform;
 import org.jtestplatform.cloud.domain.DomainConfig;
 import org.jtestplatform.cloud.domain.DomainException;
 import org.jtestplatform.cloud.domain.DomainFactory;
 import org.jtestplatform.common.ConfigUtils;
-import org.jtestplatform.cloud.configuration.Connection;
-import org.jtestplatform.cloud.configuration.Platform;
-import org.libvirt.Connect;
-import org.libvirt.Domain;
-import org.libvirt.DomainInfo;
-import org.libvirt.LibvirtException;
-import org.libvirt.Network;
+import org.libvirt.*;
 import org.libvirt.DomainInfo.DomainState;
-import org.libvirt.jna.virError;
 import org.libvirt.jna.Libvirt.VirErrorCallback;
+import org.libvirt.jna.virError;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.sun.jna.Pointer;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Implementation of {@link DomainFactory} for <a href="http://libvirt.org/">libvirt</a>.
@@ -60,7 +55,8 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
 
     private static final String NETWORK_NAME = "default";
     //private static final String NETWORK_NAME = "jtestplatform-network";
-    
+    private final ConnectManager connectManager = new ConnectManager();
+
     static {
         try {
             Connect.setErrorCallback(new VirErrorCallback() {           
@@ -86,26 +82,13 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
      * {@inheritDoc}
      */
     @Override
-    public boolean support(Platform platform, Connection connection) throws DomainException {
-        LOGGER.trace("begin support");
-        boolean support = false;
-        
-        Connect connect = null;
-        try {
-            connect = org.jtestplatform.cloud.domain.libvirt.ConnectManager.getConnect(connection);
-            support = LibVirtModelFacade.support(platform, connect);
-        } catch (LibvirtException e) {
-            throw new DomainException(e);
-        } catch (IOException e) {
-            throw new DomainException(e);
-        } catch (DocumentException e) {
-            throw new DomainException(e);
-        } finally {
-            ConnectManager.releaseConnect(connection);
+    public boolean support(final Platform platform, final Connection connection) throws DomainException {
+        return execute(connection, new ConnectManager.Command<Boolean>() {
+            @Override
+            public Boolean execute(Connect connect) throws Exception {
+                return LibVirtModelFacade.support(platform, connect);
         }
-        
-        LOGGER.trace("end support");        
-        return support;
+        });
     }
     
     /**
@@ -116,6 +99,10 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
             throw new DomainException("Unsupported platform :\n" + config.getPlatform() + "\n. You should call support(Platform, Connection) before.");
         }
         return new LibVirtDomain(config, this, connection); 
+    }
+
+    final <T> T execute(org.jtestplatform.cloud.configuration.Connection connection, ConnectManager.Command<T> command) throws DomainException {
+        return connectManager.execute(connection, command);
     }
 
     /**
@@ -246,6 +233,10 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
         } catch (LibvirtException e) {
             throw new DomainException(e);
         }
+    }
+
+    void releaseConnect(Connection connection) {
+        connectManager.releaseConnect(connection);
     }
 
     /**

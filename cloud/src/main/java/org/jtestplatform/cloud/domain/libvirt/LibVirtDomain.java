@@ -75,8 +75,9 @@ class LibVirtDomain implements Domain {
      */
     @Override
     public synchronized String start() throws DomainException {
-        try {
-            Connect connect = ConnectManager.getConnect(connection);
+        return factory.execute(connection, new ConnectManager.Command<String>() {
+            @Override
+            public String execute(Connect connect) throws Exception {
             factory.ensureNetworkExist(connect);
                             
             if (!isAlive()) {
@@ -89,15 +90,11 @@ class LibVirtDomain implements Domain {
                     ipAddress = factory.start(domain);
                 }
             }
-        } catch (LibvirtException lve) {
-            throw new DomainException("failed to start", lve);
-        } finally {
-            ConnectManager.releaseConnect(connection);
-        }
-        
         return ipAddress;
     }
-    
+        });
+    }
+
     /**
      * {@inheritDoc}
      * @throws DomainException 
@@ -123,7 +120,7 @@ class LibVirtDomain implements Domain {
     }
 
     protected void closeConnection() throws LibvirtException {
-        org.jtestplatform.cloud.domain.libvirt.ConnectManager.releaseConnect(connection);
+        factory.releaseConnect(connection);
     }
 
     /**

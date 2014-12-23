@@ -24,14 +24,14 @@
  */
 package org.jtestplatform.cloud.domain.libvirt;
 
-import java.util.Hashtable;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.jtestplatform.cloud.domain.DomainException;
 import org.libvirt.Connect;
 import org.libvirt.LibvirtException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Hashtable;
+import java.util.Map;
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)
@@ -39,15 +39,15 @@ import org.libvirt.LibvirtException;
  */
 class ConnectManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConnectManager.class);
-    
-    private static final Map<org.jtestplatform.cloud.configuration.Connection, ConnectData> CONNECTIONS =
+
+    private final Map<org.jtestplatform.cloud.configuration.Connection, ConnectData> connections =
             new Hashtable<org.jtestplatform.cloud.configuration.Connection, ConnectData>();
-    
-    static {
+
+    ConnectManager() {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
-                org.jtestplatform.cloud.configuration.Connection[] connections = CONNECTIONS.keySet().toArray(new org.jtestplatform.cloud.configuration.Connection[CONNECTIONS.size()]);
+                org.jtestplatform.cloud.configuration.Connection[] connections = ConnectManager.this.connections.keySet().toArray(new org.jtestplatform.cloud.configuration.Connection[ConnectManager.this.connections.size()]);
                 if (connections.length > 0) {
                     LOGGER.warn("There are {} unclosed connections", connections.length);
                 }
@@ -59,9 +59,23 @@ class ConnectManager {
         });
     }
 
-    static Connect getConnect(org.jtestplatform.cloud.configuration.Connection connection) throws DomainException {
+    final <T> T execute(org.jtestplatform.cloud.configuration.Connection connection, Command<T> command) throws DomainException {
+        try {
+            return command.execute(getConnect(connection));
+        } catch (Exception e) {
+            throw new DomainException(e);
+        } finally {
+            releaseConnect(connection);
+        }
+    }
+
+    static interface Command<T> {
+        T execute(Connect connect) throws Exception;
+    }
+
+    private Connect getConnect(org.jtestplatform.cloud.configuration.Connection connection) throws DomainException {
         synchronized (getLock(connection)) {
-            ConnectData connectData = CONNECTIONS.get(connection);
+            ConnectData connectData = connections.get(connection);
             if (connectData == null) {
                 try {
                     Connect connect = new Connect(connection.getUri(), false);
@@ -69,16 +83,16 @@ class ConnectManager {
                 } catch (LibvirtException e) {
                     throw new DomainException(e);
                 }
-                CONNECTIONS.put(connection, connectData);
+                connections.put(connection, connectData);
             }
             connectData.incrementReferenceCounter();
             return connectData.getConnect();
         }
     }
-    
-    static void releaseConnect(org.jtestplatform.cloud.configuration.Connection connection) {
+
+    void releaseConnect(org.jtestplatform.cloud.configuration.Connection connection) {
         synchronized (getLock(connection)) {
-            ConnectData connectData = CONNECTIONS.get(connection);
+            ConnectData connectData = connections.get(connection);
             if (connectData != null) {
                 int counter = connectData.decrementReferenceCounter();
                 if (counter == 0) {
@@ -87,9 +101,9 @@ class ConnectManager {
             }
         }
     }
-    
-    private static void closeConnect(org.jtestplatform.cloud.configuration.Connection connection) {
-        ConnectData connectData = CONNECTIONS.remove(connection);
+
+    private void closeConnect(org.jtestplatform.cloud.configuration.Connection connection) {
+        ConnectData connectData = connections.remove(connection);
         if (connectData != null) {
             try {
                 LOGGER.info("closing connection to {}",  connection.getUri());
@@ -110,9 +124,6 @@ class ConnectManager {
         // use the interned String for the uri because it's warranted to be a unique reference
         // for a given String content.
         return connection.getUri().intern();
-    }
-    
-    private ConnectManager() {        
     }
     
     private static class ConnectData {
