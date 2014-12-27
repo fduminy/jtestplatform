@@ -2,7 +2,7 @@
  * JTestPlatform is a client/server framework for testing any JVM
  * implementation.
  *
- * Copyright (C) 2008-2011  Fabien DUMINY (fduminy at jnode dot org)
+ * Copyright (C) 2008-2015  Fabien DUMINY (fduminy at jnode dot org)
  *
  * JTestPlatform is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -24,15 +24,6 @@
  */
 package org.jtestplatform.server;
 
-import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.junit.Test;
 import org.junit.experimental.theories.Theory;
 import org.junit.runner.Description;
@@ -41,6 +32,11 @@ import org.junit.runner.Request;
 import org.junit.runner.Result;
 import org.junit.runner.manipulation.Filter;
 import org.junit.runners.model.FrameworkMethod;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.lang.reflect.Method;
+import java.util.*;
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)

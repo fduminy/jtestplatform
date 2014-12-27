@@ -2,7 +2,7 @@
  * JTestPlatform is a client/server framework for testing any JVM
  * implementation.
  *
- * Copyright (C) 2008-2011  Fabien DUMINY (fduminy at jnode dot org)
+ * Copyright (C) 2008-2015  Fabien DUMINY (fduminy at jnode dot org)
  *
  * JTestPlatform is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -21,8 +21,12 @@
  */
 package org.jtestplatform.cloud.domain;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import org.dom4j.DocumentException;
+import org.jtestplatform.cloud.configuration.*;
+import org.jtestplatform.cloud.configuration.io.dom4j.ConfigurationDom4jReader;
+import org.jtestplatform.common.transport.Transport;
+import org.jtestplatform.common.transport.TransportException;
+import org.junit.Test;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -31,18 +35,8 @@ import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.dom4j.DocumentException;
-import org.jtestplatform.cloud.configuration.Configuration;
-import org.jtestplatform.cloud.configuration.Connection;
-import org.jtestplatform.cloud.configuration.Domains;
-import org.jtestplatform.cloud.configuration.Factory;
-import org.jtestplatform.cloud.configuration.Platform;
-import org.jtestplatform.cloud.configuration.io.dom4j.ConfigurationDom4jReader;
-import org.jtestplatform.common.transport.Transport;
-import org.jtestplatform.common.transport.TransportException;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)

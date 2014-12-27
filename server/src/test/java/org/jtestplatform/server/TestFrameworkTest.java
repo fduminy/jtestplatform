@@ -2,7 +2,7 @@
  * JTestPlatform is a client/server framework for testing any JVM
  * implementation.
  *
- * Copyright (C) 2008-2011  Fabien DUMINY (fduminy at jnode dot org)
+ * Copyright (C) 2008-2015  Fabien DUMINY (fduminy at jnode dot org)
  *
  * JTestPlatform is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -21,28 +21,10 @@
  */
 package org.jtestplatform.server;
 
-import static org.jtestplatform.server.Utils.contains;
-import static org.jtestplatform.server.Utils.makeTestName;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 import gnu.testlet.TestHarness;
 import gnu.testlet.Testlet;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.theories.DataPoint;
@@ -51,6 +33,12 @@ import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+
+import java.util.*;
+
+import static org.jtestplatform.server.Utils.contains;
+import static org.jtestplatform.server.Utils.makeTestName;
+import static org.junit.Assert.*;
 
 
 /**

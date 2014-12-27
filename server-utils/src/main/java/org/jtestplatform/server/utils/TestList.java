@@ -2,7 +2,7 @@
  * JTestPlatform is a client/server framework for testing any JVM
  * implementation.
  *
- * Copyright (C) 2008-2011  Fabien DUMINY (fduminy at jnode dot org)
+ * Copyright (C) 2008-2015  Fabien DUMINY (fduminy at jnode dot org)
  *
  * JTestPlatform is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -24,26 +24,15 @@
  */
 package org.jtestplatform.server.utils;
 
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Scanner;
-import java.util.Set;
-import java.util.TreeSet;
-
 import org.jtestplatform.server.TestFramework;
 import org.jtestplatform.server.TestFrameworkManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xeustechnologies.jcl.JarClassLoader;
 import org.xeustechnologies.jcl.JarResources;
+
+import java.io.*;
+import java.util.*;
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)

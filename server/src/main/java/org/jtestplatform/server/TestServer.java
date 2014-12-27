@@ -2,7 +2,7 @@
  * JTestPlatform is a client/server framework for testing any JVM
  * implementation.
  *
- * Copyright (C) 2008-2011  Fabien DUMINY (fduminy at jnode dot org)
+ * Copyright (C) 2008-2015  Fabien DUMINY (fduminy at jnode dot org)
  *
  * JTestPlatform is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -21,28 +21,21 @@
  */
 package org.jtestplatform.server;
 
+import org.jtestplatform.common.message.*;
+import org.jtestplatform.common.message.Shutdown;
+import org.jtestplatform.common.transport.*;
+import org.jtestplatform.server.commands.GetFrameworkTestsCommand;
+import org.jtestplatform.server.commands.GetTestFrameworksCommand;
+import org.jtestplatform.server.commands.RunTestCommand;
+import org.jtestplatform.server.commands.ShutdownCommand;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.jtestplatform.common.message.GetFrameworkTests;
-import org.jtestplatform.common.message.GetTestFrameworks;
-import org.jtestplatform.common.message.Message;
-import org.jtestplatform.common.message.RunTest;
-import org.jtestplatform.common.message.Shutdown;
-import org.jtestplatform.common.transport.Transport;
-import org.jtestplatform.common.transport.TransportException;
-import org.jtestplatform.common.transport.TransportFactory;
-import org.jtestplatform.common.transport.TransportHelper;
-import org.jtestplatform.common.transport.UDPTransport;
-import org.jtestplatform.server.commands.GetFrameworkTestsCommand;
-import org.jtestplatform.server.commands.GetTestFrameworksCommand;
-import org.jtestplatform.server.commands.RunTestCommand;
-import org.jtestplatform.server.commands.ShutdownCommand;
 
 public class TestServer<T extends Message> {
     private static final Logger LOGGER = LoggerFactory.getLogger(TestServer.class);

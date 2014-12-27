@@ -2,7 +2,7 @@
  * JTestPlatform is a client/server framework for testing any JVM
  * implementation.
  *
- * Copyright (C) 2008-2011  Fabien DUMINY (fduminy at jnode dot org)
+ * Copyright (C) 2008-2015  Fabien DUMINY (fduminy at jnode dot org)
  *
  * JTestPlatform is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -24,29 +24,23 @@
  */
 package org.jtestplatform.cloud.domain;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
+import org.jtestplatform.cloud.configuration.Configuration;
+import org.jtestplatform.cloud.domain.DomainUtils.CustomDomain;
+import org.jtestplatform.cloud.domain.watchdog.DefaultWatchDogStrategy;
+import org.jtestplatform.cloud.domain.watchdog.WatchDog;
+import org.jtestplatform.cloud.domain.watchdog.WatchDogListener;
+import org.junit.After;
+import org.junit.experimental.theories.DataPoint;
+import org.junit.experimental.theories.Theories;
+import org.junit.experimental.theories.Theory;
+import org.junit.runner.RunWith;
 
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.jtestplatform.cloud.domain.DomainUtils.CustomDomain;
-import org.jtestplatform.cloud.domain.watchdog.DefaultWatchDogStrategy;
-import org.jtestplatform.cloud.domain.watchdog.WatchDog;
-import org.jtestplatform.cloud.domain.watchdog.WatchDogListener;
-import org.jtestplatform.cloud.configuration.Configuration;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.experimental.theories.DataPoint;
-import org.junit.experimental.theories.Theories;
-import org.junit.experimental.theories.Theory;
-import org.junit.runner.RunWith;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)

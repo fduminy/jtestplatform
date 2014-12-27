@@ -2,7 +2,7 @@
  * JTestPlatform is a client/server framework for testing any JVM
  * implementation.
  *
- * Copyright (C) 2008-2011  Fabien DUMINY (fduminy at jnode dot org)
+ * Copyright (C) 2008-2015  Fabien DUMINY (fduminy at jnode dot org)
  *
  * JTestPlatform is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -22,15 +22,14 @@
 package org.jtestplatform.server.commands;
 
 
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.jtestplatform.common.message.RunTest;
 import org.jtestplatform.common.message.TestResult;
 import org.jtestplatform.server.TestFramework;
 import org.jtestplatform.server.TestFrameworkManager;
 import org.jtestplatform.server.TestServer;
 import org.jtestplatform.server.TestServerCommand;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RunTestCommand implements TestServerCommand<RunTest, TestResult> {
     private static final Logger LOGGER = LoggerFactory.getLogger(RunTestCommand.class);

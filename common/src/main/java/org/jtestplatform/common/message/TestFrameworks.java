@@ -2,7 +2,7 @@
  * JTestPlatform is a client/server framework for testing any JVM
  * implementation.
  *
- * Copyright (C) 2008-2011  Fabien DUMINY (fduminy at jnode dot org)
+ * Copyright (C) 2008-2015  Fabien DUMINY (fduminy at jnode dot org)
  *
  * JTestPlatform is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -21,11 +21,11 @@
  */
 package org.jtestplatform.common.message;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.jtestplatform.common.transport.Transport;
 import org.jtestplatform.common.transport.TransportException;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)

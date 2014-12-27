@@ -2,7 +2,7 @@
  * JTestPlatform is a client/server framework for testing any JVM
  * implementation.
  *
- * Copyright (C) 2008-2011  Fabien DUMINY (fduminy at jnode dot org)
+ * Copyright (C) 2008-2015  Fabien DUMINY (fduminy at jnode dot org)
  *
  * JTestPlatform is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -21,14 +21,14 @@
  */
 package org.jtestplatform.client;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-
 import org.dom4j.DocumentException;
 import org.jtestplatform.common.ConfigUtils;
 import org.jtestplatform.configuration.Configuration;
 import org.jtestplatform.configuration.io.dom4j.ConfigurationDom4jReader;
+
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 
 /**
  * Utility class used to read the configuration.

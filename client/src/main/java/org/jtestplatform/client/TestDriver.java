@@ -2,7 +2,7 @@
  * JTestPlatform is a client/server framework for testing any JVM
  * implementation.
  *
- * Copyright (C) 2008-2011  Fabien DUMINY (fduminy at jnode dot org)
+ * Copyright (C) 2008-2015  Fabien DUMINY (fduminy at jnode dot org)
  *
  * JTestPlatform is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -21,21 +21,6 @@
  */
 package org.jtestplatform.client;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.jtestplatform.client.report.PlatformReport;
 import org.jtestplatform.client.report.RunReport;
 import org.jtestplatform.client.report.TestFrameworkReport;
@@ -51,6 +36,17 @@ import org.jtestplatform.common.message.TestResult;
 import org.jtestplatform.common.transport.Transport;
 import org.jtestplatform.common.transport.TransportHelper;
 import org.jtestplatform.configuration.Configuration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.*;
 
 public final class TestDriver {
     private static final Logger LOGGER = LoggerFactory.getLogger(TestDriver.class);
