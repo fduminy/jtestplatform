@@ -2,7 +2,7 @@
 
     JTestPlatform is a client/server framework for testing any JVM implementation.
 
-    Copyright (C) 2008-2010  Fabien DUMINY (fduminy at jnode dot org)
+    Copyright (C) 2008-2015  Fabien DUMINY (fduminy at jnode dot org)
 
     JTestPlatform is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -23,14 +23,14 @@
     <watchDogPollInterval>30000</watchDogPollInterval>
     
     <platforms>
-        <platform cpu="phenom" nbCores="4" wordSize="64" memory="524288">sdfdsf</platform>
+        <platform cpu="phenom" nbCores="4" wordSize="64" memory="524288"/>
     </platforms>
     
     <domains max="2">
         <factories>
             <factory type="libvirt">
                 <connections>
-	                <connection uri="qemu:///system">dsfdsf</connection>
+                    <connection uri="qemu:///system"/>
 	            </connections>
             </factory>
         </factories>
