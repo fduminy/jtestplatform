@@ -182,11 +182,11 @@ public class WatchDog {
         return startTime;
     }
 
-    private List<Domain> watchProcesses() {
+    private List<Domain> findDeadDomains() {
         // copy the list to avoid ConcurrentModification while iterating over it.
         List<Domain> domainList = new ArrayList<Domain>(runningDomains);
-        
-        List<Domain> deadProcesses = new ArrayList<Domain>();
+
+        List<Domain> deadDomains = new ArrayList<Domain>();
         
         for (Domain domain : domainList) {
             if (domainIsAlive(domain)) {
@@ -196,7 +196,7 @@ public class WatchDog {
                     // should try to resurrect the domain
                     boolean isReallyDead = strategy.domainDead(domain, getZombieStartTime(domain));
                     if (isReallyDead) {
-                        deadProcesses.add(domain);
+                        deadDomains.add(domain);
                     }
                 }
             }
@@ -206,7 +206,7 @@ public class WatchDog {
             }
         }
 
-        return deadProcesses;
+        return deadDomains;
     }
 
     /**
@@ -226,10 +226,10 @@ public class WatchDog {
         public void run() {
             while (true) {
                 if (watch) {
-                    List<Domain> deadProcesses = watchProcesses();
+                    List<Domain> deadDomains = findDeadDomains();
 
-                    runningDomains.removeAll(deadProcesses);
-                    for (Domain deadProcess : deadProcesses) {
+                    runningDomains.removeAll(deadDomains);
+                    for (Domain deadProcess : deadDomains) {
                         notifyDomainDied(deadProcess);
                     }
                 }
