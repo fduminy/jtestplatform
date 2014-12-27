@@ -40,6 +40,8 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -52,6 +54,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.jtestplatform.cloud.domain.libvirt.LibVirtDomainFactory.DOMAIN_NAME_PREFIX;
 import static org.junit.Assert.*;
 
 
@@ -142,9 +145,11 @@ public class TestLibVirt {
             }
         }
     }
-    
+
     @Theory
     public void testStartAndStop(Integer nbDomains) throws Throwable {
+        assertEquals("no domain must be defined at begin", 0, nbDefinedDomains());
+
         List<TestStartAndStop> tasks = new ArrayList<TestStartAndStop>(nbDomains);
         for (int i = 0; i < nbDomains; i++) {
             tasks.add(new TestStartAndStop(i));
@@ -168,6 +173,19 @@ public class TestLibVirt {
         if (errorMessage.length() > 0) {
             fail(errorMessage.toString());
         }
+
+        assertEquals("no domain must be defined at end", 0, nbDefinedDomains());
+    }
+
+    private int nbDefinedDomains() {
+        File file = new File("/etc/libvirt/qemu");
+        String[] files = file.list(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.startsWith(DOMAIN_NAME_PREFIX);
+            }
+        });
+        return files.length;
     }
 
     private static void sleep(long timeMillis) {

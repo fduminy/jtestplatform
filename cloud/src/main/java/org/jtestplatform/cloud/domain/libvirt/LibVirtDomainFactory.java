@@ -54,6 +54,7 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
     private static final Logger LOGGER = LoggerFactory.getLogger(LibVirtDomainFactory.class);
 
     private static final String NETWORK_NAME = "default";
+    static final String DOMAIN_NAME_PREFIX = "JTestPlatform_";
     //private static final String NETWORK_NAME = "jtestplatform-network";
     private final ConnectManager connectManager = new ConnectManager();
 
@@ -87,7 +88,7 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
             @Override
             public Boolean execute(Connect connect) throws Exception {
                 return LibVirtModelFacade.support(platform, connect);
-        }
+            }
         });
     }
     
@@ -251,9 +252,8 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
         for (Domain domain : domains) {
             domainNames.add(domain.getName());
         }
-        String prefix = "JTestPlatform_";
-        
-        return findUniqueValue(domainNames, "domain name", prefix, (int) System.currentTimeMillis(), Integer.MAX_VALUE, 8);
+
+        return findUniqueValue(domainNames, "domain name", DOMAIN_NAME_PREFIX, (int) System.currentTimeMillis(), Integer.MAX_VALUE, 8);
     }
 
     /**
