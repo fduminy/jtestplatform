@@ -21,24 +21,26 @@
  */
 package org.jtestplatform.client;
 
-/**
- * @author Fabien DUMINY (fduminy@jnode.org)
- *
- */
-@SuppressWarnings("serial")
-public class ConfigurationException extends Exception {
-    public ConfigurationException(Throwable cause) {
-        super(cause);
-    }
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
-    /**
-     * @param string
-     */
-    public ConfigurationException(String message) {
-        super(message);
-    }
+import java.io.File;
 
-    public ConfigurationException(String message, Throwable cause) {
-        super(message, cause);
+public class TestDriverTest {
+    @Rule
+    public final TemporaryFolder folder = new TemporaryFolder();
+
+    @Test
+    public void test() throws Exception {
+        TestDriver testDriver = null;
+        File reportDirectory = folder.getRoot();
+
+/*
+        ConfigurationDom4jReader reader = new ConfigurationDom4jReader();
+        Configuration config = reader.read(new InputStreamReader(getClass().getResourceAsStream("config.xml")));
+        testDriver = new TestDriver(config);
+        testDriver.runTests(reportDirectory);
+*/
     }
 }

@@ -23,36 +23,103 @@ package org.jtestplatform.client;
 
 import org.jtestplatform.cloud.TransportProvider;
 import org.jtestplatform.cloud.configuration.Platform;
+import org.jtestplatform.common.message.FrameworkTests;
+import org.jtestplatform.common.message.GetFrameworkTests;
 import org.jtestplatform.common.message.Message;
 import org.jtestplatform.common.message.TestResult;
+import org.jtestplatform.common.transport.Transport;
 import org.jtestplatform.common.transport.TransportException;
+import org.jtestplatform.common.transport.TransportHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
+public class TestManager {
+    private static final Logger LOGGER = LoggerFactory.getLogger(TestManager.class);
 
-/**
- * @author Fabien DUMINY (fduminy@jnode.org)
- *
- */
-public interface TestManager {
-    /**
-     * @param message
-     * @param transportProvider
-     * @param platform
-     * @return The result of the test run.
-     * @throws Exception
-     */
-    Future<TestResult> runTest(Message message,
+    private final ExecutorService executor;
+    private final TransportHelper transportHelper;
+    private final ThreadGroup threadGroup;
+
+    public TestManager(int corePoolSize, int maximumPoolSize,
+                       long keepAliveTime, TimeUnit unit) {
+        transportHelper = new TransportHelper();
+
+        threadGroup = new ThreadGroup("DefaultTestManager threads");
+
+        ThreadFactory factory = new ThreadFactory() {
+            @Override
+            public Thread newThread(Runnable r) {
+                return new TestManagerThread(r);
+            }
+        };
+
+        //executor = Executors.newSingleThreadExecutor();
+        executor = new ThreadPoolExecutor(corePoolSize, maximumPoolSize,
+                keepAliveTime, unit,
+                new LinkedBlockingQueue<Runnable>(), factory);
+    }
+
+    public Future<TestResult> runTest(Message message,
             TransportProvider transportProvider, Platform platform)
-            throws Exception;
+            throws Exception {
+        return executor.submit(new TestCallable(message, transportProvider, platform));
+    }
 
-    void shutdown();
+    public Collection<String> getFrameworkTests(String testFramework, TransportProvider transportProvider, Platform platform) throws TransportException {
+        //TODO we assume here that the available tests/test frameworks are all the same on each server. check it ?
+        Transport transport = transportProvider.get(platform);
+        LOGGER.debug("call: transport={}", transport);
+        
+        transportHelper.send(transport, new GetFrameworkTests());
+        return ((FrameworkTests) transportHelper.receive(transport)).getTests();
+    }
 
-    /**
-     * @param testFramework The name of the framework.
-     * @return The collection of tests for the given framework.
-     * @throws TransportException
-     */
-    Collection<String> getFrameworkTests(String testFramework, TransportProvider transportProvider, Platform platform) throws TransportException;
+    public void shutdown() {
+        executor.shutdown(); // Disable new tasks from being submitted
+        try {
+            // Wait a while for existing tasks to terminate
+            if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
+                executor.shutdownNow(); // Cancel currently executing tasks
+                // Wait a while for tasks to respond to being cancelled
+                if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
+                    LOGGER.error("executor didn't terminate");
+                }
+            }
+        } catch (InterruptedException ie) {
+            // (Re-)Cancel if current thread also interrupted
+            executor.shutdownNow();
+            // Preserve interrupt status
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    private class TestCallable implements Callable<TestResult> {
+        private final Message message;
+        private final TransportProvider transportProvider;
+        private final Platform platform;
+
+        public TestCallable(Message message, TransportProvider transportProvider, Platform platform) {
+            this.message = message;
+            this.transportProvider = transportProvider;
+            this.platform = platform;
+        }
+
+        @Override
+        public TestResult call() throws Exception {
+            Transport transport = transportProvider.get(platform);
+            LOGGER.debug("call: transport={}", transport);
+            
+            transportHelper.send(transport, message);
+            return (TestResult) transportHelper.receive(transport);
+        }
+    }
+
+    private final class TestManagerThread extends Thread {
+        private TestManagerThread(Runnable r) {
+            super(threadGroup, r);
+        }
+    }
 }

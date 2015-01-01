@@ -6,7 +6,7 @@
   <defaults>
     <default>
       <key>package</key>
-      <value>org.jtestplatform.configuration</value>
+        <value>org.jtestplatform.client.configuration</value>
     </default>
   </defaults>
   
@@ -15,12 +15,6 @@
          <name>Configuration</name>
          <version>1.0</version>
          <fields>
-            <field>
-              <name>workDir</name>
-              <type>String</type>
-              <defaultValue>workdir</defaultValue>
-              <version>1.0</version>
-            </field>
             <field>
               <name>excludingFilters</name>
               <type>String</type>

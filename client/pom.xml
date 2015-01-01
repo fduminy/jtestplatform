@@ -78,7 +78,6 @@
 						<configuration>
 							<models>
 								<model>src/main/mdo/configuration.mdo</model>
-                                <model>src/main/mdo/report.mdo</model>
 							</models>
 							<version>1.0.0</version>
                             <useJava5>true</useJava5>
@@ -93,7 +92,6 @@
 						<configuration>
 							<models>
 								<model>src/main/mdo/configuration.mdo</model>
-                                <model>src/main/mdo/report.mdo</model>
 							</models>
 							<version>1.0.0</version>
 							<useJava5>true</useJava5>

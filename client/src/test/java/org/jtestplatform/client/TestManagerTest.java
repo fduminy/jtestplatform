@@ -75,12 +75,10 @@ public class TestManagerTest {
     }
 
     @Before
-    public void setUp() throws ConfigurationException {
-        new ConfigReader().read();
-
+    public void setUp() {
         transportProvider = mock(TransportProvider.class);
 
-        testManager = new DefaultTestManager(corePoolSize,
+        testManager = new TestManager(corePoolSize,
                 maximumPoolSize, keepAliveTime, unit);
     }
 
