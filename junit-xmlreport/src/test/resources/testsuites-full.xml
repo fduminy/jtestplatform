@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites disabled="1"
+            errors="2"
+            failures="3"
+            name="testsuites-name"
+            tests="4"
+            time="5">
+    <testsuite name="testsuite1-name"
+               tests="10"
+               disabled="11"
+               errors="12"
+               failures="13"
+               hostname="testsuite1-host"
+               id="14"
+               package="testsuite1-package"
+               skipped="15"
+               time="16"
+               timestamp="2014-01-21T16:01:02">
+        <properties>
+            <property name="testsuite1-property1" value="testsuite1-value1"/>
+            <property name="testsuite1-property2" value="testsuite1-value2"/>
+        </properties>
+
+        <testcase name="testsuite1-testcase1"
+                  assertions="100"
+                  classname="101"
+                  status="102"
+                  time="103">
+            <error message="error-message"
+                   type="error-type">error-line1
+error-line2
+            </error>
+            <failure message="failure-message"
+                     type="failure-type">failure-line1
+failure-line2
+            </failure>
+
+            <system-out>out-line1</system-out>
+            <system-out>out-line2</system-out>
+
+            <system-err>err-line1</system-err>
+            <system-err>err-line2</system-err>
+        </testcase>
+
+        <testcase name="testsuite1-testcase2">
+            <skipped/>
+        </testcase>
+
+        <system-out>testsuite1-out</system-out>
+        <system-err>testsuite1-err</system-err>
+    </testsuite>
+
+    <testsuite name="testsuite2-name">
+        <testcase name="testsuite2-testcase1">
+            <skipped/>
+        </testcase>
+    </testsuite>
+</testsuites>

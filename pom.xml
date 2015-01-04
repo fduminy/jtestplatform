@@ -52,6 +52,7 @@
         <module>libvirt-model</module>
         <module>cloud</module>
         <module>server-utils</module>
+        <module>junit-xmlreport</module>
     </modules>
 
     <dependencyManagement>
