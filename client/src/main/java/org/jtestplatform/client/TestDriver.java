@@ -132,13 +132,5 @@ public final class TestDriver {
             }
             return null;
         }
-
-        private String getPlatformKey(Platform platform) {
-            StringBuilder platformKey = new StringBuilder();
-            platformKey.append(platform.getCpu());
-            platformKey.append('_').append(platform.getWordSize()).append("bits");
-            platformKey.append('x').append(platform.getNbCores());
-            return platformKey.toString();
-        }
     }
 }
