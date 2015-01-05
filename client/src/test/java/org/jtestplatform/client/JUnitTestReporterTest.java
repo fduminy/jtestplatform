@@ -40,28 +40,20 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
 public class JUnitTestReporterTest {
-    static final Platform PLATFORM1 = PlatformKeyBuilderTest.createPlatform("Athlon", 32, 2);
-
-    static {
-        PLATFORM1.setCdrom("myCDROM");
-        PLATFORM1.setMemory(123L);
-    }
-
-    static final Platform PLATFORM2 = PlatformKeyBuilderTest.createPlatform("Pentium", 32, 1);
 
     @Rule
     public final TemporaryFolder folder = new TemporaryFolder();
 
     @Test
     public void testGetPlatformProperties() throws Exception {
-        List<Property> actualProperties = JUnitTestReporter.getPlatformProperties(PLATFORM1);
+        List<Property> actualProperties = JUnitTestReporter.getPlatformProperties(Utils.PLATFORM1);
 
         assertThat(actualProperties.size()).isEqualTo(5);
-        assertProperty(actualProperties, 0, "cdrom", PLATFORM1.getCdrom());
-        assertProperty(actualProperties, 1, "cpu", PLATFORM1.getCpu());
-        assertProperty(actualProperties, 2, "nbCores", PLATFORM1.getNbCores());
-        assertProperty(actualProperties, 3, "wordSize", PLATFORM1.getWordSize());
-        assertProperty(actualProperties, 4, "memory", PLATFORM1.getMemory());
+        assertProperty(actualProperties, 0, "cdrom", Utils.PLATFORM1.getCdrom());
+        assertProperty(actualProperties, 1, "cpu", Utils.PLATFORM1.getCpu());
+        assertProperty(actualProperties, 2, "nbCores", Utils.PLATFORM1.getNbCores());
+        assertProperty(actualProperties, 3, "wordSize", Utils.PLATFORM1.getWordSize());
+        assertProperty(actualProperties, 4, "memory", Utils.PLATFORM1.getMemory());
     }
 
     @Test
@@ -70,7 +62,7 @@ public class JUnitTestReporterTest {
         final File reportDir = folder.getRoot();
         MockTestReporter reporter = new MockTestReporter(reportDir, writer);
         TestResult testResult = new TestResult("framework", "testCase1", true);
-        reporter.report(PLATFORM1, testResult);
+        reporter.report(Utils.PLATFORM1, testResult);
 
         reporter.saveReport();
 
@@ -84,12 +76,12 @@ public class JUnitTestReporterTest {
         MockTestReporter reporter = new MockTestReporter(reportDir, writer);
         TestResult testResult = new TestResult("framework", "testCase1", true);
 
-        reporter.report(PLATFORM1, testResult);
+        reporter.report(Utils.PLATFORM1, testResult);
 
         Testsuites suites = reporter.suites;
         assertThat(suites).as("created suites").isNotNull();
         assertThat(suites.getTestsuite()).as("number of suites").hasSize(1);
-        assertTestSuite(suites, PLATFORM1, testResult.getFramework(), testResult.getTest());
+        assertTestSuite(suites, Utils.PLATFORM1, testResult.getFramework(), testResult.getTest());
     }
 
     @Test
@@ -100,13 +92,13 @@ public class JUnitTestReporterTest {
         TestResult testResult1 = new TestResult("framework", "testCase1", true);
         TestResult testResult2 = new TestResult(testResult1.getFramework(), "testCase2", true);
 
-        reporter.report(PLATFORM1, testResult1);
-        reporter.report(PLATFORM1, testResult2);
+        reporter.report(Utils.PLATFORM1, testResult1);
+        reporter.report(Utils.PLATFORM1, testResult2);
 
         Testsuites suites = reporter.suites;
         assertThat(suites).as("created suites").isNotNull();
         assertThat(suites.getTestsuite()).as("number of suites").hasSize(1);
-        assertTestSuite(suites, PLATFORM1, testResult1.getFramework(), testResult1.getTest(), testResult2.getTest());
+        assertTestSuite(suites, Utils.PLATFORM1, testResult1.getFramework(), testResult1.getTest(), testResult2.getTest());
     }
 
     @Test
@@ -117,14 +109,14 @@ public class JUnitTestReporterTest {
         TestResult testResult1 = new TestResult("framework", "testCase1", true);
         TestResult testResult2 = new TestResult("framework2", "testCase2", true);
 
-        reporter.report(PLATFORM1, testResult1);
-        reporter.report(PLATFORM2, testResult2);
+        reporter.report(Utils.PLATFORM1, testResult1);
+        reporter.report(Utils.PLATFORM2, testResult2);
 
         Testsuites suites = reporter.suites;
         assertThat(suites).as("created suites").isNotNull();
         assertThat(suites.getTestsuite()).as("number of suites").hasSize(2);
-        assertTestSuite(suites, PLATFORM1, testResult1.getFramework(), testResult1.getTest());
-        assertTestSuite(suites, PLATFORM2, testResult2.getFramework(), testResult2.getTest());
+        assertTestSuite(suites, Utils.PLATFORM1, testResult1.getFramework(), testResult1.getTest());
+        assertTestSuite(suites, Utils.PLATFORM2, testResult2.getFramework(), testResult2.getTest());
     }
 
     private void assertProperty(List<Property> actualProperties, int index, String propertyName, Object propertyValue) {

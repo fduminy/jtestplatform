@@ -22,29 +22,24 @@
 package org.jtestplatform.client;
 
 import org.jtestplatform.cloud.configuration.Platform;
-import org.junit.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
+public class Utils {
+    static final Platform PLATFORM1 = createPlatform("Athlon", 32, 2);
+    static final Platform PLATFORM2 = createPlatform("Pentium", 32, 1);
 
-public class PlatformKeyBuilderTest {
-    @Test
-    public void test_singleCore() {
-        PlatformKeyBuilder builder = new PlatformKeyBuilder();
-        Platform platform = Utils.createPlatform("myCpu", 32, 1);
+    static {
+        PLATFORM1.setCdrom("myCDROM");
+        PLATFORM1.setMemory(123L);
 
-        String actualKey = builder.buildKey(platform);
-
-        assertThat(actualKey).isEqualTo("myCpu_32bits_1core");
+        PLATFORM2.setCdrom("myCDROM2");
+        PLATFORM2.setMemory(456L);
     }
 
-    @Test
-    public void test_dualCore() {
-        PlatformKeyBuilder builder = new PlatformKeyBuilder();
-        Platform platform = Utils.createPlatform("myCpu", 32, 2);
-
-        String actualKey = builder.buildKey(platform);
-
-        assertThat(actualKey).isEqualTo("myCpu_32bits_2cores");
+    static Platform createPlatform(String cpuName, int wordSize, int nbCores) {
+        Platform platform = new Platform();
+        platform.setCpu(cpuName);
+        platform.setWordSize(wordSize);
+        platform.setNbCores(nbCores);
+        return platform;
     }
-
 }

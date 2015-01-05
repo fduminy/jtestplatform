@@ -101,7 +101,7 @@ public class MultiThreadJUnitTestReporterTest {
         PLATFORM() {
             @Override
             void report(MockTestReporter reporter, int index) throws Exception {
-                Platform platform = PlatformKeyBuilderTest.createPlatform("CPU" + index, 32, 2);
+                Platform platform = Utils.createPlatform("CPU" + index, 32, 2);
                 TestResult testResult = new TestResult("framework", "testCase", true);
                 reporter.report(platform, testResult);
             }
@@ -117,7 +117,7 @@ public class MultiThreadJUnitTestReporterTest {
         FRAMEWORK() {
             @Override
             void report(MockTestReporter reporter, int index) throws Exception {
-                Platform platform = PlatformKeyBuilderTest.createPlatform("CPU", 32, 2);
+                Platform platform = Utils.createPlatform("CPU", 32, 2);
                 TestResult testResult = new TestResult("framework" + index, "testCase", true);
                 reporter.report(platform, testResult);
             }
@@ -130,7 +130,7 @@ public class MultiThreadJUnitTestReporterTest {
         TESTCASE() {
             @Override
             void report(MockTestReporter reporter, int index) throws Exception {
-                Platform platform = PlatformKeyBuilderTest.createPlatform("CPU", 32, 2);
+                Platform platform = Utils.createPlatform("CPU", 32, 2);
                 TestResult testResult = new TestResult("framework", "testCase" + index, true);
                 reporter.report(platform, testResult);
             }
