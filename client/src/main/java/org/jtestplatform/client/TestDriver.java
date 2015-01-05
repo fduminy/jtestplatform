@@ -37,7 +37,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -54,16 +53,10 @@ public final class TestDriver {
     public void runTests(File configFile, File cloudConfigFile, File reportDirectory) throws Exception {
         DomainManager domainManager = null;
         TestManager testManager = null;
+        TestReporter testReporter = null;
         try {
             testManager = new TestManager(1, 1, 0L, TimeUnit.MILLISECONDS);
-            //TestReporter testReporter = new JUnitTestReporter(reportDirectory);
-            TestReporter testReporter = new TestReporter() {
-
-                @Override
-                public void report(Platform platform, TestResult testResult) throws IOException {
-                    //TODO implement this.
-                }
-            };
+            testReporter = new JUnitTestReporter(reportDirectory);
 
             LOGGER.info("Reading config file {}", configFile);
             ConfigurationDom4jReader reader = new ConfigurationDom4jReader();
@@ -100,6 +93,9 @@ public final class TestDriver {
             executor.invokeAll(tasks);
             executor.shutdown();
         } finally {
+            if (testReporter != null) {
+                testReporter.saveReport();
+            }
             if (domainManager != null) {
                 domainManager.stop();
             }

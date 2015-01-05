@@ -46,6 +46,12 @@
 			<version>1.6</version>
 		</dependency>
 
+		<dependency>
+			<groupId>jtestplatform</groupId>
+			<artifactId>junit-xmlreport</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+
 		<!-- tests -->
 		<dependency>
 			<groupId>junit</groupId>
@@ -61,6 +67,12 @@
 			<groupId>org.assertj</groupId>
 			<artifactId>assertj-core</artifactId>
 			<version>1.6.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.google.code.tempus-fugit</groupId>
+			<artifactId>tempus-fugit</artifactId>
+			<version>1.1</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

@@ -24,11 +24,11 @@ package org.jtestplatform.client;
 import org.jtestplatform.cloud.configuration.Platform;
 import org.jtestplatform.common.message.TestResult;
 
-import java.io.IOException;
-
 /**
  * Interface used to report the result of a test run.
  */
 public interface TestReporter {
-    void report(Platform platform, TestResult testResult) throws IOException;
+    void report(Platform platform, TestResult testResult) throws Exception;
+
+    void saveReport() throws Exception;
 }
