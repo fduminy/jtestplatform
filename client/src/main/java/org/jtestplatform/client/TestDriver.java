@@ -25,6 +25,7 @@ import org.jtestplatform.client.configuration.Configuration;
 import org.jtestplatform.client.configuration.io.dom4j.ConfigurationDom4jReader;
 import org.jtestplatform.cloud.TransportProvider;
 import org.jtestplatform.cloud.configuration.Platform;
+import org.jtestplatform.cloud.domain.DefaultDomainManager;
 import org.jtestplatform.cloud.domain.DomainManager;
 import org.jtestplatform.common.message.GetTestFrameworks;
 import org.jtestplatform.common.message.RunTest;
@@ -64,7 +65,7 @@ public final class TestDriver {
 
             LOGGER.info("Reading cloud config file {}", cloudConfigFile);
             FileReader configReader = new FileReader(cloudConfigFile);
-            domainManager = new DomainManager(configReader);
+            domainManager = new DefaultDomainManager(configReader);
 
             LOGGER.info("Starting cloud");
             domainManager.start();

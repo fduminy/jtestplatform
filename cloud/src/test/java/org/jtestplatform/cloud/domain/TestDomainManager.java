@@ -149,8 +149,8 @@ public class TestDomainManager {
         if (withKnownFactories) {
             knownFactories.put(CustomDomainFactory.TYPE, new CustomDomainFactory());
         }
-        
-        return new DomainManager(null) {
+
+        return new DefaultDomainManager(null) {
             @Override
             Map<String, DomainFactory<? extends Domain>> findKnownFactories() {
                 return knownFactories;
