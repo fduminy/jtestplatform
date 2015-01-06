@@ -162,6 +162,10 @@
                         <exclude>**/src/main/mdo/**</exclude>
                         <exclude>**/src/main/schema/**</exclude>
                         <exclude>**/.git/**</exclude>
+                        <exclude>**/.idea/**</exclude>
+                        <exclude>**/*.ipr</exclude>
+                        <exclude>**/*.iml</exclude>
+                        <exclude>**/pom.xml</exclude>
                     </excludes>
                 </configuration>
                 <executions>
