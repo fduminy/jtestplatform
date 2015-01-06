@@ -32,7 +32,9 @@ import org.jtestplatform.common.transport.TransportException;
  *
  */
 public class GetTestFrameworks implements Message {
-    public GetTestFrameworks() {
+    public static final GetTestFrameworks INSTANCE = new GetTestFrameworks();
+
+    private GetTestFrameworks() {
         // nothing
     }
 

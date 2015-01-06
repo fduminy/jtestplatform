@@ -26,9 +26,6 @@ import org.jtestplatform.cloud.configuration.Platform;
 
 import java.util.List;
 
-/**
- * TODO document this.
- */
 public interface DomainManager extends TransportProvider {
     List<Platform> getPlatforms();
 

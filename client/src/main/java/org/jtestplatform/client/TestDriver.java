@@ -80,7 +80,7 @@ public final class TestDriver {
                 Transport transport = transportProvider.get(platform);
 
                 //TODO we assume that all frameworks are available on each server. check it ?
-                transportHelper.send(transport, new GetTestFrameworks());
+                transportHelper.send(transport, GetTestFrameworks.INSTANCE);
                 TestFrameworks testFrameworks = (TestFrameworks) transportHelper.receive(transport);
 
                 for (String testFramework : testFrameworks.getFrameworks()) {
