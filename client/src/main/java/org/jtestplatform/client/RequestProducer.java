@@ -1,0 +1,79 @@
+/**
+ * JTestPlatform is a client/server framework for testing any JVM
+ * implementation.
+ *
+ * Copyright (C) 2008-2015  Fabien DUMINY (fduminy at jnode dot org)
+ *
+ * JTestPlatform is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 3
+ * of the License, or (at your option) any later version.
+ *
+ * JTestPlatform is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ */
+package org.jtestplatform.client;
+
+import org.jtestplatform.cloud.TransportProvider;
+import org.jtestplatform.cloud.configuration.Platform;
+import org.jtestplatform.cloud.domain.DomainManager;
+import org.jtestplatform.common.message.FrameworkTests;
+import org.jtestplatform.common.message.GetFrameworkTests;
+import org.jtestplatform.common.message.GetTestFrameworks;
+import org.jtestplatform.common.message.TestFrameworks;
+import org.jtestplatform.common.transport.Transport;
+import org.jtestplatform.common.transport.TransportHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.BlockingQueue;
+
+/**
+ * Producer of {@link org.jtestplatform.client.Request}s from a {@link org.jtestplatform.cloud.domain.DomainManager}.
+ * Each produced request is added to a {@link java.util.concurrent.BlockingQueue}, which could be used by consumers.
+ */
+public class RequestProducer {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RequestProducer.class);
+
+    private final BlockingQueue<Request> requests;
+
+    public RequestProducer(BlockingQueue<Request> requests) {
+        this.requests = requests;
+    }
+
+    public void produce(DomainManager domainManager) throws Exception {
+        TransportProvider transportProvider = domainManager;
+        TransportHelper transportHelper = createTransportHelper();
+
+        java.util.List<Platform> platforms = domainManager.getPlatforms();
+
+        for (Platform platform : platforms) {
+            Transport transport = transportProvider.get(platform);
+
+            //TODO we assume that all frameworks are available on each server. check it ?
+            transportHelper.send(transport, GetTestFrameworks.INSTANCE);
+            TestFrameworks testFrameworks = (TestFrameworks) transportHelper.receive(transport);
+
+            for (String testFramework : testFrameworks.getFrameworks()) {
+                transportHelper.send(transport, new GetFrameworkTests(testFramework));
+                FrameworkTests tests = (FrameworkTests) transportHelper.receive(transport);
+                for (String test : tests.getTests()) {
+                    final Request request = new Request(platform, testFramework, test);
+                    LOGGER.info("adding {}", request);
+                    requests.put(request);
+                }
+            }
+        }
+    }
+
+    TransportHelper createTransportHelper() {
+        return new TransportHelper();
+    }
+}

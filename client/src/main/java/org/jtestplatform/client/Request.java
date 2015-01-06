@@ -23,28 +23,34 @@ package org.jtestplatform.client;
 
 import org.jtestplatform.cloud.configuration.Platform;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+/**
+ * Parameters for a request to run a test.
+ */
+public class Request {
+    private final Platform platform;
+    private final String testFramework;
+    private final String testName;
 
-public class Utils {
-    static final Platform PLATFORM1 = createPlatform("Athlon", 32, 2);
-    static final Platform PLATFORM2 = createPlatform("Pentium", 32, 1);
-    static final List<Platform> PLATFORMS = Collections.unmodifiableList(Arrays.asList(PLATFORM1, PLATFORM2));
-
-    static {
-        PLATFORM1.setCdrom("myCDROM");
-        PLATFORM1.setMemory(123L);
-
-        PLATFORM2.setCdrom("myCDROM2");
-        PLATFORM2.setMemory(456L);
+    public Request(Platform platform, String testFramework, String testName) {
+        this.platform = platform;
+        this.testFramework = testFramework;
+        this.testName = testName;
     }
 
-    static Platform createPlatform(String cpuName, int wordSize, int nbCores) {
-        Platform platform = new Platform();
-        platform.setCpu(cpuName);
-        platform.setWordSize(wordSize);
-        platform.setNbCores(nbCores);
+    public Platform getPlatform() {
         return platform;
+    }
+
+    public String getTestFramework() {
+        return testFramework;
+    }
+
+    public String getTestName() {
+        return testName;
+    }
+
+    @Override
+    public String toString() {
+        return "Request(" + new PlatformKeyBuilder().buildKey(platform) + ',' + testFramework + ',' + testName + ')';
     }
 }
