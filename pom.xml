@@ -75,79 +75,77 @@
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
-                <version>1.6.1</version>
+                <version>1.7.5</version>
             </dependency>
             <dependency>
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-classic</artifactId>
-                <version>0.9.29</version>
+                <version>1.0.13</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.plexus</groupId>
+                <artifactId>plexus-utils</artifactId>
+                <version>3.0.15</version>
+            </dependency>
+            <dependency>
+                <groupId>dom4j</groupId>
+                <artifactId>dom4j</artifactId>
+                <version>1.6.1</version>
+            </dependency>
+            <dependency>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-core</artifactId>
+                <version>1.6.1</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.code.tempus-fugit</groupId>
+                <artifactId>tempus-fugit</artifactId>
+                <version>1.1</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>2.4</version>
+            </dependency>
+            <dependency>
+                <groupId>xmlunit</groupId>
+                <artifactId>xmlunit</artifactId>
+                <version>1.6</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.xml.bind</groupId>
+                <artifactId>jaxb-api</artifactId>
+                <version>2.1</version>
+            </dependency>
+            <dependency>
+                <groupId>com.redhat.sources</groupId>
+                <artifactId>mauve</artifactId>
+                <version>0.1</version>
+            </dependency>
+            <dependency>
+                <groupId>org.xeustechnologies</groupId>
+                <artifactId>jcl-core</artifactId>
+                <version>2.5</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
 
     <build>
         <plugins>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.5</version>
+                <version>2.17</version>
             </plugin>
 
             <plugin>
                 <inherited>true</inherited>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
+                <version>3.1</version>
                 <configuration>
                     <source>1.6</source>
                     <target>1.6</target>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>1.1.1</version>
-                <configuration>
-                    <!--
-                                      <includeProjectDependencies>true</includeProjectDependencies>
-                                      <includePluginDependencies>true</includePluginDependencies>
-                                      <executableDependency>
-                                        <groupId>jtestplatform</groupId>
-                                        <artifactId>jtestplatform-client</artifactId>
-                                      </executableDependency>
-                                      <mainClass>org.jtestplatform.client.TestDriver</mainClass>
-                                      <systemProperties>
-                                        <systemProperty>
-                                          <key>vmware.server.username</key>
-                                          <value>fabien</value>
-                                        </systemProperty>
-                                        <systemProperty>
-                                          <key>vmware.server.password</key>
-                                          <value>fabien</value>
-                                        </systemProperty>
-                                        <systemProperty>
-                                          <key>jtestplatform.home</key>
-                                          <value>client/src/main/resources/home</value>
-                                        </systemProperty>
-                                        <systemProperty>
-                                          <key>java.net.preferIPv4Stack</key>
-                                          <value>true</value>
-                                        </systemProperty>
-                                      </systemProperties>
-                    -->
-                    <executable>java</executable>
-                    <arguments>
-                        <argument>-Dvmware.server.username=fabien</argument>
-                        <argument>-Dvmware.server.password=fabien</argument>
-                        <argument>-Djtestplatform.home=client/src/main/resources/home</argument>
-                        <argument>-Djava.net.preferIPv4Stack=true</argument>
-                        <argument>-classpath</argument>
-                        <argument>
-                            client/target/classes:common/target/classes:/home/fabien/.m2/repository/gnu-classpath/mauve/0.1/mauve-0.1.jar:/home/fabien/.m2/repository/javagroups/jgroups-all/2.8.Beta2/jgroups-all-2.8.Beta2.jar
-                        </argument>
-                        <argument>org.jtestplatform.client.TestDriver</argument>
-                    </arguments>
                 </configuration>
             </plugin>
             <plugin>

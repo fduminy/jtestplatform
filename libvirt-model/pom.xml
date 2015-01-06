@@ -37,19 +37,16 @@
         <dependency>
             <groupId>javax.xml.bind</groupId>
             <artifactId>jaxb-api</artifactId>
-            <version>2.1</version>
         </dependency>
 
         <!-- needed for temporary model (hand made) based on maven-modello -->
         <dependency>
             <groupId>dom4j</groupId>
             <artifactId>dom4j</artifactId>
-            <version>1.6</version>
         </dependency>
         <dependency>
             <groupId>org.codehaus.plexus</groupId>
             <artifactId>plexus-utils</artifactId>
-            <version>1.5.2</version>
         </dependency>
 
     </dependencies>
@@ -81,10 +78,7 @@
                     <generatePackage>org.libvirt.model</generatePackage>
                     <schemaLanguage>RELAXNG</schemaLanguage>
                     <schemaDirectory>src/main/schema</schemaDirectory>
-                    <!--
-                                       here we find libvirt's relaxng schemas installed in
-                                       /usr/share/libvirt/schemas/
-                                   -->
+                    <!-- here we find libvirt's relaxng schemas installed in /usr/share/libvirt/schemas/ -->
                     <schemaIncludes>
                         <include>*.rng</include>
                     </schemaIncludes>
