@@ -1,4 +1,5 @@
-<model>
+<model xmlns="http://modello.codehaus.org/MODELLO/1.4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://modello.codehaus.org/MODELLO/1.4.1 http://modello.codehaus.org/xsd/modello-1.4.1.xsd">
   <id>capabilities</id>
   <name>Capabilities</name>
   <description>Capabilities Data Model</description>

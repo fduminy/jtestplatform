@@ -53,7 +53,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.5</version>
 				<configuration>
 					<archive>
 						<manifest>
@@ -66,7 +65,6 @@
 			<plugin> <!-- For JNode: do a packaging without JUnit, logback... -->
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
-				<version>1.5</version>
 				<executions>
 					<execution>
 						<phase>package</phase>
