@@ -71,6 +71,7 @@ public class RequestProducer {
                 }
             }
         }
+        requests.put(Request.END);
     }
 
     TransportHelper createTransportHelper() {

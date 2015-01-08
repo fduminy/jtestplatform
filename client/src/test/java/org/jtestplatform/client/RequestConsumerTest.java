@@ -34,12 +34,14 @@ import org.mockito.ArgumentCaptor;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.jtestplatform.client.Utils.PLATFORM1;
 import static org.jtestplatform.client.Utils.PLATFORM2;
+import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.*;
 
 public class RequestConsumerTest {
@@ -54,13 +56,48 @@ public class RequestConsumerTest {
     }
 
     @Test
+    public void testConsume_noEndRequest() throws Exception {
+        // preparation
+        BlockingQueue<Request> requests = new ArrayBlockingQueue<Request>(1);
+        requests.put(new Request(PLATFORM1, "framework1", "test1"));
+        final TestReporter reporter = mock(TestReporter.class);
+        final TransportProvider transportProvider = mock(TransportProvider.class);
+        final TransportHelper transportHelper = mock(TransportHelper.class);
+        final RequestConsumer consumer = new RequestConsumer(requests) {
+            @Override
+            TransportHelper createTransportHelper() {
+                return transportHelper;
+            }
+        };
+
+        // test
+        ExecutorService executorService = Executors.newFixedThreadPool(1);
+        final AtomicBoolean terminated = new AtomicBoolean(false);
+        executorService.submit(new Callable<Object>() {
+            @Override
+            public Object call() throws Exception {
+                consumer.consume(transportProvider, reporter);
+
+                // we should never go there (because we don't send Request.END).
+                terminated.set(true);
+                return null;
+            }
+        });
+        assertFalse(executorService.awaitTermination(1, SECONDS));
+
+        assertThat(executorService.isTerminated()).as("terminated without Request.END").isFalse();
+        assertThat(terminated.get()).as("terminated without Request.END").isFalse();
+    }
+
+    @Test
     public void testConsume() throws Exception {
         // preparation
-        BlockingQueue<Request> requests = new ArrayBlockingQueue<Request>(2);
+        BlockingQueue<Request> requests = new ArrayBlockingQueue<Request>(3);
         final Request request1 = new Request(PLATFORM1, "framework1", "test1");
         requests.put(request1);
         final Request request2 = new Request(PLATFORM2, "framework2", "test5");
         requests.put(request2);
+        requests.put(Request.END);
         TestReporter reporter = mock(TestReporter.class);
         TransportProvider transportProvider = mock(TransportProvider.class);
         Transport transport1 = mock(Transport.class);

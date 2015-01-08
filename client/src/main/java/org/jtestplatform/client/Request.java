@@ -27,6 +27,8 @@ import org.jtestplatform.cloud.configuration.Platform;
  * Parameters for a request to run a test.
  */
 public class Request {
+    static final Request END = new Request(null, "", "");
+
     private final Platform platform;
     private final String testFramework;
     private final String testName;

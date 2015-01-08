@@ -21,6 +21,7 @@
  */
 package org.jtestplatform.client;
 
+import org.assertj.core.util.Objects;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.jtestplatform.cloud.configuration.Platform;
@@ -32,10 +33,10 @@ import org.jtestplatform.common.transport.TransportHelper;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -84,7 +85,7 @@ public class RequestProducerTest {
         verify(transportHelper, times(nbPlatforms)).send(refEq(transport), eqMessage(new GetFrameworkTests(FRAMEWORK1)));
         verify(transportHelper, times(nbPlatforms)).send(refEq(transport), eqMessage(new GetFrameworkTests(FRAMEWORK2)));
         verify(transportHelper, times(nbPlatforms + nbFrameworks * nbPlatforms)).receive(refEq(transport));
-        Set<Request> expectedRequests = new HashSet<Request>();
+        List<Request> expectedRequests = new ArrayList<Request>();
         for (String test : FRAMEWORK1_TESTS) {
             expectedRequests.add(new Request(PLATFORM1, FRAMEWORK1, test));
         }
@@ -97,6 +98,7 @@ public class RequestProducerTest {
         for (String test : FRAMEWORK2_TESTS) {
             expectedRequests.add(new Request(PLATFORM1, FRAMEWORK2, test));
         }
+        expectedRequests.add(Request.END);
         ArgumentCaptor<Request> actualRequests = ArgumentCaptor.forClass(Request.class);
         verify(requests, times(expectedRequests.size())).put(actualRequests.capture());
         assertThat(actualRequests.getAllValues()).usingElementComparator(new RequestComparator()).as("requests").containsOnlyOnce(expectedRequests.toArray(new Request[0]));
@@ -110,7 +112,7 @@ public class RequestProducerTest {
     static class RequestComparator implements Comparator<Request> {
         @Override
         public int compare(Request o1, Request o2) {
-            if (!o1.getPlatform().equals(o2.getPlatform())) {
+            if (!Objects.areEqual(o1.getPlatform(), o2.getPlatform())) {
                 return -1; // could be +1 too
             }
 
@@ -137,7 +139,7 @@ public class RequestProducerTest {
             }
 
             GetFrameworkTests otherRequest = (GetFrameworkTests) o;
-            return otherRequest.getFramework().equals(request.getFramework());
+            return Objects.areEqual(otherRequest.getFramework(), request.getFramework());
         }
 
         @Override

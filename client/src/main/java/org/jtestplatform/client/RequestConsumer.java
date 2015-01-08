@@ -30,6 +30,8 @@ import org.jtestplatform.common.transport.TransportHelper;
 
 import java.util.concurrent.BlockingQueue;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 /**
  * Consumer of {@link org.jtestplatform.client.Request}s provided by a {@link java.util.concurrent.BlockingQueue}.
  * Each consumed request is sent for execution through a {@link org.jtestplatform.common.transport.Transport} provided by a
@@ -44,13 +46,18 @@ public class RequestConsumer {
 
     public void consume(TransportProvider transportProvider, TestReporter reporter) throws Exception {
         TransportHelper transportHelper = createTransportHelper();
-        Request request;
-        while ((request = requests.poll()) != null) {
-            final Platform platform = request.getPlatform();
-            Transport transport = transportProvider.get(platform);
-            transportHelper.send(transport, new RunTest(request.getTestFramework(), request.getTestName()));
-            TestResult testResult = (TestResult) transportHelper.receive(transport);
-            reporter.report(platform, testResult);
+        Request request = null;
+        while (request != Request.END) {
+            while ((request = requests.poll(1, SECONDS)) != null) {
+                if (request == Request.END) {
+                    break;
+                }
+                Platform platform = request.getPlatform();
+                Transport transport = transportProvider.get(platform);
+                transportHelper.send(transport, new RunTest(request.getTestFramework(), request.getTestName()));
+                TestResult testResult = (TestResult) transportHelper.receive(transport);
+                reporter.report(platform, testResult);
+            }
         }
     }
 
