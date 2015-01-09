@@ -21,112 +21,104 @@
  */
 package org.jtestplatform.client;
 
-import org.jtestplatform.client.configuration.Configuration;
-import org.jtestplatform.client.configuration.io.dom4j.ConfigurationDom4jReader;
 import org.jtestplatform.cloud.TransportProvider;
-import org.jtestplatform.cloud.configuration.Platform;
 import org.jtestplatform.cloud.domain.DefaultDomainManager;
+import org.jtestplatform.cloud.domain.DomainException;
 import org.jtestplatform.cloud.domain.DomainManager;
-import org.jtestplatform.common.message.GetTestFrameworks;
-import org.jtestplatform.common.message.RunTest;
-import org.jtestplatform.common.message.TestFrameworks;
-import org.jtestplatform.common.message.TestResult;
-import org.jtestplatform.common.transport.Transport;
-import org.jtestplatform.common.transport.TransportHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
-public final class TestDriver {
+import static java.util.concurrent.TimeUnit.MINUTES;
+
+public class TestDriver {
     private static final Logger LOGGER = LoggerFactory.getLogger(TestDriver.class);
 
-    TestDriver() throws Exception {
+    TestDriver() {
     }
 
-    public void runTests(File configFile, File cloudConfigFile, File reportDirectory) throws Exception {
-        DomainManager domainManager = null;
-        TestManager testManager = null;
-        TestReporter testReporter = null;
+    public void runTests(File cloudConfigFile, File reportDirectory) throws Exception {
+        BlockingQueue<Request> requests = createRequestQueue();
+        RequestConsumer requestConsumer = createRequestConsumer(requests);
+        RequestProducer requestProducer = createRequestProducer(requests);
+        DomainManager domainManager = createDomainManager(cloudConfigFile);
+        final JUnitTestReporter reporter = new JUnitTestReporter(reportDirectory);
+
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        executor.submit(new ConsumerTask(requestConsumer, domainManager, reporter));
+        executor.submit(new ProducerTask(requestProducer, domainManager));
+        shutdown(executor);
+    }
+
+    DomainManager createDomainManager(File cloudConfigFile) throws FileNotFoundException, DomainException {
+        return new DefaultDomainManager(new FileReader(cloudConfigFile));
+    }
+
+    BlockingQueue<Request> createRequestQueue() {
+        return new LinkedBlockingDeque<Request>();
+    }
+
+    RequestProducer createRequestProducer(BlockingQueue<Request> requests) {
+        return new RequestProducer(requests);
+    }
+
+    RequestConsumer createRequestConsumer(BlockingQueue<Request> requests) {
+        return new RequestConsumer(requests);
+    }
+
+    private void shutdown(ExecutorService executor) {
+        executor.shutdown(); // Disable new tasks from being submitted
         try {
-            testManager = new TestManager(1, 1, 0L, TimeUnit.MILLISECONDS);
-            testReporter = new JUnitTestReporter(reportDirectory);
-
-            LOGGER.info("Reading config file {}", configFile);
-            ConfigurationDom4jReader reader = new ConfigurationDom4jReader();
-            Configuration config = reader.read(new FileReader(configFile));
-
-            LOGGER.info("Reading cloud config file {}", cloudConfigFile);
-            FileReader configReader = new FileReader(cloudConfigFile);
-            domainManager = new DefaultDomainManager(configReader);
-
-            LOGGER.info("Starting cloud");
-            domainManager.start();
-
-            TransportProvider transportProvider = domainManager;
-            TransportHelper transportHelper = new TransportHelper();
-
-            java.util.List<Platform> platforms = domainManager.getPlatforms();
-
-            List<Callable<Object>> tasks = new ArrayList<Callable<Object>>(platforms.size());
-            for (Platform platform : platforms) {
-                Transport transport = transportProvider.get(platform);
-
-                //TODO we assume that all frameworks are available on each server. check it ?
-                transportHelper.send(transport, GetTestFrameworks.INSTANCE);
-                TestFrameworks testFrameworks = (TestFrameworks) transportHelper.receive(transport);
-
-                for (String testFramework : testFrameworks.getFrameworks()) {
-                    PlatformTask platformResults = new PlatformTask(testFramework, platform, domainManager, testManager, testReporter);
-                    tasks.add(platformResults);
+            // Wait a while for existing tasks to terminate
+            if (!executor.awaitTermination(10, MINUTES)) { //TODO this should be a parameter
+                executor.shutdownNow(); // Cancel currently executing tasks
+                // Wait a while for tasks to respond to being cancelled
+                if (!executor.awaitTermination(1, MINUTES)) {
+                    LOGGER.error("executor didn't terminate properly");
                 }
             }
-
-            // launch all tasks in parallel and wait for completion
-            ExecutorService executor = Executors.newFixedThreadPool(platforms.size());
-            executor.invokeAll(tasks);
-            executor.shutdown();
-        } finally {
-            if (testReporter != null) {
-                testReporter.saveReport();
-            }
-            if (domainManager != null) {
-                domainManager.stop();
-            }
-
-            testManager.shutdown();
+        } catch (InterruptedException ie) {
+            // (Re-)Cancel if current thread also interrupted
+            executor.shutdownNow();
+            // Preserve interrupt status
+            Thread.currentThread().interrupt();
         }
     }
 
-    private class PlatformTask implements Callable<Object> {
-        private final String testFramework;
-        private final Platform platform;
+    private static class ConsumerTask implements Callable<Void> {
+        private final RequestConsumer requestConsumer;
         private final TransportProvider transportProvider;
         private final TestReporter reporter;
-        private final TestManager testManager;
 
-        public PlatformTask(String testFramework, Platform platform, TransportProvider transportProvider, TestManager testManager, TestReporter reporter) {
-            this.testFramework = testFramework;
-            this.platform = platform;
+        private ConsumerTask(RequestConsumer requestConsumer, TransportProvider transportProvider, TestReporter reporter) {
+            this.requestConsumer = requestConsumer;
             this.transportProvider = transportProvider;
             this.reporter = reporter;
-            this.testManager = testManager;
         }
 
         @Override
-        public Object call() throws Exception {
-            for (String test : testManager.getFrameworkTests(testFramework, transportProvider, platform)) {
-                RunTest message = new RunTest(testFramework, test);
-                TestResult testResult = testManager.runTest(message, transportProvider, platform).get();
-                reporter.report(platform, testResult);
-            }
+        public Void call() throws Exception {
+            requestConsumer.consume(transportProvider, reporter);
+            return null;
+        }
+    }
+
+    private static class ProducerTask implements Callable<Void> {
+        private final RequestProducer requestProducer;
+        private final DomainManager domainManager;
+
+        private ProducerTask(RequestProducer requestProducer, DomainManager domainManager) {
+            this.requestProducer = requestProducer;
+            this.domainManager = domainManager;
+        }
+
+        @Override
+        public Void call() throws Exception {
+            requestProducer.produce(domainManager);
             return null;
         }
     }

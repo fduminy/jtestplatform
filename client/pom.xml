@@ -43,6 +43,11 @@
 			<groupId>dom4j</groupId>
 			<artifactId>dom4j</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>net.java.dev.jna</groupId>
+			<artifactId>jna</artifactId>
+			<version>3.5.0</version>
+		</dependency>
 
 		<dependency>
 			<groupId>jtestplatform</groupId>
@@ -71,71 +76,18 @@
 			<artifactId>tempus-fugit</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.1</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
-
-	<build>
-
-		<plugins>
-			<plugin>
-				<groupId>org.codehaus.modello</groupId>
-				<artifactId>modello-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>mdo</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>dom4j-writer</goal>
-							<goal>dom4j-reader</goal>
-							<goal>java</goal>
-						</goals>
-						<configuration>
-							<models>
-								<model>src/main/mdo/configuration.mdo</model>
-							</models>
-							<version>1.0.0</version>
-                            <useJava5>true</useJava5>
-						</configuration>
-					</execution>
-					<execution>
-						<id>mdo-site</id>
-						<phase>pre-site</phase>
-						<goals>
-							<goal>xdoc</goal>
-						</goals>
-						<configuration>
-							<models>
-								<model>src/main/mdo/configuration.mdo</model>
-							</models>
-							<version>1.0.0</version>
-							<useJava5>true</useJava5>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<systemPropertyVariables>
-						<jtestplatform.home>${basedir}/src/test/resources/home</jtestplatform.home>
-					</systemPropertyVariables>
-				</configuration>
-			</plugin>
-			
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>org.jtestplatform.client.TestDriver</mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
-            </plugin>			
-		</plugins>
-	</build>
 
     <scm>
         <connection>scm:git:git@github.com:fduminy/jtestplatform.git</connection>
