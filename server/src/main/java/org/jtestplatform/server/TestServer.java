@@ -94,6 +94,7 @@ public class TestServer<T extends Message> {
         messageClassToCommand.put(messageClass, command);
     }
 
+    @SuppressWarnings("unchecked")
     public void start() throws Exception {
         LOGGER.info("server started");
 

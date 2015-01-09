@@ -194,6 +194,8 @@
                         <exclude>**/*.ipr</exclude>
                         <exclude>**/*.iml</exclude>
                         <exclude>**/pom.xml</exclude>
+                        <exclude>.gitignore</exclude>
+                        <exclude>*.md</exclude>
                     </excludes>
                 </configuration>
                 <executions>
