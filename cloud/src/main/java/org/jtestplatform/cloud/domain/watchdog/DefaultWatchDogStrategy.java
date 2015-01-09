@@ -49,14 +49,11 @@ public class DefaultWatchDogStrategy implements WatchDogStrategy {
         boolean isReallyDead = ((System.currentTimeMillis() - sinceTimeMillis) > maxZombieTimeMillis);
         
         if (!isReallyDead) {
-            LOGGER.warn("domain is dead. restarting it.");
             try {
                 domain.start();
             } catch (DomainException e) {
-                LOGGER.error("error while restarting", e);
+                LOGGER.error("Error while starting domain", e);
             }
-        } else {
-            LOGGER.warn("domain is dead. restarting it.");
         }
         
         return isReallyDead;        

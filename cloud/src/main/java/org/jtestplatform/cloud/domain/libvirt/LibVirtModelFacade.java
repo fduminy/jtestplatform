@@ -104,10 +104,7 @@ public class LibVirtModelFacade {
         } catch (IOException e) {
             throw new DomainException(e);
         }
-        String result = writer.toString();
-
-        LOGGER.debug("generateNetwork:\n{}", result);
-        return result;
+        return writer.toString();
     }
         
     public static String generateDomain(DomainConfig config, String macAddress, String networkName) {
@@ -162,13 +159,8 @@ public class LibVirtModelFacade {
         sb.append("    </video>");
         sb.append("  </devices>");
         sb.append("</domain>");
-        
-        String result = sb.toString();
-        
-        LOGGER.debug("generateDomain: config={} macAddress={} networkName={} Result=\n{}",
-        		new Object[]{config, macAddress, networkName, result});
-        
-        return result;
+
+        return sb.toString();
     }
 
     /**
@@ -296,7 +288,6 @@ public class LibVirtModelFacade {
         
         if (support) {
             String capabilitiesXML = connect.getCapabilities();
-            LOGGER.debug("support: capabilitiesXML={}", capabilitiesXML);
 
             // FIXME when STRICT is set to true the tag 'uuid' throws an exception
             Capabilities capabilities = new CapabilitiesDom4jReader().read(new StringReader(capabilitiesXML), STRICT);
