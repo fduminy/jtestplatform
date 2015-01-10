@@ -42,7 +42,7 @@ import static org.junit.Assert.fail;
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
  */
-public class DomainManagerTest {
+public class DefaultDomainManagerTest {
     @Test
     public void testReadConfigFile() throws FileNotFoundException, IOException, DocumentException {
         ConfigurationDom4jReader dom4jReader = new ConfigurationDom4jReader();            

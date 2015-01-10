@@ -22,13 +22,13 @@
 /**
  * 
  */
-package org.jtestplatform.cloud.domain;
+package org.jtestplatform.cloud.domain.watchdog;
 
 import org.jtestplatform.cloud.configuration.Configuration;
+import org.jtestplatform.cloud.domain.Domain;
+import org.jtestplatform.cloud.domain.DomainException;
+import org.jtestplatform.cloud.domain.DomainUtils;
 import org.jtestplatform.cloud.domain.DomainUtils.CustomDomain;
-import org.jtestplatform.cloud.domain.watchdog.DefaultWatchDogStrategy;
-import org.jtestplatform.cloud.domain.watchdog.WatchDog;
-import org.jtestplatform.cloud.domain.watchdog.WatchDogListener;
 import org.junit.After;
 import org.junit.experimental.theories.DataPoint;
 import org.junit.experimental.theories.Theories;

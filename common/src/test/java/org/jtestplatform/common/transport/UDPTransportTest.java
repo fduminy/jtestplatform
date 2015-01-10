@@ -41,7 +41,7 @@ import static org.junit.Assert.assertEquals;
  *
  */
 @RunWith(Theories.class)
-public class TransportTest {
+public class UDPTransportTest {
     @DataPoint
     public static final ClientTransport CLIENT_UDP_TRANSPORT;
     @DataPoint
