@@ -47,7 +47,7 @@ import static org.mockito.Mockito.*;
  *
  */
 @RunWith(Theories.class)
-public class TestWatchDog {
+public class WatchDogTest {
     @DataPoint
     public static final Long MAX_ZOMBIE_TIME = Long.valueOf(60000L);
     

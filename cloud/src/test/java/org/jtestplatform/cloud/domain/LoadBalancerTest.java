@@ -39,7 +39,7 @@ import static org.junit.Assert.assertEquals;
  *
  */
 @RunWith(Theories.class)
-public class TestLoadBalancer {
+public class LoadBalancerTest {
     @DataPoint
     public static final Integer NB_THREADS1 = Integer.valueOf(1);
     @DataPoint

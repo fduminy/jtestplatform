@@ -63,8 +63,8 @@ import static org.junit.Assert.*;
  *
  */
 @RunWith(Theories.class)
-public class TestLibVirt {
-    private static final Logger LOGGER = LoggerFactory.getLogger(TestLibVirt.class);
+public class LibVirtTest {
+    private static final Logger LOGGER = LoggerFactory.getLogger(LibVirtTest.class);
 
     private static final String ERROR_TAG = "ERROR: ";
     private static final int NB_PINGS = 5;
