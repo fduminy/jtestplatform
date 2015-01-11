@@ -38,13 +38,13 @@ import java.nio.ByteBuffer;
 public class UDPTransport implements Transport {
     private static final Logger LOGGER = LoggerFactory.getLogger(UDPTransport.class);
 
-    private static final int NULL_SIZE = Integer.MIN_VALUE;
+    static final int NULL_SIZE = Integer.MIN_VALUE;
     private static final int MAX_SIZE = Integer.MAX_VALUE;
 
     /**
      *  size of an int in bytes.
      */
-    private static final int INT_SIZE = Integer.SIZE / 4;
+    private static final int INT_SIZE = Integer.SIZE / 8;
 
     private final DatagramSocket socket;
 

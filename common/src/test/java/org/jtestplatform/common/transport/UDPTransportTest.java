@@ -21,19 +21,22 @@
  */
 package org.jtestplatform.common.transport;
 
-import org.junit.AfterClass;
-import org.junit.experimental.theories.DataPoint;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import java.io.IOException;
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
+import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.jtestplatform.common.transport.UDPTransport.NULL_SIZE;
+import static org.mockito.Mockito.*;
 
 
 /**
@@ -42,14 +45,89 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(Theories.class)
 public class UDPTransportTest {
-    @DataPoint
-    public static final ClientTransport CLIENT_UDP_TRANSPORT;
-    @DataPoint
-    public static final ServerTransport SERVER_UDP_TRANSPORT;
+    @Theory
+    public void testSend(StringMessage message) throws IOException, TransportException {
+        InetSocketAddress socketAddress = spy(new InetSocketAddress("localhost", 12345));
+        DatagramSocket datagramSocket = mock(DatagramSocket.class);
+        when(datagramSocket.getRemoteSocketAddress()).thenReturn(socketAddress);
+        UDPTransport transport = new UDPTransport(datagramSocket);
+
+        transport.send(message.value);
+
+        ArgumentCaptor<DatagramPacket> packetCaptor = ArgumentCaptor.forClass(DatagramPacket.class);
+        verify(datagramSocket, times(message.getNbPackets())).send(packetCaptor.capture());
+        verify(datagramSocket, times(1)).getRemoteSocketAddress();
+        verifyNoMoreInteractions(datagramSocket, socketAddress);
+        verifyPackets(message, socketAddress, packetCaptor);
+    }
+
+    @Theory
+    public void testReceive(final StringMessage message) throws IOException, TransportException {
+        DatagramSocket datagramSocket = mock(DatagramSocket.class);
+        doAnswer(simulateReceive(message)).when(datagramSocket).receive(any(DatagramPacket.class));
+        UDPTransport transport = new UDPTransport(datagramSocket);
+
+        String receivedMessage = transport.receive();
+
+        ArgumentCaptor<DatagramPacket> packetCaptor = ArgumentCaptor.forClass(DatagramPacket.class);
+        verify(datagramSocket, times(message.getNbPackets())).receive(packetCaptor.capture());
+        verifyNoMoreInteractions(datagramSocket);
+        verifyPackets(message, null, packetCaptor);
+        assertThat(receivedMessage).isEqualTo(message.value);
+    }
+
+    private void verifyPackets(StringMessage message, InetSocketAddress socketAddress, ArgumentCaptor<DatagramPacket> packetCaptor) {
+        // first packet
+        DatagramPacket packet1 = packetCaptor.getAllValues().get(0);
+        assertThat(packet1).as("DatagramPacket").isNotNull();
+        if (socketAddress != null) {
+            assertThat(packet1.getSocketAddress()).as("socketAddress").isEqualTo(socketAddress);
+        }
+        assertThat(packet1.getLength()).as("packet1.length").isEqualTo(4);
+        assertThat(packet1.getData()).as("packet1.intValue").isEqualTo(message.getSizeAsBytes());
+
+        if (message.getNbPackets() > 1) {
+            // second packet
+            DatagramPacket packet2 = packetCaptor.getAllValues().get(1);
+            assertThat(packet2.getLength()).as("packet2.length").isEqualTo(message.value.length());
+            assertThat(packet2.getData()).as("packet2.bytes").isEqualTo(message.value.getBytes());
+        }
+    }
+
+    private Answer<Void> simulateReceive(final StringMessage message) {
+        return new Answer<Void>() {
+            int callNumber = 0;
+
+            @Override
+            public Void answer(InvocationOnMock invocationOnMock) throws Throwable {
+                callNumber++;
+                DatagramPacket packet = (DatagramPacket) invocationOnMock.getArguments()[0];
+                byte[] data;
+                if (callNumber == 1) {
+                    data = message.getSizeAsBytes();
+                    System.arraycopy(data, 0, packet.getData(), 0, data.length);
+                } else if (callNumber == 2) {
+                    data = message.value.getBytes();
+                    System.arraycopy(data, 0, packet.getData(), 0, data.length);
+                }
+                return null;
+            }
+        };
+    }
 
     public static enum StringMessage {
         MESSAGE("a value"),
-        NULL_MESSAGE(null),
+        NULL_MESSAGE(null) {
+            @Override
+            byte[] getSizeAsBytes() {
+                return toBytes(NULL_SIZE);
+            }
+
+            @Override
+            int getNbPackets() {
+                return 1;
+            }
+        },
         EMPTY_MESSAGE("");
 /*
        //TODO handle case of a big message
@@ -70,64 +148,17 @@ public class UDPTransportTest {
         StringMessage(String value) {
             this.value = value;
         }
-    }
 
-    static {
-        try {
-            final int port = 12345;
-            DatagramSocket ds = new DatagramSocket();
-            ds.connect(InetAddress.getLocalHost(), port);
-            CLIENT_UDP_TRANSPORT = new ClientTransport(new UDPTransport(ds));
-            SERVER_UDP_TRANSPORT = new ServerTransport(new UDPTransport(new DatagramSocket(port)));
-        } catch (SocketException e) {
-            throw new Error(e);
-        } catch (UnknownHostException e) {
-            throw new Error(e);
-        }
-    }
-
-    @AfterClass
-    public static void afterClass() {
-        try {
-            CLIENT_UDP_TRANSPORT.getTransport().close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
-            SERVER_UDP_TRANSPORT.getTransport().close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Theory
-    public void testSendReceive(ClientTransport client, ServerTransport server, StringMessage message) throws IOException, TransportException {
-        client.getTransport().send(message.value);
-        String serverMsg = server.getTransport().receive();
-        assertEquals(message.value, serverMsg);
-    }
-
-    private static class ClientTransport {
-        private final Transport transport;
-
-        public ClientTransport(Transport transport) {
-            this.transport = transport;
+        byte[] getSizeAsBytes() {
+            return toBytes(value.length());
         }
 
-        public Transport getTransport() {
-            return transport;
-        }
-    }
-
-    private static class ServerTransport {
-        private final Transport transport;
-
-        public ServerTransport(Transport transport) {
-            this.transport = transport;
+        int getNbPackets() {
+            return 2;
         }
 
-        public Transport getTransport() {
-            return transport;
+        private static byte[] toBytes(int value) {
+            return ByteBuffer.allocate(4).putInt(value).array();
         }
     }
 }
