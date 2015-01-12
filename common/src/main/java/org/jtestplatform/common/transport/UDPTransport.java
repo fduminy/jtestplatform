@@ -21,9 +21,6 @@
  */
 package org.jtestplatform.common.transport;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -36,8 +33,6 @@ import java.nio.ByteBuffer;
  *
  */
 public class UDPTransport implements Transport {
-    private static final Logger LOGGER = LoggerFactory.getLogger(UDPTransport.class);
-
     static final int NULL_SIZE = Integer.MIN_VALUE;
     private static final int MAX_SIZE = Integer.MAX_VALUE;
 
@@ -63,37 +58,26 @@ public class UDPTransport implements Transport {
         try {
             if (message == null) {
                 // send a null message
-                ByteBuffer byteBuffer = ByteBuffer.allocate(INT_SIZE).
-                    putInt(NULL_SIZE);
+                ByteBuffer byteBuffer = ByteBuffer.allocate(INT_SIZE).putInt(NULL_SIZE);
                 byte[] data = byteBuffer.array();
                 SocketAddress remoteAddress = socket.getRemoteSocketAddress();
-                DatagramPacket packet = new DatagramPacket(data, data.length,
-                        remoteAddress);
+                DatagramPacket packet = new DatagramPacket(data, data.length, remoteAddress);
 
                 socket.send(packet);
             } else {
                 final byte[] bytes = message.getBytes();
 
                 // send size of data
-                ByteBuffer byteBuffer = ByteBuffer.allocate(INT_SIZE).
-                    putInt(bytes.length);
+                ByteBuffer byteBuffer = ByteBuffer.allocate(INT_SIZE).putInt(bytes.length);
                 byte[] data = byteBuffer.array();
-                //remoteAddress = (remoteAddress == null) ? socket.getRemoteSocketAddress() : remoteAddress;
                 SocketAddress remoteAddress = socket.getRemoteSocketAddress();
-                DatagramPacket packet = new DatagramPacket(data, data.length,
-                        remoteAddress);
+                DatagramPacket packet = new DatagramPacket(data, data.length, remoteAddress);
 
                 socket.send(packet);
-
-                LOGGER.info("nb bytes sent : {}", bytes.length);
 
                 // send data
                 packet = new DatagramPacket(bytes, bytes.length, remoteAddress);
                 socket.send(packet);
-
-//                ByteBuffer bb = ByteBuffer.allocate(command.length() * CHAR_SIZE + INT_SIZE);
-//                bb.putInt(command.length()).asCharBuffer().append(command);
-//                socket.getChannel().send(bb, socket.getRemoteSocketAddress());
             }
         } catch (SocketTimeoutException e) {
             throw new TransportException("timeout in send", e);
@@ -113,7 +97,6 @@ public class UDPTransport implements Transport {
 
             String message = null;
             if (size != NULL_SIZE) {
-                LOGGER.info("nb bytes received : {}", size);
                 if (size > MAX_SIZE) {
                     throw new TransportException(
                             "stream probably corrupted : received more than "
@@ -129,14 +112,6 @@ public class UDPTransport implements Transport {
             }
 
             return message;
-
-//            ByteBuffer bb = ByteBuffer.allocate(INT_SIZE);
-//            socket.getChannel().read(bb);
-//            int size = bb.getInt();
-//            bb = ByteBuffer.allocate(size);
-//            socket.getChannel().read(bb);
-//
-//            return bb.asCharBuffer().rewind().toString();
         } catch (SocketTimeoutException e) {
             throw new TransportException("timeout in receive", e);
         } catch (IOException e) {
@@ -157,9 +132,6 @@ public class UDPTransport implements Transport {
         close();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("UDPTransport[");
