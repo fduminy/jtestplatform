@@ -26,17 +26,23 @@ import org.jtestplatform.cloud.configuration.*;
 import org.jtestplatform.cloud.configuration.io.dom4j.ConfigurationDom4jReader;
 import org.jtestplatform.common.transport.Transport;
 import org.jtestplatform.common.transport.TransportException;
+import org.jtestplatform.common.transport.UDPTransport;
 import org.junit.Test;
 
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.net.DatagramSocket;
+import java.net.SocketException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)
@@ -44,18 +50,44 @@ import static org.junit.Assert.fail;
  */
 public class DefaultDomainManagerTest {
     @Test
-    public void testReadConfigFile() throws FileNotFoundException, IOException, DocumentException {
-        ConfigurationDom4jReader dom4jReader = new ConfigurationDom4jReader();            
+    public void testReadConfigFile() throws IOException, DocumentException {
+        // preparation
+        ConfigurationDom4jReader dom4jReader = new ConfigurationDom4jReader();
+
+        // test
         Configuration config = dom4jReader.read(new FileReader(DomainUtils.getConfigFile()));
-        assertNotNull(config);
+
+        // verifications
+        assertThat(config).isNotNull();
+        assertThat(config.getWatchDogPollInterval()).isEqualTo(30000);
+        assertThat(config.getTimeout()).isEqualTo(12345);
+
+        assertThat(config.getPlatforms()).hasSize(1);
+        Platform platform = config.getPlatforms().get(0);
+        assertThat(platform).isNotNull();
+        assertThat(platform.getCpu()).isEqualTo("phenom");
+        assertThat(platform.getNbCores()).isEqualTo(4);
+        assertThat(platform.getWordSize()).isEqualTo(64);
+        assertThat(platform.getMemory()).isEqualTo(524288);
+
+        assertThat(config.getDomains()).isNotNull();
+        assertThat(config.getDomains().getMax()).isEqualTo(2);
+        assertThat(config.getDomains().getFactories()).hasSize(1);
+
+        Factory factory = config.getDomains().getFactories().get(0);
+        assertThat(factory).isNotNull();
+        assertThat(factory.getType()).isEqualTo("libvirt");
+        assertThat(factory.getConnections()).hasSize(1);
+        assertThat(factory.getConnections().get(0)).isNotNull();
+        assertThat(factory.getConnections().get(0).getUri()).isEqualTo("qemu:///system");
     }
     
     @Test
     public void testConstructorWithoutDomains() {
         try {
             Configuration config = new Configuration();
-            
-            createDomainManager(config, true);
+
+            createDomainManager(config, true, null);
             fail("must throw an exception");
         } catch (DomainException ce) {
             // success
@@ -66,8 +98,8 @@ public class DefaultDomainManagerTest {
     public void testConstructorWithoutKnownFactory() {
         try {
             Configuration config = new Configuration();
-            
-            createDomainManager(config, false);
+
+            createDomainManager(config, false, null);
             fail("must throw an exception");
         } catch (DomainException ce) {
             // success
@@ -79,8 +111,8 @@ public class DefaultDomainManagerTest {
         try {
             Configuration config = new Configuration();
             config.setDomains(new Domains());
-            
-            createDomainManager(config, true);
+
+            createDomainManager(config, true, null);
             fail("must throw an exception");
         } catch (DomainException ce) {
             // success
@@ -97,8 +129,8 @@ public class DefaultDomainManagerTest {
             
             Configuration config = new Configuration();
             config.setDomains(domains);
-            
-            createDomainManager(config, true);
+
+            createDomainManager(config, true, null);
             fail("must throw an exception");
         } catch (DomainException ce) {
             // success
@@ -115,36 +147,71 @@ public class DefaultDomainManagerTest {
             
             Configuration config = new Configuration();
             config.setDomains(domains);
-            
-            createDomainManager(config, true);
+
+            createDomainManager(config, true, null);
             fail("must throw an exception");
         } catch (DomainException ce) {
             // success
         }
     }
-    
+
     @Test
-    public void testGetTransport() throws TransportException, DomainException {
+    public void testCreateUDPTransport() throws DomainException {
+        DefaultDomainManager domainManager = createDomainManager(createConfiguration(), true, null);
+        DatagramSocket socket = mock(DatagramSocket.class);
+
+        UDPTransport transport = domainManager.createUDPTransport(socket);
+
+        assertThat(transport).isExactlyInstanceOf(UDPTransport.class);
+    }
+
+    @Test
+    public void testGetTransport_noTimeout() throws TransportException, DomainException, SocketException {
+        testGetTransport(0);
+    }
+
+    @Test
+    public void testGetTransport_timeout() throws TransportException, DomainException, SocketException {
+        testGetTransport(10000);
+    }
+
+    private void testGetTransport(int timeout) throws TransportException, DomainException, SocketException {
+        List<DatagramSocket> sockets = new ArrayList<DatagramSocket>();
+        final Configuration configuration = createConfiguration();
+        if (timeout > 0) {
+            configuration.setTimeout(timeout);
+        }
+        DomainManager domainManager = createDomainManager(configuration, true, sockets);
+
+        Transport transport = domainManager.get(new Platform());
+
+        assertNotNull(transport);
+        assertThat(sockets).hasSize(1);
+        final DatagramSocket socket = sockets.get(0);
+        assertThat(socket).isNotNull();
+        assertThat(socket.getSoTimeout()).as("timeout").isEqualTo(timeout);
+        assertThat(socket.getPort()).as("port").isEqualTo(configuration.getServerPort());
+        assertThat(socket.getInetAddress().getHostAddress()).as("host").isEqualTo("127.0.0.1");
+    }
+
+    private Configuration createConfiguration() {
         Connection connection = new Connection();
         connection.setUri("anURI");
-        
+
         Factory factory = new Factory();
         factory.setType(CustomDomainFactory.TYPE);
         factory.addConnection(connection);
-        
+
         Domains domains = new Domains();
         domains.addFactory(factory);
-        
+
         Configuration config = new Configuration();
         config.setDomains(domains);
-        
-        DomainManager domainManager = createDomainManager(config, true);
-        Platform platform = new Platform();
-        Transport transport = domainManager.get(platform);
-        assertNotNull(transport);
+        return config;
     }
-    
-    private DomainManager createDomainManager(final Configuration config, boolean withKnownFactories) throws DomainException {        
+
+    private DefaultDomainManager createDomainManager(final Configuration config, boolean withKnownFactories,
+                                                     final List<DatagramSocket> sockets) throws DomainException {
         final Map<String, DomainFactory<? extends Domain>> knownFactories = new HashMap<String, DomainFactory<? extends Domain>>();
         if (withKnownFactories) {
             knownFactories.put(CustomDomainFactory.TYPE, new CustomDomainFactory());
@@ -159,6 +226,14 @@ public class DefaultDomainManagerTest {
             @Override
             Configuration read(Reader reader) throws DomainException {
                 return config;
+            }
+
+            @Override
+            UDPTransport createUDPTransport(DatagramSocket socket) {
+                if (sockets != null) {
+                    sockets.add(socket);
+                }
+                return super.createUDPTransport(socket);
             }
         };
     }

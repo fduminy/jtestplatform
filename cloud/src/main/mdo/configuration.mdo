@@ -22,6 +22,12 @@
               <defaultValue>10000</defaultValue>
               <version>1.0</version>
             </field>
+           <field>
+             <name>timeout</name>
+             <type>int</type>
+             <defaultValue>0</defaultValue>
+             <version>1.0</version>
+           </field>
             <field>
               <name>serverPort</name>
               <type>int</type>
@@ -88,7 +94,7 @@
           <name>Domains</name>
           <version>1.0</version>
           <fields>
-            <field>
+            <field xml.attribute="true">
               <name>max</name>
               <type>int</type>
               <defaultValue>5</defaultValue>

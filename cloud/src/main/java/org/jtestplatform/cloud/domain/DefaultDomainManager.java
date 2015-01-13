@@ -144,13 +144,20 @@ public class DefaultDomainManager implements DomainManager {
             String host = getNextIP(platform);
 
             DatagramSocket socket = new DatagramSocket();
+            if (config.getTimeout() > 0) {
+                socket.setSoTimeout(config.getTimeout());
+            }
             socket.connect(InetAddress.getByName(host), serverPort);
-            return new UDPTransport(socket);
+            return createUDPTransport(socket);
         } catch (SocketException e) {
             throw new TransportException("failed to create socket", e);
         } catch (UnknownHostException e) {
             throw new TransportException("failed to find host", e);
         }
+    }
+
+    UDPTransport createUDPTransport(DatagramSocket socket) {
+        return new UDPTransport(socket);
     }
 
     private synchronized String getNextIP(Platform platform) throws TransportException {

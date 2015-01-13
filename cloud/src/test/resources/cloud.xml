@@ -21,7 +21,8 @@
 -->
 <configuration>
     <watchDogPollInterval>30000</watchDogPollInterval>
-    
+    <timeout>12345</timeout>
+
     <platforms>
         <platform cpu="phenom" nbCores="4" wordSize="64" memory="524288"/>
     </platforms>
