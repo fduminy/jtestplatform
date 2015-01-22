@@ -21,7 +21,9 @@
  */
 package org.jtestplatform.common.transport;
 
+import org.jtestplatform.common.message.GetTestFrameworks;
 import org.jtestplatform.common.message.Message;
+import org.jtestplatform.common.message.Shutdown;
 
 import java.io.IOException;
 
@@ -32,11 +34,6 @@ import java.io.IOException;
 public class TransportHelper {
     public void send(Transport transport, Message message) throws TransportException {
         transport.send(message.getClass().getName());
-
-        if (message.getClass().isEnum()) {
-            transport.send(((Enum<?>) message).name());
-        }
-
         message.sendWith(transport);
     }
 
@@ -45,15 +42,9 @@ public class TransportHelper {
 
         try {
             Class<? extends Message> clazz = Class.forName(className).asSubclass(Message.class);
+            Message message = createMessage(clazz);
 
-            Message message;
-            if (clazz.isEnum()) {
-                String enumValue = transport.receive();
-                message = createEnum(clazz, enumValue);
-            } else {
-                message = clazz.newInstance();
-                message.receiveFrom(transport);
-            }
+            message.receiveFrom(transport);
             return message;
         } catch (ClassNotFoundException e) {
             throw new TransportException("can't find message of type " + className, e);
@@ -66,16 +57,21 @@ public class TransportHelper {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private Message createEnum(Class<? extends Message> clazz, String enumValue) {
-        return clazz.cast(Enum.valueOf(clazz.asSubclass(Enum.class), enumValue));
-    }
-
     /**
      * @throws IOException
      *
      */
     public void stop(Transport transport) throws IOException {
         transport.close();
+    }
+
+    Message createMessage(Class<? extends Message> clazz) throws InstantiationException, IllegalAccessException {
+        if (GetTestFrameworks.class.equals(clazz)) {
+            return GetTestFrameworks.INSTANCE;
+        }
+        if (Shutdown.class.equals(clazz)) {
+            return Shutdown.INSTANCE;
+        }
+        return clazz.newInstance();
     }
 }

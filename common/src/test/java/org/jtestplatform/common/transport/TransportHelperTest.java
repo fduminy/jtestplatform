@@ -21,18 +21,25 @@
  */
 package org.jtestplatform.common.transport;
 
-import org.jtestplatform.common.message.Message;
-import org.junit.experimental.theories.DataPoint;
+import org.apache.commons.lang3.mutable.MutableObject;
+import org.jtestplatform.common.message.*;
+import org.jtestplatform.common.message.Shutdown;
+import org.junit.Test;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
+import org.mockito.InOrder;
+import org.reflections.Reflections;
 
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.*;
 
 
 /**
@@ -41,114 +48,105 @@ import static org.junit.Assert.assertNotNull;
  */
 @RunWith(Theories.class)
 public class TransportHelperTest {
-    @DataPoint
-    public static final Message EMPTY_MESSAGE = new EmptyMessage();
-    @DataPoint
-    public static final Message TEST_MESSAGE = new TestMessage("a message");
-    @DataPoint
-    public static final Message ENUM_MESSAGE = EnumMessage.A_MESSAGE;
 
-    @Theory
-    public void testSendReceive(Message message) throws TransportException {
-        Transport transport = new ArrayTransport();
+    @Test
+    public void testSend() throws TransportException {
+        // prepare
+        Message message = mock(Message.class);
+        Transport transport = mock(Transport.class);
         TransportHelper helper = new TransportHelper();
 
+        // test
         helper.send(transport, message);
 
-        Message serverMsg = helper.receive(transport);
-        assertNotNull(serverMsg);
-        assertEquals(message.getClass(), serverMsg.getClass());
+        // verify
+        InOrder inOrder = inOrder(transport, message);
+        inOrder.verify(transport, times(1)).send(message.getClass().getName());
+        inOrder.verify(message, times(1)).sendWith(eq(transport));
+        inOrder.verifyNoMoreInteractions();
     }
 
-    private static class ArrayTransport implements Transport {
-        private final List<String> messages = new ArrayList<String>();
+    @Theory
+    public void testCreateMessage(MessageData data) throws Exception {
+        TransportHelper helper = new TransportHelper();
 
-        @Override
-        public void send(String message) throws TransportException {
-            messages.add(message);
-        }
+        Message message = helper.createMessage(data.messageClass);
 
-        @Override
-        public String receive() throws TransportException {
-            return messages.remove(0);
-        }
-
-        @Override
-        public void close() throws IOException {
-        }
+        assertThat(message).isExactlyInstanceOf(data.messageClass);
     }
 
-    private static class TestMessage implements Message {
-        private String message;
+    @Theory
+    public void testReceive(MessageData data) throws Exception {
+        // prepare
+        final MutableObject<Message> messageWrapper = new MutableObject<Message>();
+        Transport transport = mock(Transport.class);
+        when(transport.receive()).thenReturn(data.messageClass.getName(), data.expectedParts);
+        TransportHelper helper = new TransportHelper() {
+            @Override
+            Message createMessage(Class<? extends Message> clazz) throws InstantiationException, IllegalAccessException {
+                Message message = spy(super.createMessage(clazz));
+                messageWrapper.setValue(message);
+                return message;
+            }
+        };
 
-        public TestMessage() {
+        // test
+        Message actualMessage = helper.receive(transport);
 
-        }
-
-        public TestMessage(String message) {
-            this.message = message;
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        public String getMessage() {
-            return message;
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void sendWith(Transport t) throws TransportException {
-            t.send(message);
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void receiveFrom(Transport t) throws TransportException {
-            message = t.receive();
-        }
+        // verify
+        assertNotNull(actualMessage);
+        Message message = messageWrapper.getValue();
+        assertEquals(message.getClass(), actualMessage.getClass());
+        InOrder inOrder = inOrder(transport, message);
+        inOrder.verify(transport, times(1)).receive();
+        inOrder.verify(message, times(1)).receiveFrom(eq(transport));
+        inOrder.verify(transport, times(data.expectedParts.length)).receive();
+        inOrder.verifyNoMoreInteractions();
     }
 
-    private static class EmptyMessage implements Message {
-        public EmptyMessage() {
-
+    @Test
+    public void verifyAllMessagesInMessageData() {
+        List<Class<? extends Message>> actualClasses = new ArrayList<Class<? extends Message>>();
+        for (MessageData data : MessageData.values()) {
+            actualClasses.add(data.messageClass);
         }
+        Collections.sort(actualClasses, CLASS_COMPARATOR);
 
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void sendWith(Transport t) throws TransportException {
-        }
+        Reflections reflections = new Reflections(Message.class.getPackage().getName());
+        List<Class<? extends Message>> expectedClasses = new ArrayList<Class<? extends Message>>(reflections.getSubTypesOf(Message.class));
+        Collections.sort(expectedClasses, CLASS_COMPARATOR);
 
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void receiveFrom(Transport t) throws TransportException {
-        }
+        assertThat(actualClasses).containsExactly(expectedClasses.toArray(new Class[0]));
     }
 
-    private static enum EnumMessage implements Message {
-        A_MESSAGE,
-        ANOTHER_MESSAGE;
-
-        /**
-         * {@inheritDoc}
-         */
+    private static final Comparator<Class<?>> CLASS_COMPARATOR = new Comparator<Class<?>>() {
         @Override
-        public void sendWith(Transport t) throws TransportException {
+        public int compare(Class<?> o1, Class<?> o2) {
+            return o1.getName().compareTo(o2.getName());
+        }
+    };
+
+    @SuppressWarnings("all")
+    public static enum MessageData {
+        RUNTEST(RunTest.class, "framework", "test"),
+        SHUTDOWN(Shutdown.class),
+        TESTFRAMEWORKS(TestFrameworks.class, "2", "framework1", "framework2"),
+        TESTRESULT(TestResult.class, "framework", "test", Boolean.TRUE.toString()),
+        GETTESTFRAMEWORKS(GetTestFrameworks.class),
+        GETFRAMEWORKTESTS(GetFrameworkTests.class, "framework"),
+        FRAMEWORKTESTS(FrameworkTests.class, "2", "test1", "test2");
+
+        private final Class<? extends Message> messageClass;
+        private final String[] expectedParts;
+
+        MessageData(Class<? extends Message> messageClass, String... parts) {
+            this.messageClass = messageClass;
+            expectedParts = parts;
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
-        public void receiveFrom(Transport t) throws TransportException {
+        public String toString() {
+            return messageClass.getSimpleName();
         }
     }
 }

@@ -32,6 +32,12 @@ import org.jtestplatform.common.transport.Transport;
  *
  */
 public class Shutdown implements Message {
+    public static final Shutdown INSTANCE = new Shutdown();
+
+    private Shutdown() {
+        // nothing
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -45,6 +51,6 @@ public class Shutdown implements Message {
      */
     @Override
     public void receiveFrom(Transport transport) {
-     // nothing to receive
+        // nothing to receive
     }
 }

@@ -68,7 +68,8 @@ public class FrameworkTests implements Message {
      */
     @Override
     public void receiveFrom(Transport transport) throws TransportException {
-        int nbTests = Integer.getInteger(transport.receive());
+        final String nbTestsStr = transport.receive();
+        int nbTests = Integer.parseInt(nbTestsStr);
         tests = new ArrayList<String>(nbTests);
         for (int i = 0; i < nbTests; i++) {
             tests.add(transport.receive());

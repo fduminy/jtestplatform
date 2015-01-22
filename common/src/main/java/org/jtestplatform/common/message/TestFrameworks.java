@@ -65,7 +65,7 @@ public class TestFrameworks implements Message {
      */
     @Override
     public void receiveFrom(Transport transport) throws TransportException {
-        int nbFrameworks = Integer.getInteger(transport.receive());
+        int nbFrameworks = Integer.parseInt(transport.receive());
         frameworks = new HashSet<String>(nbFrameworks);
         for (int i = 0; i < nbFrameworks; i++) {
             frameworks.add(transport.receive());
