@@ -31,10 +31,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 import org.reflections.Reflections;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -49,10 +46,10 @@ import static org.mockito.Mockito.*;
 @RunWith(Theories.class)
 public class TransportHelperTest {
 
-    @Test
-    public void testSend() throws TransportException {
+    @Theory
+    public void testSend(MessageData data) throws TransportException, InstantiationException, IllegalAccessException {
         // prepare
-        Message message = mock(Message.class);
+        Message message = spy(data.createMessage());
         Transport transport = mock(Transport.class);
         TransportHelper helper = new TransportHelper();
 
@@ -61,8 +58,11 @@ public class TransportHelperTest {
 
         // verify
         InOrder inOrder = inOrder(transport, message);
-        inOrder.verify(transport, times(1)).send(message.getClass().getName());
+        inOrder.verify(transport, times(1)).send(eq(message.getClass().getName()));
         inOrder.verify(message, times(1)).sendWith(eq(transport));
+        for (int i = 0; i < data.expectedParts.length; i++) {
+            inOrder.verify(transport, times(1)).send(eq(data.expectedParts[i]));
+        }
         inOrder.verifyNoMoreInteractions();
     }
 
@@ -128,21 +128,58 @@ public class TransportHelperTest {
 
     @SuppressWarnings("all")
     public static enum MessageData {
-        RUNTEST(RunTest.class, "framework", "test"),
-        SHUTDOWN(Shutdown.class),
-        TESTFRAMEWORKS(TestFrameworks.class, "2", "framework1", "framework2"),
-        TESTRESULT(TestResult.class, "framework", "test", Boolean.TRUE.toString()),
-        GETTESTFRAMEWORKS(GetTestFrameworks.class),
-        GETFRAMEWORKTESTS(GetFrameworkTests.class, "framework"),
-        FRAMEWORKTESTS(FrameworkTests.class, "2", "test1", "test2");
+        RUNTEST(RunTest.class, "framework", "test") {
+            @Override
+            Message createMessage() {
+                return new RunTest(expectedParts[0], expectedParts[1]);
+            }
+        },
+        SHUTDOWN(Shutdown.class) {
+            @Override
+            Message createMessage() {
+                return Shutdown.INSTANCE;
+            }
+        },
+        TESTFRAMEWORKS(TestFrameworks.class, "2", "framework1", "framework2") {
+            @Override
+            Message createMessage() {
+                return new TestFrameworks(new HashSet<String>(Arrays.asList(expectedParts).subList(1, expectedParts.length)));
+            }
+        },
+        TESTRESULT(TestResult.class, "framework", "test", Boolean.TRUE.toString()) {
+            @Override
+            Message createMessage() {
+                return new TestResult(expectedParts[0], expectedParts[1], Boolean.parseBoolean(expectedParts[2]));
+            }
+        },
+        GETTESTFRAMEWORKS(GetTestFrameworks.class) {
+            @Override
+            Message createMessage() {
+                return GetTestFrameworks.INSTANCE;
+            }
+        },
+        GETFRAMEWORKTESTS(GetFrameworkTests.class, "framework") {
+            @Override
+            Message createMessage() {
+                return new GetFrameworkTests(expectedParts[0]);
+            }
+        },
+        FRAMEWORKTESTS(FrameworkTests.class, "2", "test1", "test2") {
+            @Override
+            Message createMessage() {
+                return new FrameworkTests(Arrays.asList(expectedParts).subList(1, expectedParts.length));
+            }
+        };
 
         private final Class<? extends Message> messageClass;
-        private final String[] expectedParts;
+        protected final String[] expectedParts;
 
         MessageData(Class<? extends Message> messageClass, String... parts) {
             this.messageClass = messageClass;
             expectedParts = parts;
         }
+
+        abstract Message createMessage();
 
         @Override
         public String toString() {
