@@ -108,7 +108,9 @@ public class TransportHelperTest {
     public void verifyAllMessagesInMessageData() {
         List<Class<? extends Message>> actualClasses = new ArrayList<Class<? extends Message>>();
         for (MessageData data : MessageData.values()) {
-            actualClasses.add(data.messageClass);
+            if (!(actualClasses.contains(data.messageClass) && data.duplicateMessageClass)) {
+                actualClasses.add(data.messageClass);
+            }
         }
         Collections.sort(actualClasses, CLASS_COMPARATOR);
 
@@ -146,10 +148,16 @@ public class TransportHelperTest {
                 return new TestFrameworks(new HashSet<String>(Arrays.asList(expectedParts).subList(1, expectedParts.length)));
             }
         },
-        TESTRESULT(TestResult.class, "framework", "test", Boolean.TRUE.toString()) {
+        TESTRESULT_SUCCESS(TestResult.class, true, "framework", "test", TransportHelper.TRUE) {
             @Override
             Message createMessage() {
-                return new TestResult(expectedParts[0], expectedParts[1], Boolean.parseBoolean(expectedParts[2]));
+                return new TestResult(expectedParts[0], expectedParts[1], TransportHelper.TRUE.equals(expectedParts[2]));
+            }
+        },
+        TESTRESULT_FAILURE(TestResult.class, true, "framework", "test", TransportHelper.FALSE) {
+            @Override
+            Message createMessage() {
+                return new TestResult(expectedParts[0], expectedParts[1], TransportHelper.TRUE.equals(expectedParts[2]));
             }
         },
         GETTESTFRAMEWORKS(GetTestFrameworks.class) {
@@ -173,9 +181,15 @@ public class TransportHelperTest {
 
         private final Class<? extends Message> messageClass;
         protected final String[] expectedParts;
+        private final boolean duplicateMessageClass;
 
         MessageData(Class<? extends Message> messageClass, String... parts) {
+            this(messageClass, false, parts);
+        }
+
+        MessageData(Class<? extends Message> messageClass, boolean duplicateMessageClass, String... parts) {
             this.messageClass = messageClass;
+            this.duplicateMessageClass = duplicateMessageClass;
             expectedParts = parts;
         }
 

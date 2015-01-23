@@ -26,8 +26,8 @@ package org.jtestplatform.common.message;
 
 import org.jtestplatform.common.transport.Transport;
 import org.jtestplatform.common.transport.TransportException;
+import org.jtestplatform.common.transport.TransportHelper;
 
-import java.util.ArrayList;
 import java.util.Collection;
 
 /**
@@ -57,10 +57,7 @@ public class FrameworkTests implements Message {
      */
     @Override
     public void sendWith(Transport transport) throws TransportException {
-        transport.send(Integer.toString(tests.size()));
-        for (String test : tests) {
-            transport.send(test);
-        }
+        TransportHelper.sendList(transport, tests);
     }
 
     /**
@@ -68,11 +65,6 @@ public class FrameworkTests implements Message {
      */
     @Override
     public void receiveFrom(Transport transport) throws TransportException {
-        final String nbTestsStr = transport.receive();
-        int nbTests = Integer.parseInt(nbTestsStr);
-        tests = new ArrayList<String>(nbTests);
-        for (int i = 0; i < nbTests; i++) {
-            tests.add(transport.receive());
-        }
+        tests = TransportHelper.receiveList(transport);
     }
 }

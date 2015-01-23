@@ -23,6 +23,7 @@ package org.jtestplatform.common.message;
 
 import org.jtestplatform.common.transport.Transport;
 import org.jtestplatform.common.transport.TransportException;
+import org.jtestplatform.common.transport.TransportHelper;
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)
@@ -69,7 +70,7 @@ public class TestResult implements Message {
     public void sendWith(Transport transport) throws TransportException {
         transport.send(framework);
         transport.send(test);
-        transport.send(Boolean.toString(success));
+        TransportHelper.sendBoolean(transport, success);
     }
 
     /**
@@ -79,6 +80,6 @@ public class TestResult implements Message {
     public void receiveFrom(Transport transport) throws TransportException {
         framework = transport.receive();
         test = transport.receive();
-        success = Boolean.getBoolean(transport.receive());
+        success = TransportHelper.receiveBoolean(transport);
     }
 }

@@ -26,12 +26,19 @@ import org.jtestplatform.common.message.Message;
 import org.jtestplatform.common.message.Shutdown;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
  */
 public class TransportHelper {
+
+    static final String TRUE = "1";
+    static final String FALSE = "0";
+
     public void send(Transport transport, Message message) throws TransportException {
         transport.send(message.getClass().getName());
         message.sendWith(transport);
@@ -73,5 +80,29 @@ public class TransportHelper {
             return Shutdown.INSTANCE;
         }
         return clazz.newInstance();
+    }
+
+    public static Collection<String> receiveList(Transport transport) throws TransportException {
+        int nbFrameworks = Integer.parseInt(transport.receive());
+        List<String> frameworks = new ArrayList<String>(nbFrameworks);
+        for (int i = 0; i < nbFrameworks; i++) {
+            frameworks.add(transport.receive());
+        }
+        return frameworks;
+    }
+
+    public static void sendList(Transport transport, Collection<String> items) throws TransportException {
+        transport.send(Integer.toString(items.size()));
+        for (String item : items) {
+            transport.send(item);
+        }
+    }
+
+    public static boolean receiveBoolean(Transport transport) throws TransportException {
+        return TRUE.equals(transport.receive());
+    }
+
+    public static void sendBoolean(Transport transport, boolean value) throws TransportException {
+        transport.send(value ? TRUE : FALSE);
     }
 }

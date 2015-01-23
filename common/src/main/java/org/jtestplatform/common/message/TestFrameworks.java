@@ -23,29 +23,29 @@ package org.jtestplatform.common.message;
 
 import org.jtestplatform.common.transport.Transport;
 import org.jtestplatform.common.transport.TransportException;
+import org.jtestplatform.common.transport.TransportHelper;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Collection;
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
  */
 public class TestFrameworks implements Message {
-    private Set<String> frameworks;
+    private Collection<String> frameworks;
 
     public TestFrameworks() {
         // nothing
     }
 
-    public TestFrameworks(Set<String> frameworks) {
+    public TestFrameworks(Collection<String> frameworks) {
         this.frameworks = frameworks;
     }
 
     /**
      * @return the frameworks
      */
-    public Set<String> getFrameworks() {
+    public Collection<String> getFrameworks() {
         return frameworks;
     }
 
@@ -54,10 +54,7 @@ public class TestFrameworks implements Message {
      */
     @Override
     public void sendWith(Transport transport) throws TransportException {
-        transport.send(Integer.toString(frameworks.size()));
-        for (String test : frameworks) {
-            transport.send(test);
-        }
+        TransportHelper.sendList(transport, frameworks);
     }
 
     /**
@@ -65,10 +62,6 @@ public class TestFrameworks implements Message {
      */
     @Override
     public void receiveFrom(Transport transport) throws TransportException {
-        int nbFrameworks = Integer.parseInt(transport.receive());
-        frameworks = new HashSet<String>(nbFrameworks);
-        for (int i = 0; i < nbFrameworks; i++) {
-            frameworks.add(transport.receive());
-        }
+        frameworks = TransportHelper.receiveList(transport);
     }
 }
