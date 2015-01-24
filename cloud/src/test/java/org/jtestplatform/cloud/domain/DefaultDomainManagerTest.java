@@ -27,7 +27,9 @@ import org.jtestplatform.cloud.configuration.io.dom4j.ConfigurationDom4jReader;
 import org.jtestplatform.common.transport.Transport;
 import org.jtestplatform.common.transport.TransportException;
 import org.jtestplatform.common.transport.UDPTransport;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -41,7 +43,6 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -49,6 +50,9 @@ import static org.mockito.Mockito.mock;
  *
  */
 public class DefaultDomainManagerTest {
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
+
     @Test
     public void testReadConfigFile() throws IOException, DocumentException {
         // preparation
@@ -83,76 +87,65 @@ public class DefaultDomainManagerTest {
     }
     
     @Test
-    public void testConstructorWithoutDomains() {
-        try {
-            Configuration config = new Configuration();
+    public void testConstructor_withoutDomains() throws ConfigurationException {
+        thrown.expect(ConfigurationException.class);
+        thrown.expectMessage("domains is not defined");
 
-            createDomainManager(config, true, null);
-            fail("must throw an exception");
-        } catch (DomainException ce) {
-            // success
-        }
+        Configuration config = new Configuration();
+
+        createDomainManager(config, true, null);
     }
 
     @Test
-    public void testConstructorWithoutKnownFactory() {
-        try {
-            Configuration config = new Configuration();
+    public void testConstructor_withoutKnownFactory() throws ConfigurationException {
+        thrown.expect(ConfigurationException.class);
+        thrown.expectMessage("No known factory");
 
-            createDomainManager(config, false, null);
-            fail("must throw an exception");
-        } catch (DomainException ce) {
-            // success
-        }
+        Configuration config = new Configuration();
+
+        createDomainManager(config, false, null);
     }
 
     @Test
-    public void testConstructorWithoutFactory() {
-        try {
-            Configuration config = new Configuration();
-            config.setDomains(new Domains());
+    public void testConstructor_withoutFactory() throws ConfigurationException {
+        thrown.expect(ConfigurationException.class);
+        thrown.expectMessage("No factory has been defined");
 
-            createDomainManager(config, true, null);
-            fail("must throw an exception");
-        } catch (DomainException ce) {
-            // success
-        }
+        Configuration config = new Configuration();
+        config.setDomains(new Domains());
+
+        createDomainManager(config, true, null);
     }
 
     @Test
-    public void testConstructorWithWrongFactoryType() {
-        try {
-            Domains domains = new Domains();
-            Factory factory = new Factory();
-            factory.setType("aWrongType");
-            domains.addFactory(factory);
-            
-            Configuration config = new Configuration();
-            config.setDomains(domains);
+    public void testConstructor_withWrongFactoryType() throws ConfigurationException {
+        Domains domains = new Domains();
+        Factory factory = new Factory();
+        factory.setType("aWrongType");
+        domains.addFactory(factory);
+        thrown.expect(ConfigurationException.class);
+        thrown.expectMessage("No DomainFactory for type(s) " + factory.getType());
 
-            createDomainManager(config, true, null);
-            fail("must throw an exception");
-        } catch (DomainException ce) {
-            // success
-        }
+        Configuration config = new Configuration();
+        config.setDomains(domains);
+
+        createDomainManager(config, true, null);
     }
     
     @Test
-    public void testConstructorWithAFactoryWithoutConnection() {
-        try {
-            Domains domains = new Domains();
-            Factory factory = new Factory();
-            factory.setType(CustomDomainFactory.TYPE);
-            domains.addFactory(factory);
-            
-            Configuration config = new Configuration();
-            config.setDomains(domains);
+    public void testConstructor_withAFactoryWithoutConnection() throws ConfigurationException {
+        thrown.expect(ConfigurationException.class);
+        thrown.expectMessage("No connection for type(s) " + CustomDomainFactory.TYPE);
 
-            createDomainManager(config, true, null);
-            fail("must throw an exception");
-        } catch (DomainException ce) {
-            // success
-        }
+        Domains domains = new Domains();
+        Factory factory = new Factory();
+        factory.setType(CustomDomainFactory.TYPE);
+        domains.addFactory(factory);
+
+        Configuration config = new Configuration();
+        config.setDomains(domains);
+
+        createDomainManager(config, true, null);
     }
 
     @Test
@@ -211,7 +204,7 @@ public class DefaultDomainManagerTest {
     }
 
     private DefaultDomainManager createDomainManager(final Configuration config, boolean withKnownFactories,
-                                                     final List<DatagramSocket> sockets) throws DomainException {
+                                                     final List<DatagramSocket> sockets) throws ConfigurationException {
         final Map<String, DomainFactory<? extends Domain>> knownFactories = new HashMap<String, DomainFactory<? extends Domain>>();
         if (withKnownFactories) {
             knownFactories.put(CustomDomainFactory.TYPE, new CustomDomainFactory());
@@ -224,7 +217,7 @@ public class DefaultDomainManagerTest {
             }
             
             @Override
-            Configuration read(Reader reader) throws DomainException {
+            Configuration read(Reader reader) {
                 return config;
             }
 

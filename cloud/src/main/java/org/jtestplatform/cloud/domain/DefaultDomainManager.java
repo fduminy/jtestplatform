@@ -57,7 +57,7 @@ public class DefaultDomainManager implements DomainManager {
     private final int maxNumberOfDomains;
     private final int serverPort;
 
-    public DefaultDomainManager(Reader configReader) throws DomainException {
+    public DefaultDomainManager(Reader configReader) throws ConfigurationException {
         config = read(configReader);
         Map<String, DomainFactory<? extends Domain>> knownFactories = findKnownFactories();
         checkValid(knownFactories, config);
@@ -198,15 +198,15 @@ public class DefaultDomainManager implements DomainManager {
         return domains.getNext().getIPAddress();
     }
 
-    private void checkValid(Map<String, DomainFactory<? extends Domain>> knownFactories, Configuration config) throws DomainException {
+    private void checkValid(Map<String, DomainFactory<? extends Domain>> knownFactories, Configuration config) throws ConfigurationException {
         if ((knownFactories == null) || knownFactories.isEmpty()) {
-            throw new DomainException("no known factory");
+            throw new ConfigurationException("No known factory");
         }
         if (config.getDomains() == null) {
-            throw new DomainException("domains is not defined");
+            throw new ConfigurationException("domains is not defined");
         }
         if ((config.getDomains().getFactories() == null) || config.getDomains().getFactories().isEmpty()) {
-            throw new DomainException("no factory has been defined");
+            throw new ConfigurationException("No factory has been defined");
         }
 
         StringBuilder wrongTypes = new StringBuilder();
@@ -214,7 +214,7 @@ public class DefaultDomainManager implements DomainManager {
         for (Factory factory : config.getDomains().getFactories()) {
             DomainFactory<? extends Domain> domainFactory = knownFactories.get(factory.getType());
             if (domainFactory == null) {
-                LOGGER.error("no DomainFactory for type {}", factory.getType());
+                LOGGER.error("No DomainFactory for type {}", factory.getType());
 
                 if (wrongTypes.length() != 0) {
                     wrongTypes.append(", ");
@@ -225,7 +225,7 @@ public class DefaultDomainManager implements DomainManager {
 
             if ((factory.getConnections() == null) || factory.getConnections()
                     .isEmpty()) {
-                LOGGER.error("no connection for type {}", factory.getType());
+                LOGGER.error("No connection for type {}", factory.getType());
 
                 if (typesWithoutConnection.length() != 0) {
                     typesWithoutConnection.append(", ");
@@ -238,26 +238,26 @@ public class DefaultDomainManager implements DomainManager {
             StringBuilder message = new StringBuilder("Invalid configuration:\n");
 
             if (wrongTypes.length() != 0) {
-                message.append("\tno DomainFactory for types ").append(wrongTypes).append('\n');
+                message.append("\tNo DomainFactory for type(s) ").append(wrongTypes).append('\n');
             }
 
             if (typesWithoutConnection.length() != 0) {
-                message.append("\tno connection for types ").append(typesWithoutConnection);
+                message.append("\tNo connection for type(s) ").append(typesWithoutConnection);
             }
 
-            throw new DomainException(wrongTypes.toString());
+            throw new ConfigurationException(message.toString());
         }
     }
 
-    Configuration read(Reader reader) throws DomainException {
+    Configuration read(Reader reader) throws ConfigurationException {
         ConfigurationDom4jReader dom4jReader = new ConfigurationDom4jReader();
         Configuration config;
         try {
             config = dom4jReader.read(reader);
         } catch (IOException e) {
-            throw new DomainException("can't read config", e);
+            throw new ConfigurationException("can't read config", e);
         } catch (DocumentException e) {
-            throw new DomainException("can't read config", e);
+            throw new ConfigurationException("can't read config", e);
         }
 
         return config;

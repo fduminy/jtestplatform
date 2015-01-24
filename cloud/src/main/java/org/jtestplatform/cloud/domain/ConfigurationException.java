@@ -19,26 +19,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
  * USA.
  */
-/**
- * 
- */
 package org.jtestplatform.cloud.domain;
 
-/**
- * @author Fabien DUMINY (fduminy@jnode.org)
- *
- */
-@SuppressWarnings("serial")
-public class DomainException extends Exception {
-    public DomainException(Throwable cause) {
-        super(cause);
-    }
-
-    public DomainException(String message) {
+public class ConfigurationException extends DomainException {
+    public ConfigurationException(String message) {
         super(message);
     }
 
-    public DomainException(String message, Throwable cause) {
+    public ConfigurationException(String message, Throwable cause) {
         super(message, cause);
     }
 }
