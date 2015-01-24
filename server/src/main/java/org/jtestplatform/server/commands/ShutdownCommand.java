@@ -27,9 +27,9 @@ import org.jtestplatform.server.TestServer;
 import org.jtestplatform.server.TestServerCommand;
 
 public class ShutdownCommand implements TestServerCommand<Shutdown, Message> {
-    private final TestServer<?> testServer;
+    private final TestServer testServer;
 
-    public ShutdownCommand(TestServer<?> testServer) {
+    public ShutdownCommand(TestServer testServer) {
         this.testServer = testServer;
     }
 

@@ -34,9 +34,9 @@ import org.slf4j.LoggerFactory;
 public class RunTestCommand implements TestServerCommand<RunTest, TestResult> {
     private static final Logger LOGGER = LoggerFactory.getLogger(RunTestCommand.class);
 
-    private final TestServer<?> testServer;
+    private final TestServer testServer;
 
-    public RunTestCommand(TestServer<?> testServer) {
+    public RunTestCommand(TestServer testServer) {
         this.testServer = testServer;
     }
 

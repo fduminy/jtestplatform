@@ -37,12 +37,12 @@ import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TestServer<T extends Message> {
+public class TestServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(TestServer.class);
 
     public static void main(String[] args) {
         try {
-            TestServer<Message> server = new TestServer<Message>();
+            TestServer server = new TestServer();
             server.start();
         } catch (IOException e) {
             LOGGER.error("unable to read config", e);
@@ -101,11 +101,11 @@ public class TestServer<T extends Message> {
         transport = transportFactory.create();
         while (true) {
             Message message = transportManager.receive(transport);
-            TestServerCommand<T, ?> command = (TestServerCommand<T, ?>) messageClassToCommand.get(message.getClass());
+            TestServerCommand command = messageClassToCommand.get(message.getClass());
 
             if (command != null) {
                 try {
-                    Message result = command.execute((T) message);
+                    Message result = command.execute(message);
                     if (result != null) {
                         transportManager.send(transport, result);
                     }
