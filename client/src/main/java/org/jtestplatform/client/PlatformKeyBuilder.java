@@ -28,6 +28,9 @@ import org.jtestplatform.cloud.configuration.Platform;
  */
 public class PlatformKeyBuilder {
     public String buildKey(Platform platform) {
+        if (platform == null) {
+            return null;
+        }
         StringBuilder platformKey = new StringBuilder();
         platformKey.append(platform.getCpu());
         platformKey.append('_').append(platform.getWordSize()).append("bits");

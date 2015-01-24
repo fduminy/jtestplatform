@@ -28,6 +28,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class PlatformKeyBuilderTest {
     @Test
+    public void test_nullPlatform() {
+        PlatformKeyBuilder builder = new PlatformKeyBuilder();
+
+        String actualKey = builder.buildKey(null);
+
+        assertThat(actualKey).isNull();
+    }
+
+    @Test
     public void test_singleCore() {
         PlatformKeyBuilder builder = new PlatformKeyBuilder();
         Platform platform = Utils.createPlatform("myCpu", 32, 1);
