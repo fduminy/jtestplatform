@@ -160,7 +160,7 @@ public class DefaultDomainManagerTest {
         DefaultDomainManager domainManager = createDomainManager(createConfiguration(), true, null);
         DatagramSocket socket = mock(DatagramSocket.class);
 
-        UDPTransport transport = domainManager.createUDPTransport(socket);
+        Transport transport = domainManager.createTransport(socket);
 
         assertThat(transport).isExactlyInstanceOf(UDPTransport.class);
     }
@@ -219,7 +219,7 @@ public class DefaultDomainManagerTest {
 
         return new DefaultDomainManager(null) {
             @Override
-            Map<String, DomainFactory<? extends Domain>> findKnownFactories() {
+            protected Map<String, DomainFactory<? extends Domain>> findKnownFactories() {
                 return knownFactories;
             }
             
@@ -229,11 +229,11 @@ public class DefaultDomainManagerTest {
             }
 
             @Override
-            UDPTransport createUDPTransport(DatagramSocket socket) {
+            protected Transport createTransport(DatagramSocket socket) {
                 if (sockets != null) {
                     sockets.add(socket);
                 }
-                return super.createUDPTransport(socket);
+                return super.createTransport(socket);
             }
         };
     }

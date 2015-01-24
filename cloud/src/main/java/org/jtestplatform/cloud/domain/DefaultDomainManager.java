@@ -139,16 +139,20 @@ public class DefaultDomainManager implements DomainManager {
      */
     @Override
     public Transport get(Platform platform) throws TransportException {
-        try {
-            //TODO put the connection/transport in cache and remove it when the domain stop/die
-            String host = getNextIP(platform);
+        //TODO put the connection/transport in cache and remove it when the domain stop/die
+        String host = getNextIP(platform);
 
+        return createTransport(host, serverPort, config.getTimeout());
+    }
+
+    protected Transport createTransport(String host, int port, int timeout) throws TransportException {
+        try {
             DatagramSocket socket = new DatagramSocket();
-            if (config.getTimeout() > 0) {
-                socket.setSoTimeout(config.getTimeout());
+            if (timeout > 0) {
+                socket.setSoTimeout(timeout);
             }
-            socket.connect(InetAddress.getByName(host), serverPort);
-            return createUDPTransport(socket);
+            socket.connect(InetAddress.getByName(host), port);
+            return createTransport(socket);
         } catch (SocketException e) {
             throw new TransportException("failed to create socket", e);
         } catch (UnknownHostException e) {
@@ -156,7 +160,7 @@ public class DefaultDomainManager implements DomainManager {
         }
     }
 
-    UDPTransport createUDPTransport(DatagramSocket socket) {
+    protected Transport createTransport(DatagramSocket socket) {
         return new UDPTransport(socket);
     }
 
@@ -259,7 +263,7 @@ public class DefaultDomainManager implements DomainManager {
         return config;
     }
 
-    Map<String, DomainFactory<? extends Domain>> findKnownFactories() {
+    protected Map<String, DomainFactory<? extends Domain>> findKnownFactories() {
         //TODO get it from ServiceLoader
         Map<String, DomainFactory<? extends Domain>> result = new HashMap<String, DomainFactory<? extends Domain>>();
         LibVirtDomainFactory f = new LibVirtDomainFactory();
