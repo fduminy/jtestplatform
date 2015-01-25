@@ -27,7 +27,12 @@ import org.jtestplatform.cloud.configuration.Platform;
  * Parameters for a request to run a test.
  */
 public class Request {
-    static final Request END = new Request(null, "", "");
+    static final Request END = new Request(null, "", "") {
+        @Override
+        public String toString() {
+            return Request.class.getSimpleName() + ".END";
+        }
+    };
 
     private final Platform platform;
     private final String testFramework;

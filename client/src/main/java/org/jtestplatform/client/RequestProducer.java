@@ -49,6 +49,7 @@ public class RequestProducer {
     }
 
     public void produce(DomainManager domainManager) throws Exception {
+        LOGGER.info("STARTED");
         TransportProvider transportProvider = domainManager;
         TransportHelper transportHelper = createTransportHelper();
 
@@ -66,12 +67,14 @@ public class RequestProducer {
                 FrameworkTests tests = (FrameworkTests) transportHelper.receive(transport);
                 for (String test : tests.getTests()) {
                     final Request request = new Request(platform, testFramework, test);
-                    LOGGER.info("adding {}", request);
+                    LOGGER.info("producing {}", request);
                     requests.put(request);
                 }
             }
         }
+
         requests.put(Request.END);
+        LOGGER.info("FINISHED");
     }
 
     TransportHelper createTransportHelper() {

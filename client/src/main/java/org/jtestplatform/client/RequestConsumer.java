@@ -27,6 +27,8 @@ import org.jtestplatform.common.message.RunTest;
 import org.jtestplatform.common.message.TestResult;
 import org.jtestplatform.common.transport.Transport;
 import org.jtestplatform.common.transport.TransportHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.BlockingQueue;
 
@@ -38,6 +40,8 @@ import static java.util.concurrent.TimeUnit.SECONDS;
  * {@link org.jtestplatform.cloud.TransportProvider}. The result is sent to a {@link org.jtestplatform.client.TestReporter}.
  */
 public class RequestConsumer {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RequestConsumer.class);
+
     private final BlockingQueue<Request> requests;
 
     public RequestConsumer(BlockingQueue<Request> requests) {
@@ -45,10 +49,13 @@ public class RequestConsumer {
     }
 
     public void consume(TransportProvider transportProvider, TestReporter reporter) throws Exception {
+        LOGGER.info("STARTED");
         TransportHelper transportHelper = createTransportHelper();
         Request request = null;
         while (request != Request.END) {
             while ((request = requests.poll(1, SECONDS)) != null) {
+                LOGGER.info("consuming {}", request);
+
                 if (request == Request.END) {
                     break;
                 }
@@ -59,6 +66,7 @@ public class RequestConsumer {
                 reporter.report(platform, testResult);
             }
         }
+        LOGGER.info("FINISHED");
     }
 
     TransportHelper createTransportHelper() {
