@@ -33,6 +33,7 @@ import org.jtestplatform.common.transport.TransportHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
 /**
@@ -50,31 +51,36 @@ public class RequestProducer {
 
     public void produce(DomainManager domainManager) throws Exception {
         LOGGER.info("STARTED");
-        TransportProvider transportProvider = domainManager;
-        TransportHelper transportHelper = createTransportHelper();
+        try {
+            TransportProvider transportProvider = domainManager;
+            TransportHelper transportHelper = createTransportHelper();
 
-        java.util.List<Platform> platforms = domainManager.getPlatforms();
+            List<Platform> platforms = domainManager.getPlatforms();
 
-        for (Platform platform : platforms) {
-            Transport transport = transportProvider.get(platform);
+            for (Platform platform : platforms) {
+                Transport transport = transportProvider.get(platform);
 
-            //TODO we assume that all frameworks are available on each server. check it ?
-            transportHelper.send(transport, GetTestFrameworks.INSTANCE);
-            TestFrameworks testFrameworks = (TestFrameworks) transportHelper.receive(transport);
+                //TODO we assume that all frameworks are available on each server. check it ?
+                transportHelper.send(transport, GetTestFrameworks.INSTANCE);
+                TestFrameworks testFrameworks = (TestFrameworks) transportHelper.receive(transport);
 
-            for (String testFramework : testFrameworks.getFrameworks()) {
-                transportHelper.send(transport, new GetFrameworkTests(testFramework));
-                FrameworkTests tests = (FrameworkTests) transportHelper.receive(transport);
-                for (String test : tests.getTests()) {
-                    final Request request = new Request(platform, testFramework, test);
-                    LOGGER.info("producing {}", request);
-                    requests.put(request);
+                for (String testFramework : testFrameworks.getFrameworks()) {
+                    transportHelper.send(transport, new GetFrameworkTests(testFramework));
+                    FrameworkTests tests = (FrameworkTests) transportHelper.receive(transport);
+                    for (String test : tests.getTests()) {
+                        final Request request = new Request(platform, testFramework, test);
+                        LOGGER.info("producing {}", request);
+                        requests.put(request);
+                    }
                 }
             }
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
+            throw e;
+        } finally {
+            requests.put(Request.END);
+            LOGGER.info("FINISHED");
         }
-
-        requests.put(Request.END);
-        LOGGER.info("FINISHED");
     }
 
     TransportHelper createTransportHelper() {

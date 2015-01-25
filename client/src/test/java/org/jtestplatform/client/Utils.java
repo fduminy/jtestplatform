@@ -66,6 +66,8 @@ public class Utils {
 
     static class MockTransportHelper extends TransportHelper {
         private static final Logger LOGGER = LoggerFactory.getLogger(MockTransportHelper.class);
+        private TransportException sendError;
+        private TransportException receiveError;
 
         private static enum STATE {
             INIT,
@@ -85,6 +87,14 @@ public class Utils {
             this.expectedTransports = Arrays.asList(expectedTransports);
         }
 
+        public void setSendError(TransportException sendError) {
+            this.sendError = sendError;
+        }
+
+        public void setReceiveError(TransportException receiveError) {
+            this.receiveError = receiveError;
+        }
+
         @Override
         public void send(Transport transport, Message message) throws TransportException {
             LOGGER.info("BEGIN send(transport, {}): state={}", message.getClass().getSimpleName(), state);
@@ -93,6 +103,10 @@ public class Utils {
             }
             if (!expectedTransports.contains(transport)) {
                 throw new IllegalArgumentException("illegal transport: " + transport);
+            }
+
+            if (sendError != null) {
+                throw sendError;
             }
 
             if (message instanceof GetTestFrameworks) {
@@ -114,6 +128,11 @@ public class Utils {
         @Override
         public Message receive(Transport transport) throws TransportException {
             LOGGER.info("BEGIN receive(transport): state={}", state);
+
+            if (receiveError != null) {
+                throw receiveError;
+            }
+
             Message result;
             switch (state) {
                 case GET_FRAMEWORKS:
@@ -139,8 +158,8 @@ public class Utils {
                 default:
                     throw new IllegalStateException("illegal state: " + state);
             }
-            LOGGER.info("END receive(transport): state={} RETURN {}({})", new Object[]{state, result.getClass().getSimpleName(),
-                    toString(result)});
+            LOGGER.info("END receive(transport): state={} RETURN {}({})", state, result.getClass().getSimpleName(),
+                    toString(result));
             return result;
         }
 
