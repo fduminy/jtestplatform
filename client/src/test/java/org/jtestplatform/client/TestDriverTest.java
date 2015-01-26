@@ -40,6 +40,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -64,7 +65,7 @@ public class TestDriverTest {
 
         BlockingQueue<Request> requestQueue = testDriver.createRequestQueue();
 
-        assertThat(requestQueue).isInstanceOf(BlockingQueue.class);
+        assertThat(requestQueue).isInstanceOf(LinkedBlockingQueue.class);
     }
 
     @Test

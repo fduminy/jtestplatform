@@ -59,7 +59,7 @@ public class TestDriver {
     }
 
     BlockingQueue<Request> createRequestQueue() {
-        return new LinkedBlockingDeque<Request>();
+        return new LinkedBlockingQueue<Request>();
     }
 
     RequestProducer createRequestProducer(BlockingQueue<Request> requests) {
