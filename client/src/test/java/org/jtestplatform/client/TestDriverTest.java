@@ -50,7 +50,7 @@ public class TestDriverTest {
 
     @Test
     public void testCreateDomainManager() throws Exception {
-        File cloudConfigFile = copyStreamToFile("/cloud.xml");
+        File cloudConfigFile = getCloudConfigFile();
         TestDriver testDriver = new TestDriver();
 
         DomainManager domainManager = testDriver.createDomainManager(cloudConfigFile);
@@ -91,7 +91,7 @@ public class TestDriverTest {
     public void testRunTests() throws Exception {
         // preparation
         File reportDirectory = folder.getRoot();
-        File cloudConfigFile = copyStreamToFile("/cloud.xml");
+        File cloudConfigFile = getCloudConfigFile();
         final BlockingQueue<Request> requests = mock(BlockingQueue.class);
         final RequestProducer requestProducer = mock(RequestProducer.class);
         final MutableObject<Thread> requestProducerThread = new MutableObject<Thread>();
@@ -129,11 +129,15 @@ public class TestDriverTest {
         assertThat(requestProducerThread.getValue()).as("requestProducerThread").isNotNull().isNotEqualTo(mainThread).isNotEqualTo(requestConsumerThread);
     }
 
-    private File copyStreamToFile(String name) throws IOException {
+    public static File copyStreamToFile(TemporaryFolder folder, String name) throws IOException {
         File outputFile = folder.newFile(name);
-        final InputStream inputStream = getClass().getResourceAsStream(name);
+        final InputStream inputStream = TestDriverTest.class.getResourceAsStream(name);
         FileUtils.copyInputStreamToFile(inputStream, outputFile);
         return outputFile;
+    }
+
+    private File getCloudConfigFile() throws IOException {
+        return copyStreamToFile(folder, "/cloud.xml");
     }
 
     private static class MockTestDriver extends TestDriver {
@@ -164,7 +168,7 @@ public class TestDriverTest {
         }
 
         @Override
-        DomainManager createDomainManager(File cloudConfigFile) throws FileNotFoundException, DomainException {
+        protected DomainManager createDomainManager(File cloudConfigFile) throws FileNotFoundException, DomainException {
             this.actualCloudConfigFile = cloudConfigFile;
             return super.createDomainManager(cloudConfigFile);
         }

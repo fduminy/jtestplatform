@@ -83,7 +83,23 @@
 		</dependency>
 	</dependencies>
 
-    <scm>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>test-jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+	<scm>
         <connection>scm:git:git@github.com:fduminy/jtestplatform.git</connection>
         <tag>HEAD</tag>
         <url>https://github.com/fduminy/jtestplatform/tree/master/client</url>

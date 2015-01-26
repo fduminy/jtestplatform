@@ -38,10 +38,10 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 public class TestDriver {
     private static final Logger LOGGER = LoggerFactory.getLogger(TestDriver.class);
 
-    TestDriver() {
+    public TestDriver() {
     }
 
-    public void runTests(File cloudConfigFile, File reportDirectory) throws Exception {
+    public final void runTests(File cloudConfigFile, File reportDirectory) throws Exception {
         BlockingQueue<Request> requests = createRequestQueue();
         RequestConsumer requestConsumer = createRequestConsumer(requests);
         RequestProducer requestProducer = createRequestProducer(requests);
@@ -54,7 +54,7 @@ public class TestDriver {
         shutdown(executor);
     }
 
-    DomainManager createDomainManager(File cloudConfigFile) throws FileNotFoundException, DomainException {
+    protected DomainManager createDomainManager(File cloudConfigFile) throws FileNotFoundException, DomainException {
         return new DefaultDomainManager(new FileReader(cloudConfigFile));
     }
 
