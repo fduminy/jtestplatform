@@ -21,6 +21,8 @@
  */
 package org.jtestplatform.client;
 
+import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.jtestplatform.cloud.TransportProvider;
 import org.jtestplatform.cloud.domain.DefaultDomainManager;
 import org.jtestplatform.cloud.domain.DomainException;
@@ -32,8 +34,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.concurrent.*;
-
-import static java.util.concurrent.TimeUnit.MINUTES;
 
 public class TestDriver {
     private static final Logger LOGGER = LoggerFactory.getLogger(TestDriver.class);
@@ -48,10 +48,25 @@ public class TestDriver {
         DomainManager domainManager = createDomainManager(cloudConfigFile);
         final JUnitTestReporter reporter = new JUnitTestReporter(reportDirectory);
 
-        ExecutorService executor = Executors.newFixedThreadPool(2);
-        executor.submit(new ConsumerTask(requestConsumer, domainManager, reporter));
-        executor.submit(new ProducerTask(requestProducer, domainManager));
-        shutdown(executor);
+        Thread.UncaughtExceptionHandler handler = new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread t, Throwable e) {
+                LOGGER.error("Uncaught error in {}: {}", t, e);
+            }
+        };
+
+        ExecutorService consumerExecutor = newExecutor("client-consumer-%d", handler);
+        consumerExecutor.submit(new ConsumerTask(requestConsumer, domainManager, reporter));
+
+        ExecutorService producerExecutor = newExecutor("client-producer-%d", handler);
+        producerExecutor.submit(new ProducerTask(requestProducer, domainManager));
+
+        shutdown(4, TimeUnit.MINUTES, consumerExecutor, producerExecutor);
+    }
+
+    private ExecutorService newExecutor(String nameFormat, Thread.UncaughtExceptionHandler handler) {
+        ThreadFactory consumerFactory = new ThreadFactoryBuilder().setNameFormat(nameFormat).setUncaughtExceptionHandler(handler).build();
+        return Executors.newSingleThreadExecutor(consumerFactory);
     }
 
     protected DomainManager createDomainManager(File cloudConfigFile) throws FileNotFoundException, DomainException {
@@ -70,22 +85,9 @@ public class TestDriver {
         return new RequestConsumer(requests);
     }
 
-    private void shutdown(ExecutorService executor) {
-        executor.shutdown(); // Disable new tasks from being submitted
-        try {
-            // Wait a while for existing tasks to terminate
-            if (!executor.awaitTermination(10, MINUTES)) { //TODO this should be a parameter
-                executor.shutdownNow(); // Cancel currently executing tasks
-                // Wait a while for tasks to respond to being cancelled
-                if (!executor.awaitTermination(1, MINUTES)) {
-                    LOGGER.error("executor didn't terminate properly");
-                }
-            }
-        } catch (InterruptedException ie) {
-            // (Re-)Cancel if current thread also interrupted
-            executor.shutdownNow();
-            // Preserve interrupt status
-            Thread.currentThread().interrupt();
+    private void shutdown(long timeout, TimeUnit unit, ExecutorService... executors) {
+        for (ExecutorService executor : executors) {
+            MoreExecutors.shutdownAndAwaitTermination(executor, timeout, unit);
         }
     }
 
