@@ -24,6 +24,7 @@
  */
 package org.jtestplatform.cloud.domain;
 
+import org.junit.Test;
 import org.junit.experimental.theories.DataPoint;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
@@ -84,8 +85,8 @@ public class LoadBalancerTest {
         sleep(100);
         assertEquals("must not block when the list is not empty", nbElements.intValue(), countGotValue(threads));
     }
-    
-    @Theory
+
+    @Test
     public void testRemoveLastElement() {
         String firstElement = "firstElement";
         String lastElement = "lastElement";
@@ -104,7 +105,7 @@ public class LoadBalancerTest {
         assertEquals(firstElement, loadBalancer.getNext());
     }
 
-    @Theory
+    @Test
     public void testRemoveNotLastElement() {
         String firstElement = "firstElement";
         String secondElement = "secondElement";

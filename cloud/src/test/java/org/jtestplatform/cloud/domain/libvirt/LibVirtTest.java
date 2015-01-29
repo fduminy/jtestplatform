@@ -116,7 +116,7 @@ public class LibVirtTest {
         @Override
         public String call() throws Exception {
             Domain domain = null;
-            String ip = null;
+            String ip;
             try {
                 //TODO also check createDomain/support methods work well together
                 LOGGER.debug("{}: creating domain", name);
@@ -139,9 +139,11 @@ public class LibVirtTest {
                 LOGGER.error("error in " + name, e);
                 return ERROR_TAG + e.getMessage();
             } finally {
-                // stop
-                LOGGER.debug("{}: stopping domain", name);
-                domain.stop();
+                if (domain != null) {
+                    // stop
+                    LOGGER.debug("{}: stopping domain", name);
+                    domain.stop();
+                }
             }
         }
     }
@@ -164,8 +166,7 @@ public class LibVirtTest {
         assertThat(new HashSet<Future<String>>(ipAddresses).size(), is(nbDomains));
 
         StringBuilder errorMessage = new StringBuilder();
-        for (int i = 0; i < ipAddresses.size(); i++) {
-            Future<String> ipFuture = ipAddresses.get(i);
+        for (Future<String> ipFuture : ipAddresses) {
             if (ipFuture.get().startsWith(ERROR_TAG)) {
                 errorMessage.append("domain[").append(0).append("]: ").append(ipFuture.get()).append('\n');
             }
@@ -196,9 +197,6 @@ public class LibVirtTest {
         }
     }
     
-    /**
-     * @return
-     */
     private DomainConfig createDomainConfig() {
         Platform platform = new Platform();
         platform.setMemory(32L * 1024L);

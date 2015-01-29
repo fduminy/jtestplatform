@@ -241,7 +241,7 @@ public class DefaultDomainManagerTest {
         @Override
         public Domain createDomain(DomainConfig config, Connection connection)
             throws DomainException {
-            return DomainUtils.createFixedStateProcesses(Boolean.TRUE, null, 1)[0];
+            return DomainUtils.createFixedStateProcesses(true, null, 1)[0];
         }
 
         @Override

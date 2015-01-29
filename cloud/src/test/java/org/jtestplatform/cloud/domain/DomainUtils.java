@@ -112,7 +112,7 @@ public class DomainUtils {
         }
     }
 
-    public static Domain[] createFixedStateProcesses(final Boolean fixedState, WatchDog watchDog, int nbDomains) throws DomainException {
+    public static Domain[] createFixedStateProcesses(final boolean fixedState, WatchDog watchDog, int nbDomains) throws DomainException {
         Domain[] p = new Domain[nbDomains];
         for (int i = 0; i < nbDomains; i++) {
             p[i] = mock(Domain.class);

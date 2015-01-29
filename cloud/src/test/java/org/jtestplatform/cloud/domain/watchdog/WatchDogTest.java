@@ -30,7 +30,6 @@ import org.jtestplatform.cloud.domain.DomainException;
 import org.jtestplatform.cloud.domain.DomainUtils;
 import org.jtestplatform.cloud.domain.DomainUtils.CustomDomain;
 import org.junit.After;
-import org.junit.experimental.theories.DataPoint;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
@@ -48,31 +47,33 @@ import static org.mockito.Mockito.*;
  */
 @RunWith(Theories.class)
 public class WatchDogTest {
-    @DataPoint
-    public static final Long MAX_ZOMBIE_TIME = Long.valueOf(60000L);
-    
-    public static class NbDomains {
+    private static final Long MAX_ZOMBIE_TIME = 60000L;
+
+    @SuppressWarnings("UnusedDeclaration")
+    public static enum NbDomains {
+        _1(1),
+        _10(10),
+        _100(100),
+        _1000(1000);
+
         private final int value;
-        public NbDomains(int value) {
+
+        private NbDomains(int value) {
             this.value = value;
         }
-        public int getValue() {
-            return value;
-        }
-    }    
-    @DataPoint
-    public static final NbDomains NB_DOMAINS1 = new NbDomains(1);
-    @DataPoint
-    public static final NbDomains NB_DOMAINS2 = new NbDomains(10);
-    @DataPoint
-    public static final NbDomains NB_DOMAINS3 = new NbDomains(100);
-    @DataPoint
-    public static final NbDomains NB_DOMAINS4 = new NbDomains(1000);
+    }
 
-    @DataPoint
-    public static final Integer POLL_INTERVAL1 = Integer.valueOf(10);
-    @DataPoint
-    public static final Integer POLL_INTERVAL2 = Integer.valueOf(100);
+    @SuppressWarnings("UnusedDeclaration")
+    public static enum PollInterval {
+        _10(10),
+        _100(100);
+
+        private final int value;
+
+        private PollInterval(int value) {
+            this.value = value;
+        }
+    }
     
     private WatchDog watchDog;
     
@@ -83,11 +84,11 @@ public class WatchDogTest {
     }
     
     @Theory
-    public void testAlwaysDead(NbDomains nbDomains, Long maxZombieTimeMillis, Integer pollInterval) throws IOException, DomainException {
-        watchDog = createWatchDog(pollInterval, maxZombieTimeMillis);
-        Domain[] p = createFixedStateProcesses(Boolean.FALSE, null, nbDomains, pollInterval);
-        
-        for (int i = 0; i < nbDomains.getValue(); i++) {        
+    public void testAlwaysDead(NbDomains nbDomains, PollInterval pollInterval) throws IOException, DomainException {
+        watchDog = createWatchDog(pollInterval, MAX_ZOMBIE_TIME);
+        Domain[] p = createFixedStateProcesses(false, null, nbDomains, pollInterval);
+
+        for (int i = 0; i < nbDomains.value; i++) {        
             verify(p[i], atLeastOnce()).isAlive();
             assertFalse("must be dead", p[i].isAlive());
             
@@ -97,11 +98,11 @@ public class WatchDogTest {
     }
 
     @Theory
-    public void testAlwaysAlive(NbDomains nbDomains, Long maxZombieTimeMillis, Integer pollInterval) throws IOException, DomainException {
-        watchDog = createWatchDog(pollInterval, maxZombieTimeMillis);
-        Domain[] p = createFixedStateProcesses(Boolean.TRUE, null, nbDomains, pollInterval);
-        
-        for (int i = 0; i < nbDomains.getValue(); i++) {
+    public void testAlwaysAlive(NbDomains nbDomains, PollInterval pollInterval) throws IOException, DomainException {
+        watchDog = createWatchDog(pollInterval, MAX_ZOMBIE_TIME);
+        Domain[] p = createFixedStateProcesses(true, null, nbDomains, pollInterval);
+
+        for (int i = 0; i < nbDomains.value; i++) {
             verify(p[i], atLeastOnce()).isAlive();
             assertTrue("domain must be alive", p[i].isAlive());
             
@@ -111,11 +112,11 @@ public class WatchDogTest {
     }
 
     @Theory
-    public void testNormal(NbDomains nbDomains, Long maxZombieTimeMillis, Integer pollInterval) {
-        watchDog = createWatchDog(pollInterval, maxZombieTimeMillis);
+    public void testNormal(NbDomains nbDomains, PollInterval pollInterval) {
+        watchDog = createWatchDog(pollInterval, MAX_ZOMBIE_TIME);
         CustomDomain[] p = createCustomDomain(0, null, nbDomains, pollInterval);
-        
-        for (int i = 0; i < nbDomains.getValue(); i++) {
+
+        for (int i = 0; i < nbDomains.value; i++) {
             verify(p[i], atLeastOnce()).isAlive();
             assertTrue("domain must be alive", p[i].isAlive());
             
@@ -125,11 +126,11 @@ public class WatchDogTest {
     }
 
     @Theory
-    public void testUnexpectedDead(NbDomains nbDomains, Long maxZombieTimeMillis, Integer pollInterval) throws IOException {
-        watchDog = createWatchDog(pollInterval, maxZombieTimeMillis);
+    public void testUnexpectedDead(NbDomains nbDomains, PollInterval pollInterval) throws IOException {
+        watchDog = createWatchDog(pollInterval, MAX_ZOMBIE_TIME);
         CustomDomain[] p = createCustomDomain(0, null, nbDomains, pollInterval);
-        
-        for (int i = 0; i < nbDomains.getValue(); i++) {
+
+        for (int i = 0; i < nbDomains.value; i++) {
             verify(p[i], atLeastOnce()).isAlive();
             assertTrue("domain must be alive", p[i].isAlive());
             
@@ -139,13 +140,13 @@ public class WatchDogTest {
     }
     
     @Theory
-    public void testAddRemoveListener(NbDomains nbDomains, Integer pollInterval) throws DomainException {
-        watchDog = createWatchDog(pollInterval, Long.valueOf(pollInterval * 2));
-        testAddRemoveListener(Boolean.FALSE, nbDomains, pollInterval);
-        testAddRemoveListener(Boolean.TRUE, nbDomains, pollInterval);
+    public void testAddRemoveListener(NbDomains nbDomains, PollInterval pollInterval) throws DomainException {
+        watchDog = createWatchDog(pollInterval, pollInterval.value * 2);
+        testAddRemoveListener(false, nbDomains, pollInterval);
+        testAddRemoveListener(true, nbDomains, pollInterval);
     }
 
-    private void testAddRemoveListener(Boolean fixedState, NbDomains nbDomains, Integer pollInterval) throws DomainException {
+    private void testAddRemoveListener(boolean fixedState, NbDomains nbDomains, PollInterval pollInterval) throws DomainException {
         final Set<Domain> called = new HashSet<Domain>(); 
         WatchDogListener listener = new WatchDogListener() {
             public void domainDied(Domain domain) {
@@ -155,37 +156,37 @@ public class WatchDogTest {
         Domain[] p = createFixedStateProcesses(fixedState, listener, nbDomains, pollInterval);
         
         int nbCalled = 0;
-        for (int i = 0; i < nbDomains.getValue(); i++) {
+        for (int i = 0; i < nbDomains.value; i++) {
             if (called.contains(p[i])) {
                 nbCalled++;
             }
         }
-        if (Boolean.TRUE.equals(fixedState)) {
+        if (fixedState) {
             assertEquals("always alive => listener must never be called", 0, nbCalled);
         } else {
-            assertEquals("always dead => listener must be called", nbDomains.getValue(), nbCalled);
+            assertEquals("always dead => listener must be called", nbDomains.value, nbCalled);
         }
 
         watchDog.removeWatchDogListener(listener);
         called.clear();
-        
-        sleep(10 * pollInterval);
+
+        sleep(10 * pollInterval.value);
         nbCalled = 0;
-        for (int i = 0; i < nbDomains.getValue(); i++) {
+        for (int i = 0; i < nbDomains.value; i++) {
             if (called.contains(p[i])) {
                 nbCalled++;
             }
         }
         assertEquals("listener must never be called after removal", 0, nbCalled);
     }
-    
-    private Domain[] createFixedStateProcesses(final Boolean fixedState, WatchDogListener listener, NbDomains nbDomains, Integer pollInterval) throws DomainException {
+
+    private Domain[] createFixedStateProcesses(final boolean fixedState, WatchDogListener listener, NbDomains nbDomains, PollInterval pollInterval) throws DomainException {
         if (listener != null) {
             watchDog.addWatchDogListener(listener);
         }
-        
-        Domain[] p = DomainUtils.createFixedStateProcesses(fixedState, watchDog, nbDomains.getValue());
-        sleep(Math.max(5 * pollInterval, (nbDomains.getValue() < 50) ? 100 : 1000));
+
+        Domain[] p = DomainUtils.createFixedStateProcesses(fixedState, watchDog, nbDomains.value);
+        sleep(Math.max(5 * pollInterval.value, (nbDomains.value < 50) ? 100 : 1000));
         return p;
     }
     
@@ -196,22 +197,22 @@ public class WatchDogTest {
             // ignore
         }
     }
-        
-    private CustomDomain[] createCustomDomain(long multiple, WatchDogListener listener, NbDomains nbDomains, Integer pollInterval) {
+
+    private CustomDomain[] createCustomDomain(long multiple, WatchDogListener listener, NbDomains nbDomains, PollInterval pollInterval) {
         if (listener != null) {
             watchDog.addWatchDogListener(listener);
         }
-        
-        CustomDomain[] result = DomainUtils.createCustomDomain(multiple, nbDomains.getValue(), watchDog, pollInterval);
-        
-        sleep(10 * pollInterval);
+
+        CustomDomain[] result = DomainUtils.createCustomDomain(multiple, nbDomains.value, watchDog, pollInterval.value);
+
+        sleep(10 * pollInterval.value);
         return result;
     }
-    
-    private static WatchDog createWatchDog(Integer pollInterval, Long maxZombieTimeMillis) {        
+
+    private static WatchDog createWatchDog(PollInterval pollInterval, long maxZombieTimeMillis) {
         Configuration config = new Configuration();
-        DefaultWatchDogStrategy strategy = new DefaultWatchDogStrategy(maxZombieTimeMillis); 
-        config.setWatchDogPollInterval(pollInterval);
+        DefaultWatchDogStrategy strategy = new DefaultWatchDogStrategy(maxZombieTimeMillis);
+        config.setWatchDogPollInterval(pollInterval.value);
         WatchDog watchDog = new WatchDog(config, strategy);
         watchDog.startWatching();
         return watchDog; 
