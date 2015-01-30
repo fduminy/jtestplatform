@@ -24,6 +24,8 @@
  */
 package org.jtestplatform.cloud.domain.libvirt;
 
+import com.google.code.tempusfugit.temporal.Condition;
+import com.google.code.tempusfugit.temporal.Duration;
 import org.jtestplatform.cloud.configuration.Connection;
 import org.jtestplatform.cloud.configuration.Platform;
 import org.jtestplatform.cloud.domain.Domain;
@@ -33,10 +35,7 @@ import org.jtestplatform.cloud.domain.DomainUtils;
 import org.jtestplatform.common.ConfigUtils;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.experimental.theories.DataPoint;
-import org.junit.experimental.theories.Theories;
-import org.junit.experimental.theories.Theory;
-import org.junit.runner.RunWith;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,16 +43,18 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Vector;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import static org.hamcrest.CoreMatchers.is;
+import static com.google.code.tempusfugit.concurrency.ExecutorServiceShutdown.shutdown;
+import static com.google.code.tempusfugit.temporal.Duration.minutes;
+import static com.google.code.tempusfugit.temporal.Duration.seconds;
+import static com.google.code.tempusfugit.temporal.Timeout.timeout;
+import static com.google.code.tempusfugit.temporal.WaitFor.waitOrTimeout;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.jtestplatform.cloud.domain.libvirt.LibVirtDomainFactory.DOMAIN_NAME_PREFIX;
 import static org.junit.Assert.*;
 
@@ -62,19 +63,11 @@ import static org.junit.Assert.*;
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
  */
-@RunWith(Theories.class)
 public class LibVirtTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(LibVirtTest.class);
 
     private static final String ERROR_TAG = "ERROR: ";
-    private static final int NB_PINGS = 5;
 
-    
-    @DataPoint
-    public static final Integer _1_DOMAIN = 1;
-    @DataPoint
-    public static final Integer _3_DOMAINS = 3;
-    
     private Connection connection;
     
     private LibVirtDomainFactory factory;
@@ -107,10 +100,10 @@ public class LibVirtTest {
     }
 
     private class TestStartAndStop implements Callable<String> {
-        private final String name;
+        private final int domainId;
 
         public TestStartAndStop(int index) {
-            this.name = "TestStartAndStop[" + index + ']';
+            domainId = index;
         }
         
         @Override
@@ -119,38 +112,47 @@ public class LibVirtTest {
             String ip;
             try {
                 //TODO also check createDomain/support methods work well together
-                LOGGER.debug("{}: creating domain", name);
+                LOGGER.debug("creating domain #{}", domainId);
                 domain = factory.createDomain(createDomainConfig(), connection);
-                LOGGER.debug("{}: domain created", name);
+                LOGGER.debug("domain #{} created", domainId);
                 ip = domain.getIPAddress();
                 assertNull(ip);
                 
                 domains.add(domain);
                 
                 // start
-                LOGGER.debug("{}: starting domain", name);
+                LOGGER.debug("starting domain #{}", domainId);
                 ip = domain.start();
-                assertFalse("ip must not be null, empty or blank", ConfigUtils.isBlank(ip));
+                assertFalse("domain #" + domainId + "'s ip must not be null, empty or blank", ConfigUtils.isBlank(ip));
 
-                assertEquals("domain must be pingable", NB_PINGS, ping(ip));
-                assertEquals("domain.start() must return same ip address as domain.getIpAddress()", ip, domain.getIPAddress());
+                waitOrTimeout(reachable(InetAddress.getByName(ip), seconds(1)), timeout(minutes(1)));
+                assertEquals("domain #" + domainId + " start() must return same ip address as getIpAddress()", ip, domain.getIPAddress());
                 return ip;
             } catch (Exception e) {
-                LOGGER.error("error in " + name, e);
+                LOGGER.error("error in domain #" + domainId, e);
                 return ERROR_TAG + e.getMessage();
             } finally {
                 if (domain != null) {
                     // stop
-                    LOGGER.debug("{}: stopping domain", name);
+                    LOGGER.debug("stopping domain #{}", domainId);
                     domain.stop();
                 }
             }
         }
     }
 
-    @Theory
-    public void testStartAndStop(Integer nbDomains) throws Throwable {
-        assertEquals("no domain must be defined at begin", 0, nbDefinedDomains());
+    @Test
+    public void testStartAndStop_1_domain() throws Throwable {
+        testStartAndStop(1);
+    }
+
+    @Test
+    public void testStartAndStop_3_domains() throws Throwable {
+        testStartAndStop(3);
+    }
+
+    private void testStartAndStop(int nbDomains) throws Throwable {
+        assertThat(nbDefinedDomains()).as("number of defined domains at begin").isEqualTo(0);
 
         List<TestStartAndStop> tasks = new ArrayList<TestStartAndStop>(nbDomains);
         for (int i = 0; i < nbDomains; i++) {
@@ -162,23 +164,28 @@ public class LibVirtTest {
 
         // invokeAll() blocks until all tasks have run...
         List<Future<String>> ipAddresses = executorService.invokeAll(tasks);
-        assertThat(ipAddresses.size(), is(nbDomains));
-        assertThat(new HashSet<Future<String>>(ipAddresses).size(), is(nbDomains));
+        assertThat(ipAddresses).hasSize(nbDomains);
 
+        shutdown(executorService);
         StringBuilder errorMessage = new StringBuilder();
+        Set<String> uniqueIpAddresses = new HashSet<String>();
+        int i = 0;
         for (Future<String> ipFuture : ipAddresses) {
             if (ipFuture.get().startsWith(ERROR_TAG)) {
-                errorMessage.append("domain[").append(0).append("]: ").append(ipFuture.get()).append('\n');
+                errorMessage.append("domain[").append(i++).append("]: ").append(ipFuture.get()).append('\n');
+            } else {
+                uniqueIpAddresses.add(ipFuture.get());
             }
         }
         if (errorMessage.length() > 0) {
             fail(errorMessage.toString());
         }
 
-        assertEquals("no domain must be defined at end", 0, nbDefinedDomains());
+        assertThat(uniqueIpAddresses).hasSize(nbDomains);
+        assertThat(nbDefinedDomains()).as("number of defined domains at end").isEqualTo(0);
     }
 
-    private int nbDefinedDomains() {
+    private static int nbDefinedDomains() {
         File file = new File("/etc/libvirt/qemu");
         String[] files = file.list(new FilenameFilter() {
             @Override
@@ -189,15 +196,7 @@ public class LibVirtTest {
         return files.length;
     }
 
-    private static void sleep(long timeMillis) {
-        try {
-            Thread.sleep(timeMillis);
-        } catch (InterruptedException e) {
-            // ignore
-        }
-    }
-    
-    private DomainConfig createDomainConfig() {
+    private static DomainConfig createDomainConfig() {
         Platform platform = new Platform();
         platform.setMemory(32L * 1024L);
         platform.setCdrom(DomainUtils.getCDROM());
@@ -209,34 +208,16 @@ public class LibVirtTest {
         return cfg;
     }
 
-    private static int ping(String host) throws IOException {
-        LOGGER.debug("pinging {}", host);
-
-        final int timeOut = 1000;
-        final InetAddress addr = InetAddress.getByName(host);
-
-        LOGGER.info("waiting domain {} has started", host);
-        long start = System.currentTimeMillis();
-        boolean pong = false;
-        while (((System.currentTimeMillis() - start) < 60000) && !pong) {
-            pong = addr.isReachable(timeOut);
-            sleep(500);
-        }
-        if (!pong) {
-            LOGGER.info("domain {} NOT started", host);
-            return 0;
-        }
-
-        LOGGER.info("domain {} started", host);
-
-        int counter = 0;
-        while (counter < NB_PINGS) {
-            if (addr.isReachable(timeOut)) {
-                counter++;
-                LOGGER.debug("received pong from {}", host);
+    private static Condition reachable(final InetAddress address, final Duration timeOut) {
+        return new Condition() {
+            @Override
+            public boolean isSatisfied() {
+                try {
+                    return address.isReachable((int) timeOut.inMillis());
+                } catch (IOException e) {
+                    return false;
+                }
             }
-        }
-
-        return counter;
+        };
     }
 }
