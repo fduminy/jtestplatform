@@ -52,8 +52,7 @@ public class TestFrameworkTest {
     @DataPoint
     public static final JUnitTestFramework JUNIT_TEST_FRAMEWORK = new JUnitTestFramework();
 
-    private static final Map<TestFramework, TestFrameworkData> TESTS =
-        new HashMap<TestFramework, TestFrameworkData>();
+    private static final Map<TestFramework, TestFrameworkData> TESTS = new HashMap<TestFramework, TestFrameworkData>();
 
     private static final boolean FAIL = false;
     private static final boolean SUCCEED = true;
@@ -61,7 +60,7 @@ public class TestFrameworkTest {
         addTest(testFramework, testClass, succeed, null);
     }
     private static void addTest(TestFramework testFramework, Class<?> testClass, boolean succeed, String method) throws Exception {
-        TestFrameworkData data = (TestFrameworkData) TESTS.get(testFramework);
+        TestFrameworkData data = TESTS.get(testFramework);
         if (data == null) {
             data = new TestFrameworkData(testFramework);
             TESTS.put(testFramework, data);
@@ -69,7 +68,7 @@ public class TestFrameworkTest {
         data.addTest(testClass, succeed, method);
     }
     private static boolean mustFail(TestFramework framework, String testName) {
-        TestFrameworkData data = (TestFrameworkData) TESTS.get(framework);
+        TestFrameworkData data = TESTS.get(framework);
         return data.mustFail(testName);
     }
 
@@ -79,7 +78,7 @@ public class TestFrameworkTest {
      * @return The list of expected tests.
      */
     private static List<String> getExpectedTests(TestFramework testFramework, Class<?> testClass) {
-        TestFrameworkData data = (TestFrameworkData) TESTS.get(testFramework);
+        TestFrameworkData data = TESTS.get(testFramework);
         return data.getExpectedTests(testClass);
     }
 
@@ -99,7 +98,7 @@ public class TestFrameworkTest {
      * @return The collection of test classes.
      */
     private static Collection<Class<?>> getTestClasses(TestFramework testFramework) {
-        TestFrameworkData data = (TestFrameworkData) TESTS.get(testFramework);
+        TestFrameworkData data = TESTS.get(testFramework);
         return data.getTestClasses();
     }
 
