@@ -182,10 +182,7 @@ public class TestFrameworkTest {
     @Theory
     @Test(expected=UnknownTestException.class)
     public void testRunUnknownTest(TestFramework testFramework) throws UnknownTestException {
-        // should not be a valid test name
-        String aTest = Long.toString(System.currentTimeMillis());
-
-        testFramework.runTest(aTest);
+        testFramework.runTest("AnUnknownTest");
     }
 
     @RunWith(Parameterized.class)
