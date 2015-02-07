@@ -24,21 +24,31 @@
  */
 package org.jtestplatform.cloud.domain.watchdog;
 
-import org.jtestplatform.cloud.configuration.Configuration;
+import com.google.code.tempusfugit.temporal.*;
+import org.apache.commons.lang3.mutable.MutableObject;
 import org.jtestplatform.cloud.domain.Domain;
 import org.jtestplatform.cloud.domain.DomainException;
 import org.jtestplatform.cloud.domain.DomainUtils;
-import org.jtestplatform.cloud.domain.DomainUtils.CustomDomain;
+import org.jtestplatform.cloud.domain.DomainUtils.FixedState;
 import org.junit.After;
+import org.junit.Test;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.concurrent.TimeoutException;
 
-import static org.junit.Assert.*;
+import static com.google.code.tempusfugit.temporal.Conditions.isAlive;
+import static com.google.code.tempusfugit.temporal.Duration.seconds;
+import static com.google.code.tempusfugit.temporal.WaitFor.waitOrTimeout;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.jtestplatform.cloud.domain.DomainUtils.FixedState.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 /**
@@ -47,173 +57,151 @@ import static org.mockito.Mockito.*;
  */
 @RunWith(Theories.class)
 public class WatchDogTest {
-    private static final Long MAX_ZOMBIE_TIME = 60000L;
-
-    @SuppressWarnings("UnusedDeclaration")
-    public static enum NbDomains {
-        _1(1),
-        _10(10),
-        _100(100),
-        _1000(1000);
-
-        private final int value;
-
-        private NbDomains(int value) {
-            this.value = value;
-        }
-    }
-
-    @SuppressWarnings("UnusedDeclaration")
-    public static enum PollInterval {
-        _10(10),
-        _100(100);
-
-        private final int value;
-
-        private PollInterval(int value) {
-            this.value = value;
-        }
-    }
-    
     private WatchDog watchDog;
-    
+
     @After
     public void tearDown() {
         watchDog.stopWatching();
         watchDog = null;
     }
-    
-    @Theory
-    public void testAlwaysDead(NbDomains nbDomains, PollInterval pollInterval) throws IOException, DomainException {
-        watchDog = createWatchDog(pollInterval, MAX_ZOMBIE_TIME);
-        Domain[] p = createFixedStateProcesses(false, null, nbDomains, pollInterval);
 
-        for (int i = 0; i < nbDomains.value; i++) {        
-            verify(p[i], atLeastOnce()).isAlive();
-            assertFalse("must be dead", p[i].isAlive());
-            
-            verify(p[i], atLeastOnce()).start();
-            verify(p[i], never()).stop();
+    @Test
+    public void testStart() throws TimeoutException, InterruptedException {
+        // prepare
+        MutableObject<WatchDogThread> thread = new MutableObject<WatchDogThread>();
+        watchDog = createWatchDog(null, thread);
+
+        // test
+        watchDog.start();
+
+        // verify
+        assertThat(thread.getValue()).isNotNull();
+        waitOrTimeout(isAlive(thread.getValue()), Timeout.timeout(seconds(10)));
+    }
+
+    @Theory
+    public void testWatchDomains(FixedState state, Boolean unwatch) throws IOException, DomainException {
+        // prepare
+        watchDog = createWatchDog(state);
+        Domain domain = DomainUtils.createFixedStateDomain(state);
+        watchDog.watch(domain);
+        if (unwatch) {
+            watchDog.unwatch(domain);
+        }
+
+        // test
+        watchDog.watchDomains();
+
+        // verify
+        boolean useStrategy = !unwatch && ALWAYS_DEAD.equals(state);
+        verify(domain, unwatch ? never() : times(1)).isAlive();
+        verify(watchDog.strategy, useStrategy ? times(1) : never()).domainDead(eq(domain), any(StopWatch.class));
+        verifyNoMoreInteractions(domain, watchDog.strategy);
+        verifyStateOf(domain, state); // must be after verifyNoMoreInteractions
+    }
+
+    @Theory
+    public void testAddListener(FixedState fixedState) throws DomainException {
+        // prepare
+        watchDog = createWatchDog(fixedState);
+
+        final ArgumentCaptor<Domain> notifications = ArgumentCaptor.forClass(Domain.class);
+        WatchDogListener listener = mock(WatchDogListener.class);
+        doNothing().when(listener).domainDied(notifications.capture());
+        Domain domain = DomainUtils.createFixedStateDomain(fixedState);
+        watchDog.watch(domain);
+
+        // test
+        watchDog.addWatchDogListener(listener);
+        watchDog.watchDomains();
+
+        // verify
+        if (ALWAYS_ALIVE.equals(fixedState)) {
+            // always alive => listener must never be called
+            assertThat(notifications.getAllValues()).isEmpty();
+        } else {
+            // always dead => listener must be called
+            assertThat(notifications.getAllValues()).containsExactly(domain);
         }
     }
 
     @Theory
-    public void testAlwaysAlive(NbDomains nbDomains, PollInterval pollInterval) throws IOException, DomainException {
-        watchDog = createWatchDog(pollInterval, MAX_ZOMBIE_TIME);
-        Domain[] p = createFixedStateProcesses(true, null, nbDomains, pollInterval);
+    public void testRemoveListener(FixedState fixedState) throws DomainException {
+        // prepare
+        watchDog = createWatchDog(fixedState);
+        WatchDogListener listener = mock(WatchDogListener.class);
+        watchDog.addWatchDogListener(listener);
+        Domain domain = DomainUtils.createFixedStateDomain(fixedState);
+        watchDog.watch(domain);
 
-        for (int i = 0; i < nbDomains.value; i++) {
-            verify(p[i], atLeastOnce()).isAlive();
-            assertTrue("domain must be alive", p[i].isAlive());
-            
-            verify(p[i], never()).start();
-            verify(p[i], never()).stop();
+        // test
+        watchDog.removeWatchDogListener(listener);
+        watchDog.watchDomains();
+
+        // verify
+        verify(listener, never()).domainDied(eq(domain));
+        verifyNoMoreInteractions(listener);
+    }
+
+    @Test
+    public void testConstructor() {
+        watchDog = new WatchDog(mock(Sleeper.class), mock(WatchDogStrategy.class), mock(Clock.class));
+
+        assertFalse(watchDog.isWatching());
+    }
+
+    @Test
+    public void testStartWatching() {
+        // prepare
+        watchDog = new WatchDog(mock(Sleeper.class), mock(WatchDogStrategy.class), mock(Clock.class));
+
+        // test
+        watchDog.startWatching();
+
+        // verify
+        assertTrue(watchDog.isWatching());
+    }
+
+    @Test
+    public void testStopWatching() {
+        // prepare
+        watchDog = new WatchDog(mock(Sleeper.class), mock(WatchDogStrategy.class), mock(Clock.class));
+        watchDog.startWatching();
+
+        // test
+        watchDog.stopWatching();
+
+        // verify
+        assertFalse(watchDog.isWatching());
+    }
+
+    private static WatchDog createWatchDog(FixedState fixedState) {
+        return createWatchDog(fixedState, null);
+    }
+
+    private static WatchDog createWatchDog(FixedState fixedState, final MutableObject<WatchDogThread> thread) {
+        final boolean alive = ALWAYS_ALIVE.equals(fixedState);
+        Sleeper sleeper = mock(Sleeper.class);
+        WatchDogStrategy strategy = mock(WatchDogStrategy.class);
+        if (fixedState != null) {
+            when(strategy.domainDead(any(Domain.class), any(StopWatch.class))).thenAnswer(new Answer<Boolean>() {
+                @Override
+                public Boolean answer(InvocationOnMock invocationOnMock) throws Throwable {
+                    return !alive;
+                }
+            });
         }
-    }
-
-    @Theory
-    public void testNormal(NbDomains nbDomains, PollInterval pollInterval) {
-        watchDog = createWatchDog(pollInterval, MAX_ZOMBIE_TIME);
-        CustomDomain[] p = createCustomDomain(0, null, nbDomains, pollInterval);
-
-        for (int i = 0; i < nbDomains.value; i++) {
-            verify(p[i], atLeastOnce()).isAlive();
-            assertTrue("domain must be alive", p[i].isAlive());
-            
-            verify(p[i], atLeastOnce()).start();
-            verify(p[i], never()).stop();            
-        }
-    }
-
-    @Theory
-    public void testUnexpectedDead(NbDomains nbDomains, PollInterval pollInterval) throws IOException {
-        watchDog = createWatchDog(pollInterval, MAX_ZOMBIE_TIME);
-        CustomDomain[] p = createCustomDomain(0, null, nbDomains, pollInterval);
-
-        for (int i = 0; i < nbDomains.value; i++) {
-            verify(p[i], atLeastOnce()).isAlive();
-            assertTrue("domain must be alive", p[i].isAlive());
-            
-            verify(p[i], atLeastOnce()).start();
-            verify(p[i], never()).stop();            
-        }
-    }
-    
-    @Theory
-    public void testAddRemoveListener(NbDomains nbDomains, PollInterval pollInterval) throws DomainException {
-        watchDog = createWatchDog(pollInterval, pollInterval.value * 2);
-        testAddRemoveListener(false, nbDomains, pollInterval);
-        testAddRemoveListener(true, nbDomains, pollInterval);
-    }
-
-    private void testAddRemoveListener(boolean fixedState, NbDomains nbDomains, PollInterval pollInterval) throws DomainException {
-        final Set<Domain> called = new HashSet<Domain>(); 
-        WatchDogListener listener = new WatchDogListener() {
-            public void domainDied(Domain domain) {
-                called.add(domain);
+        Clock clock = new MovableClock();
+        WatchDog watchDog = new WatchDog(sleeper, strategy, clock) {
+            @Override
+            WatchDogThread createWatchDogThread(Sleeper sleeper) {
+                WatchDogThread watchDogThread = super.createWatchDogThread(sleeper);
+                if (thread != null) {
+                    thread.setValue(watchDogThread);
+                }
+                return watchDogThread;
             }
         };
-        Domain[] p = createFixedStateProcesses(fixedState, listener, nbDomains, pollInterval);
-        
-        int nbCalled = 0;
-        for (int i = 0; i < nbDomains.value; i++) {
-            if (called.contains(p[i])) {
-                nbCalled++;
-            }
-        }
-        if (fixedState) {
-            assertEquals("always alive => listener must never be called", 0, nbCalled);
-        } else {
-            assertEquals("always dead => listener must be called", nbDomains.value, nbCalled);
-        }
-
-        watchDog.removeWatchDogListener(listener);
-        called.clear();
-
-        sleep(10 * pollInterval.value);
-        nbCalled = 0;
-        for (int i = 0; i < nbDomains.value; i++) {
-            if (called.contains(p[i])) {
-                nbCalled++;
-            }
-        }
-        assertEquals("listener must never be called after removal", 0, nbCalled);
-    }
-
-    private Domain[] createFixedStateProcesses(final boolean fixedState, WatchDogListener listener, NbDomains nbDomains, PollInterval pollInterval) throws DomainException {
-        if (listener != null) {
-            watchDog.addWatchDogListener(listener);
-        }
-
-        Domain[] p = DomainUtils.createFixedStateProcesses(fixedState, watchDog, nbDomains.value);
-        sleep(Math.max(5 * pollInterval.value, (nbDomains.value < 50) ? 100 : 1000));
-        return p;
-    }
-    
-    private void sleep(long milliseconds) {
-        try {
-            Thread.sleep(milliseconds);
-        } catch (InterruptedException e) {
-            // ignore
-        }
-    }
-
-    private CustomDomain[] createCustomDomain(long multiple, WatchDogListener listener, NbDomains nbDomains, PollInterval pollInterval) {
-        if (listener != null) {
-            watchDog.addWatchDogListener(listener);
-        }
-
-        CustomDomain[] result = DomainUtils.createCustomDomain(multiple, nbDomains.value, watchDog, pollInterval.value);
-
-        sleep(10 * pollInterval.value);
-        return result;
-    }
-
-    private static WatchDog createWatchDog(PollInterval pollInterval, long maxZombieTimeMillis) {
-        Configuration config = new Configuration();
-        DefaultWatchDogStrategy strategy = new DefaultWatchDogStrategy(maxZombieTimeMillis);
-        config.setWatchDogPollInterval(pollInterval.value);
-        WatchDog watchDog = new WatchDog(config, strategy);
         watchDog.startWatching();
         return watchDog; 
     }

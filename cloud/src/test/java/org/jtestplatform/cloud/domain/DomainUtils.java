@@ -24,14 +24,19 @@
  */
 package org.jtestplatform.cloud.domain;
 
-import org.jtestplatform.cloud.domain.watchdog.WatchDog;
+import com.google.code.tempusfugit.temporal.Condition;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import java.io.File;
 import java.net.URL;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.mockito.Mockito.*;
+import static org.jtestplatform.cloud.domain.DomainUtils.FixedState.ALWAYS_ALIVE;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)
@@ -57,77 +62,52 @@ public class DomainUtils {
     public static File getConfigFile() {
         return getResource("cloud.xml");
     }
-    
-    public static CustomDomain[] createCustomDomain(long multiple, int nbDomains, WatchDog watchDog, int pollInterval) {
-        CustomDomain[] p = new CustomDomain[nbDomains];
-        for (int i = 0; i < nbDomains; i++) {
-            p[i] = mock(CustomDomain.class);
-            p[i].setUnexpectedDeadDelay((int) (multiple * pollInterval));
-            doCallRealMethod().when(p[i]).isAlive();
-            doCallRealMethod().when(p[i]).start();
-            doCallRealMethod().when(p[i]).stop();
 
-            if (watchDog != null) {
-                watchDog.watch(p[i]);
+    public static Domain createFixedStateDomain(final FixedState fixedState) throws DomainException {
+        Domain domain = mock(Domain.class);
+        when(domain.isAlive()).thenAnswer(new Answer<Boolean>() {
+
+            @Override
+            public Boolean answer(InvocationOnMock invocation) throws Throwable {
+                return ALWAYS_ALIVE.equals(fixedState);
             }
-        }
-        return p;
+        });
+        return domain;
     }
 
-    public static class CustomDomain implements Domain {
-        private boolean alive = false;
+    public static class MethodAnswer<T> implements Answer<T> {
+        private final AtomicBoolean called = new AtomicBoolean(false);
 
-        public CustomDomain() {
+        public MethodAnswer() {
         }
-        public void setUnexpectedDeadDelay(final int unexpectedDeadDelay) {
-            if (unexpectedDeadDelay > 0) {
-                new Thread() {
-                    public void run() {
-                        try {
-                            Thread.sleep(unexpectedDeadDelay);
-                        } catch (InterruptedException e) {
-                            // ignore
-                        }
-                        alive = false;
-                    }
-                }.start();
-            }
-        }
+
         @Override
-        public void stop() {
-            alive = false;
-        }
-        @Override
-        public String start() {
-            alive = true;
+        public T answer(InvocationOnMock invocationOnMock) throws Throwable {
+            called.set(true);
             return null;
         }
-        @Override
-        public boolean isAlive() {
-            return alive;
-        }
-        @Override
-        public String getIPAddress() {
-            return null;
-        }
-    }
 
-    public static Domain[] createFixedStateProcesses(final boolean fixedState, WatchDog watchDog, int nbDomains) throws DomainException {
-        Domain[] p = new Domain[nbDomains];
-        for (int i = 0; i < nbDomains; i++) {
-            p[i] = mock(Domain.class);
-            when(p[i].isAlive()).thenAnswer(new Answer<Boolean>() {
-
+        public Condition called() {
+            return new Condition() {
                 @Override
-                public Boolean answer(InvocationOnMock invocation) throws Throwable {
-                    return fixedState;
+                public boolean isSatisfied() {
+                    return called.get();
                 }
-            });
+            };
+        }
+    }
 
-            if (watchDog != null) {
-                watchDog.watch(p[i]);
+    @SuppressWarnings("UnusedDeclaration")
+    public static enum FixedState {
+        ALWAYS_ALIVE,
+        ALWAYS_DEAD;
+
+        public static void verifyStateOf(Domain domain, FixedState expectedState) throws DomainException {
+            if (ALWAYS_DEAD.equals(expectedState)) {
+                assertFalse("must be dead", domain.isAlive());
+            } else {
+                assertTrue("domain must be alive", domain.isAlive());
             }
         }
-        return p;
     }
 }

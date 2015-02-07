@@ -19,24 +19,35 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
  * USA.
  */
-/**
- * 
- */
 package org.jtestplatform.cloud.domain.watchdog;
 
-import com.google.code.tempusfugit.temporal.StopWatch;
-import org.jtestplatform.cloud.domain.Domain;
+import com.google.code.tempusfugit.temporal.Sleeper;
 
-/**
- * @author Fabien DUMINY (fduminy@jnode.org)
- *
- */
-public interface WatchDogStrategy {
-    /**
-     * Callback method used to notify that a domain is dead.
-     * @param domain The {@link Domain} that just died.
-     * @return true if the domain should be considered as really dead, 
-     * otherwise it will be considered as a zombie (it might die or resurrect).
-     */
-    boolean domainDead(Domain domain, StopWatch stopWatch);
+class WatchDogThread extends Thread {
+    private final WatchDog watchDog;
+    private final Sleeper sleeper;
+
+    WatchDogThread(WatchDog watchDog, Sleeper sleeper) {
+        super("WatchDogThread");
+        this.watchDog = watchDog;
+        this.sleeper = sleeper;
+
+        setDaemon(true);
+        start();
+    }
+
+    @Override
+    public void run() {
+        while (true) {
+            if (watchDog.isWatching()) {
+                watchDog.watchDomains();
+            }
+
+            try {
+                sleeper.sleep();
+            } catch (InterruptedException e) {
+                // ignore
+            }
+        }
+    }
 }

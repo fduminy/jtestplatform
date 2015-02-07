@@ -24,6 +24,8 @@
  */
 package org.jtestplatform.cloud.domain.watchdog;
 
+import com.google.code.tempusfugit.temporal.Duration;
+import com.google.code.tempusfugit.temporal.StopWatch;
 import org.jtestplatform.cloud.domain.Domain;
 import org.jtestplatform.cloud.domain.DomainException;
 import org.slf4j.Logger;
@@ -35,18 +37,19 @@ import org.slf4j.LoggerFactory;
  */
 public class DefaultWatchDogStrategy implements WatchDogStrategy {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultWatchDogStrategy.class);
-    
-    private final long maxZombieTimeMillis;
-    public DefaultWatchDogStrategy(long maxZombieTimeMillis) {
-        this.maxZombieTimeMillis = maxZombieTimeMillis;
+
+    private final Duration maxZombieDuration;
+
+    public DefaultWatchDogStrategy(Duration maxZombieDuration) {
+        this.maxZombieDuration = maxZombieDuration;
     }
     
     /**
      * {@inheritDoc}
      */
     @Override
-    public boolean domainDead(Domain domain, Long sinceTimeMillis) {
-        boolean isReallyDead = ((System.currentTimeMillis() - sinceTimeMillis) > maxZombieTimeMillis);
+    public boolean domainDead(Domain domain, StopWatch stopWatch) {
+        boolean isReallyDead = stopWatch.markAndGetTotalElapsedTime().greaterThan(maxZombieDuration);
         
         if (!isReallyDead) {
             try {

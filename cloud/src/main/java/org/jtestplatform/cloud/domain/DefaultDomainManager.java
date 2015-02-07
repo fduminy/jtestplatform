@@ -21,6 +21,10 @@
  */
 package org.jtestplatform.cloud.domain;
 
+import com.google.code.tempusfugit.temporal.Duration;
+import com.google.code.tempusfugit.temporal.RealClock;
+import com.google.code.tempusfugit.temporal.Sleeper;
+import com.google.code.tempusfugit.temporal.ThreadSleep;
 import org.dom4j.DocumentException;
 import org.jtestplatform.cloud.configuration.Configuration;
 import org.jtestplatform.cloud.configuration.Connection;
@@ -28,8 +32,10 @@ import org.jtestplatform.cloud.configuration.Factory;
 import org.jtestplatform.cloud.configuration.Platform;
 import org.jtestplatform.cloud.configuration.io.dom4j.ConfigurationDom4jReader;
 import org.jtestplatform.cloud.domain.libvirt.LibVirtDomainFactory;
+import org.jtestplatform.cloud.domain.watchdog.DefaultWatchDogStrategy;
 import org.jtestplatform.cloud.domain.watchdog.WatchDog;
 import org.jtestplatform.cloud.domain.watchdog.WatchDogListener;
+import org.jtestplatform.cloud.domain.watchdog.WatchDogStrategy;
 import org.jtestplatform.common.transport.Transport;
 import org.jtestplatform.common.transport.TransportException;
 import org.jtestplatform.common.transport.UDPTransport;
@@ -47,8 +53,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.google.code.tempusfugit.temporal.Duration.millis;
+import static com.google.code.tempusfugit.temporal.Duration.seconds;
+
 public class DefaultDomainManager implements DomainManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultDomainManager.class);
+    private static final Duration MAX_ZOMBIE_DURATION = seconds(10);
 
     private final Configuration config;
     private final LoadBalancer<DomainManagerDelegate> delegates;
@@ -64,15 +74,7 @@ public class DefaultDomainManager implements DomainManager {
 
         maxNumberOfDomains = Math.max(1, config.getDomains().getMax());
         serverPort = config.getServerPort();
-
-        watchDog = new WatchDog(config);
-        watchDog.addWatchDogListener(new WatchDogListener() {
-            @Override
-            public void domainDied(Domain domain) {
-                DefaultDomainManager.this.domainDied(domain);
-            }
-        });
-
+        watchDog = createWatchDog();
         domains = new LoadBalancer<Domain>();
 
         List<DomainManagerDelegate> dmDelegates = new ArrayList<DomainManagerDelegate>();
@@ -85,6 +87,18 @@ public class DefaultDomainManager implements DomainManager {
         delegates = new LoadBalancer<DomainManagerDelegate>(dmDelegates);
     }
 
+    private WatchDog createWatchDog() {
+        WatchDogStrategy strategy = new DefaultWatchDogStrategy(MAX_ZOMBIE_DURATION);
+        Sleeper sleeper = new ThreadSleep(millis(config.getWatchDogPollInterval()));
+        WatchDog watchDog = new WatchDog(sleeper, strategy, RealClock.now());
+        watchDog.addWatchDogListener(new WatchDogListener() {
+            @Override
+            public void domainDied(Domain domain) {
+                DefaultDomainManager.this.domainDied(domain);
+            }
+        });
+        return watchDog;
+    }
 
     /**
      * @return

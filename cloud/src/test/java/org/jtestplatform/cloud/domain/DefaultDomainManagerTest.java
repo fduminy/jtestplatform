@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.jtestplatform.cloud.domain.DomainUtils.FixedState.ALWAYS_ALIVE;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 
@@ -241,7 +242,7 @@ public class DefaultDomainManagerTest {
         @Override
         public Domain createDomain(DomainConfig config, Connection connection)
             throws DomainException {
-            return DomainUtils.createFixedStateProcesses(true, null, 1)[0];
+            return DomainUtils.createFixedStateDomain(ALWAYS_ALIVE);
         }
 
         @Override
