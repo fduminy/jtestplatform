@@ -33,10 +33,10 @@ import org.jtestplatform.cloud.domain.Domain;
  */
 public interface WatchDogStrategy {
     /**
-     * Callback method used to notify that a domain is dead.
-     * @param domain The {@link Domain} that just died.
+     * Callback method used to notify that a domain is probably dead.
+     * @param domain The {@link Domain} that may be dead.
      * @return true if the domain should be considered as really dead, 
-     * otherwise it will be considered as a zombie (it might die or resurrect).
+     * otherwise it will be considered as a zombie (it might finally die or resurrect).
      */
     boolean domainDead(Domain domain, StopWatch stopWatch);
 }

@@ -134,16 +134,10 @@ class ConnectManager {
             this.connect = connect;
         }
         
-        /**
-         * @return
-         */
         public int getReferenceCounter() {
             return referenceCounter;
         }
 
-        /**
-         * @return the connect
-         */
         public Connect getConnect() {
             return connect;
         }

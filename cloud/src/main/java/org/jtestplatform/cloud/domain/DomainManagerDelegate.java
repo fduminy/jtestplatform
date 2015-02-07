@@ -37,10 +37,6 @@ class DomainManagerDelegate {
     private final DomainFactory<? extends Domain> domainFactory;
     private final LoadBalancer<Connection> connections;
     
-    /**
-     * @param domainFactory
-     * @param connections
-     */
     public DomainManagerDelegate(DomainFactory<? extends Domain> domainFactory,
             List<Connection> connections) {
         this.domainFactory = domainFactory;
@@ -61,11 +57,6 @@ class DomainManagerDelegate {
         return result;
     }
     
-    /**
-     * @param config
-     * @return
-     * @throws DomainException 
-     */
     public Domain createDomain(DomainConfig config, Connection connection) throws DomainException {
         return domainFactory.createDomain(config, connection);
     }    

@@ -100,19 +100,12 @@ public class DefaultDomainManager implements DomainManager {
         return watchDog;
     }
 
-    /**
-     * @return
-     */
     @Override
     public List<Platform> getPlatforms() {
         // TODO maybe we shouldn't expose our list of platforms 
         return config.getPlatforms();
     }
 
-    /**
-     * @param platform
-     * @return
-     */
     private DomainConfig createDomainConfig(Platform platform) {
         DomainConfig domainConfig = new DomainConfig();
         domainConfig.setDomainName(null); // null => will be defined automatically
@@ -228,24 +221,12 @@ public class DefaultDomainManager implements DomainManager {
         for (Factory factory : config.getDomains().getFactories()) {
             DomainFactory<? extends Domain> domainFactory = knownFactories.get(factory.getType());
             if (domainFactory == null) {
-                LOGGER.error("No DomainFactory for type {}", factory.getType());
-
-                if (wrongTypes.length() != 0) {
-                    wrongTypes.append(", ");
-                }
-                wrongTypes.append(factory.getType());
+                appendErrorMessage("DomainFactory", wrongTypes, factory);
                 continue;
             }
 
-            if ((factory.getConnections() == null) || factory.getConnections()
-                    .isEmpty()) {
-                LOGGER.error("No connection for type {}", factory.getType());
-
-                if (typesWithoutConnection.length() != 0) {
-                    typesWithoutConnection.append(", ");
-                }
-                typesWithoutConnection.append(factory.getType());
-                continue;
+            if ((factory.getConnections() == null) || factory.getConnections().isEmpty()) {
+                appendErrorMessage("connection", typesWithoutConnection, factory);
             }
         }
         if ((wrongTypes.length() != 0) || (typesWithoutConnection.length() != 0)) {
@@ -261,6 +242,15 @@ public class DefaultDomainManager implements DomainManager {
 
             throw new ConfigurationException(message.toString());
         }
+    }
+
+    private void appendErrorMessage(String missingObjectName, StringBuilder wrongTypes, Factory factory) {
+        LOGGER.error("No {} for type {}", missingObjectName, factory.getType());
+
+        if (wrongTypes.length() != 0) {
+            wrongTypes.append(", ");
+        }
+        wrongTypes.append(factory.getType());
     }
 
     Configuration read(Reader reader) throws ConfigurationException {

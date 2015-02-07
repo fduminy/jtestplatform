@@ -163,12 +163,6 @@ public class LibVirtModelFacade {
         return sb.toString();
     }
 
-    /**
-     * @param valueIndex
-     * @param hexadecimalSize
-     * @return
-     * @throws DomainException 
-     */
     public static String toHexString(int valueIndex, int hexadecimalSize) throws DomainException {
         String result = Integer.toHexString(valueIndex);
         if (result.length() > hexadecimalSize) {
@@ -196,13 +190,6 @@ public class LibVirtModelFacade {
         return ipAddress;
     }
 
-    /**
-     * @param wantedNetworkXML
-     * @param network
-     * @return
-     * @throws LibvirtException 
-     * @throws DomainException 
-     */
     public static boolean sameNetwork(String wantedNetworkXML, org.libvirt.Network network) throws LibvirtException, DomainException {
         String actualNetworkXML = network.getXMLDesc(0);
         org.libvirt.model.network.Network actualNetwork = toNetwork(actualNetworkXML);                
@@ -210,11 +197,6 @@ public class LibVirtModelFacade {
         return sameNetwork(wantedNetwork, actualNetwork);
     }
 
-    /**
-     * @param wantedNetwork
-     * @param actualNetwork
-     * @return
-     */
     private static boolean sameNetwork(org.libvirt.model.network.Network wantedNetwork,
             org.libvirt.model.network.Network actualNetwork) {
 
@@ -264,14 +246,6 @@ public class LibVirtModelFacade {
         }
     }
 
-    /**
-     * @param platform
-     * @param connect
-     * @return
-     * @throws LibvirtException 
-     * @throws DocumentException 
-     * @throws IOException 
-     */
     public static boolean support(Platform platform, Connect connect) throws LibvirtException, IOException, DocumentException {
         LOGGER.trace("begin support");
         

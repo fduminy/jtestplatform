@@ -108,10 +108,6 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
         return connectManager.execute(connection, command);
     }
 
-    /**
-     * @param domain
-     * @throws DomainException 
-     */
     String start(Domain domain) throws DomainException {
         String ipAddress = null;
         Network network = null;
@@ -147,12 +143,7 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
         return ipAddress;
     }
 
-    /**
-     * @param domain
-     * @param ipAddress
-     * @throws DomainException 
-     */
-    void stop(Domain domain, String ipAddress) throws DomainException {
+    void stop(Domain domain) throws DomainException {
         try {
             domain.destroy();
             
@@ -213,11 +204,6 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
         return network;
     }
     
-    /**
-     * @param config
-     * @return
-     * @throws DomainException 
-     */
     Domain defineDomain(Connect connect, DomainConfig config) throws DomainException {
         try {
             synchronized ((connect.getHostName() + "_defineDomain").intern()) {
@@ -244,10 +230,8 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
 
     /**
      * Automatically define the domain name. It must be unique for the connection.
-     * @param domains
-     * @return
      * @throws LibvirtException
-     * @throws DomainException 
+     * @throws DomainException
      */
     private String findUniqueDomainName(List<Domain> domains) throws LibvirtException, DomainException {        
         List<String> domainNames = new ArrayList<String>(domains.size());
@@ -260,8 +244,6 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
 
     /**
      * Automatically define the mac address. It must be unique for the connection.
-     * @param domains
-     * @return
      * @throws LibvirtException
      * @throws DomainException 
      */
@@ -300,12 +282,6 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
 
     /**
      * Find a unique value that is not yet in the given list of values.
-     * @param values
-     * @param valueName
-     * @param valuePrefix
-     * @param valueIndex
-     * @param maxValueIndex
-     * @throws DomainException 
      */
     private String findUniqueValue(List<String> values, String valueName, String valuePrefix, int valueIndex, int maxValueIndex, int hexadecimalSize) throws DomainException {
         String value = null;
@@ -317,8 +293,8 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
                 break;
             }
         }
-        
-        if ((maxValueIndex > maxValueIndex) || (value == null)) {
+
+        if ((valueIndex > maxValueIndex) || (value == null)) {
             throw new DomainException("unable to find a unique " + valueName);
         }
         

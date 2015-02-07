@@ -54,10 +54,11 @@ class LibVirtDomain implements Domain {
     private String ipAddress;
     
     /**
-     * 
-     * @param config configuration of the machine to run with libvirt.
-     * @param connect1
-     * @throws DomainException 
+     *
+     * @param config The configuration of the machine to run with libvirt.
+     * @param factory The factory that is creating this domain.
+     * @param connection The connection giving the underlying engine URI.
+     * @throws DomainException
      */
     LibVirtDomain(DomainConfig config, LibVirtDomainFactory factory, Connection connection) throws DomainException {
         this.config = config;        
@@ -102,7 +103,7 @@ class LibVirtDomain implements Domain {
     @Override
     public synchronized void stop() throws DomainException {
         if (isAlive()) {
-            factory.stop(domain, ipAddress);
+            factory.stop(domain);
             try {
                 domain.free();
                 closeConnection();
@@ -115,7 +116,8 @@ class LibVirtDomain implements Domain {
     }
 
     @Override
-    protected void finalize() throws LibvirtException {
+    protected void finalize() throws Throwable {
+        super.finalize();
         closeConnection();
     }
 

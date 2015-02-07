@@ -36,6 +36,7 @@ class WatchDogThread extends Thread {
         start();
     }
 
+    @SuppressWarnings("InfiniteLoopStatement")
     @Override
     public void run() {
         while (true) {

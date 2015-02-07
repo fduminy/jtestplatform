@@ -71,9 +71,6 @@ public class LoadBalancer<T> {
         return element;
     }
 
-    /**
-     * @param domain
-     */
     public void add(T element) {
         synchronized (elements) {
             elements.add(element);            
@@ -81,10 +78,6 @@ public class LoadBalancer<T> {
         }
     }
 
-    /**
-     * @param domain
-     * @return
-     */
     public boolean remove(T element) {
         synchronized (elements) {
             boolean removed = elements.remove(element);
@@ -97,16 +90,10 @@ public class LoadBalancer<T> {
         }
     }
     
-    /**
-     * @return
-     */
     public int size() {
         return elements.size();
     }
 
-    /**
-     * @return
-     */
     public List<T> clear() {
         ArrayList<T> result;
         synchronized (elements) {
