@@ -24,6 +24,9 @@
  */
 package org.jtestplatform.cloud.domain.libvirt;
 
+import com.google.code.tempusfugit.temporal.Condition;
+import com.google.code.tempusfugit.temporal.Sleeper;
+import com.google.code.tempusfugit.temporal.Timeout;
 import com.sun.jna.Pointer;
 import org.dom4j.DocumentException;
 import org.jtestplatform.cloud.configuration.Connection;
@@ -43,7 +46,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 
+import static com.google.code.tempusfugit.temporal.WaitFor.waitOrTimeout;
 import static java.lang.Integer.MAX_VALUE;
 
 /**
@@ -143,23 +148,23 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
         return ipAddress;
     }
 
-    void stop(Domain domain) throws DomainException {
-        try {
-            domain.destroy();
-            
-            DomainInfo info = domain.getInfo();
-            while (info.state != DomainState.VIR_DOMAIN_SHUTOFF) {
+    void stop(final Domain domain, Timeout timeout, Sleeper sleeper)
+            throws LibvirtException, TimeoutException, InterruptedException, DomainException {
+        domain.destroy();
+
+        waitOrTimeout(new Condition() {
+            @Override
+            public boolean isSatisfied() {
                 try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    // ignore
+                    DomainInfo info = domain.getInfo();
+                    return (info.state == DomainState.VIR_DOMAIN_SHUTOFF);
+                } catch (LibvirtException e) {
+                    throw new RuntimeException("Can't get domain information", e);
                 }
             }
-            
-            domain.undefine();
-        } catch (LibvirtException e) {
-            throw new DomainException(e);
-        }
+        }, timeout, sleeper);
+
+        domain.undefine();
     }
     
     void ensureNetworkExist(Connect connect) throws LibvirtException, DomainException {
@@ -307,8 +312,6 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
     
         // get defined but inactive domains
         for (String name : connect.listDefinedDomains()) {
-            LOGGER.debug("name={}", name);
-            
             if (name != null) {
                 domains.add(connect.domainLookupByName(name));
             }

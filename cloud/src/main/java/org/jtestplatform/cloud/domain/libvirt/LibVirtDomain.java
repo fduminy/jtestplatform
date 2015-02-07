@@ -24,6 +24,9 @@
  */
 package org.jtestplatform.cloud.domain.libvirt;
 
+import com.google.code.tempusfugit.temporal.Sleeper;
+import com.google.code.tempusfugit.temporal.ThreadSleep;
+import com.google.code.tempusfugit.temporal.Timeout;
 import org.jtestplatform.cloud.configuration.Connection;
 import org.jtestplatform.cloud.domain.Domain;
 import org.jtestplatform.cloud.domain.DomainConfig;
@@ -32,6 +35,12 @@ import org.jtestplatform.common.ConfigUtils;
 import org.libvirt.Connect;
 import org.libvirt.DomainInfo.DomainState;
 import org.libvirt.LibvirtException;
+
+import java.util.concurrent.TimeoutException;
+
+import static com.google.code.tempusfugit.temporal.Duration.minutes;
+import static com.google.code.tempusfugit.temporal.Duration.seconds;
+import static com.google.code.tempusfugit.temporal.Timeout.timeout;
 
 /**
  * Implementation for a {@link org.jtestplatform.cloud.domain.Domain} based on <a href="http://www.libvirt.org/">libvirt</a>.
@@ -103,11 +112,17 @@ class LibVirtDomain implements Domain {
     @Override
     public synchronized void stop() throws DomainException {
         if (isAlive()) {
-            factory.stop(domain);
+            Timeout timeout = timeout(minutes(1));
+            Sleeper sleeper = new ThreadSleep(seconds(1));
             try {
+                factory.stop(domain, timeout, sleeper);
                 domain.free();
                 closeConnection();
             } catch (LibvirtException e) {
+                throw new DomainException(e);
+            } catch (InterruptedException e) {
+                throw new DomainException(e);
+            } catch (TimeoutException e) {
                 throw new DomainException(e);
             }
             domain = null;
