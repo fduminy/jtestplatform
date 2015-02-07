@@ -42,11 +42,11 @@ import static org.junit.Assert.assertEquals;
 @RunWith(Theories.class)
 public class LoadBalancerTest {
     @DataPoint
-    public static final Integer NB_THREADS1 = Integer.valueOf(1);
+    public static final Integer NB_THREADS1 = 1;
     @DataPoint
-    public static final Integer NB_THREADS2 = Integer.valueOf(10);
+    public static final Integer NB_THREADS2 = 10;
     @DataPoint
-    public static final Integer NB_THREADS3 = Integer.valueOf(100);
+    public static final Integer NB_THREADS3 = 100;
     
     @DataPoint
     public static final String[] ELEMENTS1 = {};
@@ -62,7 +62,7 @@ public class LoadBalancerTest {
     }
     
     @Theory
-    public void testGetNextWithEmptyList(Integer nbElements) {
+    public void testGetNext_emptyList(Integer nbElements) {
         final LoadBalancer<String> loadBalancer = new LoadBalancer<String>();
         Thread[] threads = createThreads(loadBalancer, nbElements);
         
@@ -76,7 +76,7 @@ public class LoadBalancerTest {
     }
 
     @Theory
-    public void testGetNextWithNonEmptyList(Integer nbElements) {
+    public void testGetNext_nonEmptyList(Integer nbElements) {
         String[] elements = new String[nbElements];
         Arrays.fill(elements, "str");
         final LoadBalancer<String> loadBalancer = createLoadBalancer(elements);
@@ -87,7 +87,7 @@ public class LoadBalancerTest {
     }
 
     @Test
-    public void testRemoveLastElement() {
+    public void testRemove_lastElement() {
         String firstElement = "firstElement";
         String lastElement = "lastElement";
         String[] elements = new String[]{firstElement, "2", lastElement};
@@ -106,7 +106,7 @@ public class LoadBalancerTest {
     }
 
     @Test
-    public void testRemoveNotLastElement() {
+    public void testRemove_notLastElement() {
         String firstElement = "firstElement";
         String secondElement = "secondElement";
         String thirdElement = "thirdElement";
@@ -132,9 +132,9 @@ public class LoadBalancerTest {
     }
     
     private LoadBalancer<String> createLoadBalancer(String... elements) {
-        LoadBalancer<String> loadBalancer = new LoadBalancer<String>();        
-        for (int i = 0; i < elements.length; i++) {
-            loadBalancer.add(elements[i]);
+        LoadBalancer<String> loadBalancer = new LoadBalancer<String>();
+        for (String element : elements) {
+            loadBalancer.add(element);
         }
         return loadBalancer;
     }
