@@ -44,6 +44,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static java.lang.Integer.MAX_VALUE;
+
 /**
  * Implementation of {@link DomainFactory} for <a href="http://libvirt.org/">libvirt</a>.
  * 
@@ -253,7 +255,7 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
             domainNames.add(domain.getName());
         }
 
-        return findUniqueValue(domainNames, "domain name", DOMAIN_NAME_PREFIX, (int) System.currentTimeMillis(), Integer.MAX_VALUE, 8);
+        return findUniqueValue(domainNames, "domain name", DOMAIN_NAME_PREFIX, 0, MAX_VALUE, 8);
     }
 
     /**
