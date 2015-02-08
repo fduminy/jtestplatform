@@ -31,11 +31,9 @@ import org.jtestplatform.common.message.TestResult;
 import org.jtestplatform.junitxmlreport.JUnitXMLReportWriter;
 import org.jtestplatform.junitxmlreport.Testsuite;
 import org.jtestplatform.junitxmlreport.Testsuites;
-import org.junit.AfterClass;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
+import org.junit.rules.TemporaryFolder;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -43,29 +41,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 public class MultiThreadJUnitTestReporterTest {
+    private static final int NB_THREADS = 100;
+    private static final int NB_REPEATS = 10;
+
+    @ClassRule
+    public static final TemporaryFolder folder = new TemporaryFolder();
+
     @Rule
     public final ConcurrentRule concurrentRule = new ConcurrentRule();
     @Rule
     public final RepeatingRule repeatingRule = new RepeatingRule();
 
-    private static final int NB_THREADS = 100;
-    private static final int NB_REPEATS = 10;
+    private static MockTestReporter[] testReporters;
 
-    private static final MockTestReporter[] testReporters = new MockTestReporter[Reporter.values().length];
-
-    static {
-        try {
-            File tempFolder = File.createTempFile("test", "");
-            for (int i = 0; i < testReporters.length; i++) {
-                JUnitXMLReportWriter writer = mock(JUnitXMLReportWriter.class);
-                testReporters[i] = new MockTestReporter(tempFolder, writer);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static final AtomicInteger counter = new AtomicInteger();
+    private static AtomicInteger counter;
 
     @Test
     @Concurrent(count = NB_THREADS)
@@ -88,8 +77,18 @@ public class MultiThreadJUnitTestReporterTest {
         Reporter.TESTCASE.report(testReporters[Reporter.TESTCASE.ordinal()], counter.getAndIncrement());
     }
 
+    @BeforeClass
+    public static void beforeClass() throws IOException {
+        counter = new AtomicInteger();
+        testReporters = new MockTestReporter[Reporter.values().length];
+        for (int i = 0; i < testReporters.length; i++) {
+            JUnitXMLReportWriter writer = mock(JUnitXMLReportWriter.class);
+            testReporters[i] = new MockTestReporter(folder.newFolder("reportFolder" + i), writer);
+        }
+    }
+
     @AfterClass
-    public static void afterTest() {
+    public static void afterClass() {
         for (int i = 0; i < testReporters.length; i++) {
             Testsuites suites = testReporters[i].getSuites();
             Reporter reporter = Reporter.values()[i];
