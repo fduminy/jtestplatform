@@ -34,9 +34,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class LoadBalancer<T> {
     private final List<T> elements;
-    
-    private AtomicInteger nextElement = new AtomicInteger(0);
-    
+
+    private final AtomicInteger nextElement = new AtomicInteger(0);
+
     public LoadBalancer(List<T> elements) {
         this();
         this.elements.addAll(elements);
@@ -63,7 +63,7 @@ public class LoadBalancer<T> {
                     // ignore
                 }
             }
-            
+
             element = elements.get(nextElement.getAndIncrement());
             nextElement.compareAndSet(elements.size(), 0);
         }

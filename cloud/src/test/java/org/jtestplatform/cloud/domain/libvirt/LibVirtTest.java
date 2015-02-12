@@ -31,7 +31,7 @@ import org.jtestplatform.cloud.configuration.Platform;
 import org.jtestplatform.cloud.domain.Domain;
 import org.jtestplatform.cloud.domain.DomainConfig;
 import org.jtestplatform.cloud.domain.DomainException;
-import org.jtestplatform.cloud.domain.DomainUtils;
+import org.jtestplatform.cloud.domain.Utils;
 import org.jtestplatform.common.ConfigUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -199,7 +199,7 @@ public class LibVirtTest {
     private static DomainConfig createDomainConfig() {
         Platform platform = new Platform();
         platform.setMemory(32L * 1024L);
-        platform.setCdrom(DomainUtils.getCDROM());
+        platform.setCdrom(Utils.getCDROM());
         
         DomainConfig cfg = new DomainConfig();
         cfg.setPlatform(platform);

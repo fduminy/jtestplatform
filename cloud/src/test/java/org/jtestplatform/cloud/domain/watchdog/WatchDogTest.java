@@ -28,8 +28,8 @@ import com.google.code.tempusfugit.temporal.*;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.jtestplatform.cloud.domain.Domain;
 import org.jtestplatform.cloud.domain.DomainException;
-import org.jtestplatform.cloud.domain.DomainUtils;
-import org.jtestplatform.cloud.domain.DomainUtils.FixedState;
+import org.jtestplatform.cloud.domain.Utils;
+import org.jtestplatform.cloud.domain.Utils.FixedState;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.theories.Theories;
@@ -46,7 +46,7 @@ import static com.google.code.tempusfugit.temporal.Conditions.isAlive;
 import static com.google.code.tempusfugit.temporal.Duration.seconds;
 import static com.google.code.tempusfugit.temporal.WaitFor.waitOrTimeout;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.jtestplatform.cloud.domain.DomainUtils.FixedState.*;
+import static org.jtestplatform.cloud.domain.Utils.FixedState.*;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
@@ -83,7 +83,7 @@ public class WatchDogTest {
     public void testWatchDomains(FixedState state, Boolean unwatch) throws IOException, DomainException {
         // prepare
         watchDog = createWatchDog(state);
-        Domain domain = DomainUtils.createFixedStateDomain(state);
+        Domain domain = Utils.createFixedStateDomain(state);
         watchDog.watch(domain);
         if (unwatch) {
             watchDog.unwatch(domain);
@@ -108,7 +108,7 @@ public class WatchDogTest {
         final ArgumentCaptor<Domain> notifications = ArgumentCaptor.forClass(Domain.class);
         WatchDogListener listener = mock(WatchDogListener.class);
         doNothing().when(listener).domainDied(notifications.capture());
-        Domain domain = DomainUtils.createFixedStateDomain(fixedState);
+        Domain domain = Utils.createFixedStateDomain(fixedState);
         watchDog.watch(domain);
 
         // test
@@ -131,7 +131,7 @@ public class WatchDogTest {
         watchDog = createWatchDog(fixedState);
         WatchDogListener listener = mock(WatchDogListener.class);
         watchDog.addWatchDogListener(listener);
-        Domain domain = DomainUtils.createFixedStateDomain(fixedState);
+        Domain domain = Utils.createFixedStateDomain(fixedState);
         watchDog.watch(domain);
 
         // test

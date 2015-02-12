@@ -24,16 +24,28 @@
  */
 package org.jtestplatform.cloud.domain;
 
+import com.google.code.tempusfugit.temporal.Conditions;
 import org.junit.Test;
 import org.junit.experimental.theories.DataPoint;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeoutException;
 
-import static org.junit.Assert.assertEquals;
+import static com.google.code.tempusfugit.concurrency.CountDownLatchWithTimeout.await;
+import static com.google.code.tempusfugit.temporal.Duration.seconds;
+import static com.google.code.tempusfugit.temporal.Timeout.timeout;
+import static com.google.code.tempusfugit.temporal.WaitFor.waitOrTimeout;
+import static java.lang.Thread.State.TERMINATED;
+import static java.lang.Thread.State.WAITING;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)
@@ -41,68 +53,112 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(Theories.class)
 public class LoadBalancerTest {
+    private static final Logger LOGGER = LoggerFactory.getLogger(LoadBalancerTest.class);
+
     @DataPoint
-    public static final Integer NB_THREADS1 = 1;
+    public static final String[] NO_ELEMENTS = {};
     @DataPoint
-    public static final Integer NB_THREADS2 = 10;
+    public static final String[] ONE_ELEMENT = {"1"};
     @DataPoint
-    public static final Integer NB_THREADS3 = 100;
-    
-    @DataPoint
-    public static final String[] ELEMENTS1 = {};
-    @DataPoint
-    public static final String[] ELEMENTS2 = {"1"};
-    @DataPoint
-    public static final String[] ELEMENTS3 = {"1", "2"};
-    
+    public static final String[] TWO_ELEMENTS = {"1", "2"};
+
+    @Test
+    public void testConstructor_default() {
+        LoadBalancer<String> loadBalancer = new LoadBalancer<String>();
+        assertThat(loadBalancer.size()).isEqualTo(0);
+    }
+
+    @Theory
+    public void testConstructor_fromList(String[] elements) {
+        LoadBalancer<String> loadBalancer = new LoadBalancer<String>(Arrays.asList(elements));
+        assertThat(loadBalancer.size()).isEqualTo(elements.length);
+    }
+
     @Theory
     public void testSize(String[] elements) {
-        LoadBalancer<String> loadBalancer = createLoadBalancer(elements);        
-        assertEquals(elements.length, loadBalancer.size());
-    }
-    
-    @Theory
-    public void testGetNext_emptyList(Integer nbElements) {
-        final LoadBalancer<String> loadBalancer = new LoadBalancer<String>();
-        Thread[] threads = createThreads(loadBalancer, nbElements);
-        
-        assertEquals("must block when the list is empty", 0, countGotValue(threads));
-
-        for (int i = 0; i < nbElements; i++) {
-            loadBalancer.add("str");
-            sleep(100);
-            assertEquals("must be unblocked when the list become non empty", i + 1, countGotValue(threads));
+        // prepare
+        LoadBalancer<String> loadBalancer = new LoadBalancer<String>();
+        for (String element : elements) {
+            loadBalancer.add(element);
         }
+
+        // test and verify
+        assertThat(loadBalancer.size()).isEqualTo(elements.length);
     }
 
-    @Theory
-    public void testGetNext_nonEmptyList(Integer nbElements) {
-        String[] elements = new String[nbElements];
-        Arrays.fill(elements, "str");
-        final LoadBalancer<String> loadBalancer = createLoadBalancer(elements);
-        Thread[] threads = createThreads(loadBalancer, nbElements);
-        
-        sleep(100);
-        assertEquals("must not block when the list is not empty", nbElements.intValue(), countGotValue(threads));
+    @Test
+    public void testClear() {
+        // prepare
+        LoadBalancer<String> loadBalancer = new LoadBalancer<String>(Arrays.asList(TWO_ELEMENTS));
+
+        // test
+        loadBalancer.clear();
+
+        // verify
+        assertThat(loadBalancer.size()).isEqualTo(0);
+    }
+
+    @Test
+    public void testGetNext_emptyList() throws TimeoutException, InterruptedException {
+        // prepare
+        final LoadBalancer<String> loadBalancer = new LoadBalancer<String>();
+        final CountDownLatch startup = new CountDownLatch(1);
+        final CountDownLatch end = new CountDownLatch(1);
+
+        // test
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+                startup.countDown();
+                loadBalancer.getNext();
+                end.countDown();
+            }
+        };
+        thread.start();
+        await(startup).with(seconds(1));
+
+        // verify
+        try {
+            await(end).with(seconds(1));
+            fail("must block when the list is empty");
+        } catch (TimeoutException e) {
+            assertThat(thread.getState()).as("thread state").isEqualTo(WAITING);
+            LOGGER.info("Thread is blocked : OK");
+        }
+
+        loadBalancer.add("element"); // this must unblock the thread
+        await(end).with(seconds(1));
+        LOGGER.info("Thread was unblocked : OK");
+
+        waitOrTimeout(Conditions.is(thread, TERMINATED), timeout(seconds(1)));
+    }
+
+    @Test
+    public void testGetNext_nonEmptyList() {
+        LoadBalancer<String> loadBalancer = new LoadBalancer<String>(Arrays.asList(TWO_ELEMENTS));
+
+        assertThat(loadBalancer.getNext()).isSameAs(TWO_ELEMENTS[0]);
+        assertThat(loadBalancer.getNext()).isSameAs(TWO_ELEMENTS[1]);
     }
 
     @Test
     public void testRemove_lastElement() {
         String firstElement = "firstElement";
         String lastElement = "lastElement";
-        String[] elements = new String[]{firstElement, "2", lastElement};
-        final LoadBalancer<String> loadBalancer = createLoadBalancer(elements);
+        List<String> elements = Arrays.asList(firstElement, "2", lastElement);
+        LoadBalancer<String> loadBalancer = new LoadBalancer<String>(elements);
         
         // get all elements except the last one
-        for (int i = 0; i < elements.length - 1; i++) {
+        for (int i = 0; i < elements.size() - 1; i++) {
             loadBalancer.getNext();
         }
         
         // remove the last element
-        loadBalancer.remove(lastElement);
+        boolean removed = loadBalancer.remove(lastElement);
         
         // check we get the first element instead of the last element
-        assertEquals(firstElement, loadBalancer.getNext());
+        assertThat(removed).isTrue();
+        assertThat(loadBalancer.getNext()).isEqualTo(firstElement);
     }
 
     @Test
@@ -110,82 +166,17 @@ public class LoadBalancerTest {
         String firstElement = "firstElement";
         String secondElement = "secondElement";
         String thirdElement = "thirdElement";
-        String[] elements = new String[]{firstElement, secondElement, thirdElement};
-        final LoadBalancer<String> loadBalancer = createLoadBalancer(elements);
+        List<String> elements = Arrays.asList(firstElement, secondElement, thirdElement);
+        LoadBalancer<String> loadBalancer = new LoadBalancer<String>(elements);
         
         // get the first element
         loadBalancer.getNext();
         
         // remove the second element
-        loadBalancer.remove(secondElement);
+        boolean removed = loadBalancer.remove(secondElement);
         
         // check we get the third element instead of the second element
-        assertEquals(thirdElement, loadBalancer.getNext());
-    }
-    
-    private void sleep(int time) {
-        try {
-            Thread.sleep(time);
-        } catch (InterruptedException e) {
-            // ignore
-        }
-    }
-    
-    private LoadBalancer<String> createLoadBalancer(String... elements) {
-        LoadBalancer<String> loadBalancer = new LoadBalancer<String>();
-        for (String element : elements) {
-            loadBalancer.add(element);
-        }
-        return loadBalancer;
-    }
-    
-    private Thread[] createThreads(LoadBalancer<String> loadBalancer, int nbThreads) {
-        Thread[] result = new Thread[nbThreads];
-        for (int i = 0; i < nbThreads; i++) {
-            result[i] = new Thread(loadBalancer);
-        }
-
-        // be sure all threads have started
-        boolean oneNotStarted = false;
-        do {
-            sleep(100);
-
-            for (Thread t : result) {
-                if(!t.started.get()) {
-                    oneNotStarted = true;
-                    break;
-                }
-            }
-        } while (oneNotStarted);
-        
-        return result;
-    }
-    
-    private int countGotValue(Thread[] threads) {
-        int count = 0;
-        for (Thread t : threads) {
-            if (t.gotValue.get()) {
-                count++;
-            }
-        }
-        return count;
-    }
-    
-    private static class Thread extends java.lang.Thread {
-        final AtomicBoolean started = new AtomicBoolean(false);
-        final AtomicBoolean gotValue = new AtomicBoolean(false);
-        final LoadBalancer<String> loadBalancer;
-        
-        public Thread(LoadBalancer<String> loadBalancer) {
-            this.loadBalancer = loadBalancer;
-            start();
-        }
-        
-        @Override
-        public void run() {
-            started.set(true);
-            loadBalancer.getNext();
-            gotValue.set(true);
-        }
+        assertThat(removed).isTrue();
+        assertThat(loadBalancer.getNext()).isEqualTo(thirdElement);
     }
 }

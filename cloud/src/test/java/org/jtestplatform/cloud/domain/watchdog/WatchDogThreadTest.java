@@ -22,7 +22,7 @@
 package org.jtestplatform.cloud.domain.watchdog;
 
 import com.google.code.tempusfugit.temporal.Sleeper;
-import org.jtestplatform.cloud.domain.DomainUtils.MethodAnswer;
+import org.jtestplatform.cloud.domain.Utils.MethodAnswer;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;

@@ -30,9 +30,11 @@ import org.mockito.stubbing.Answer;
 
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.jtestplatform.cloud.domain.DomainUtils.FixedState.ALWAYS_ALIVE;
+import static org.jtestplatform.cloud.domain.Utils.FixedState.ALWAYS_ALIVE;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -42,12 +44,12 @@ import static org.mockito.Mockito.when;
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
  */
-public class DomainUtils {
-    private DomainUtils() {        
+public class Utils {
+    private Utils() {
     }
 
     private static File getResource(String resource) {
-        URL url = DomainUtils.class.getResource("/" + resource);
+        URL url = Utils.class.getResource("/" + resource);
         File f = new File(url.getFile());
         if (!f.exists()) {
             throw new RuntimeException("file not found : " + f.getAbsolutePath());
@@ -109,5 +111,13 @@ public class DomainUtils {
                 assertTrue("domain must be alive", domain.isAlive());
             }
         }
+    }
+
+    public static List<String> generateStringList(int count) {
+        List<String> elements = new ArrayList<String>(count);
+        for (int i = 0; i < count; i++) {
+            elements.add("ELEMENT" + i);
+        }
+        return elements;
     }
 }
