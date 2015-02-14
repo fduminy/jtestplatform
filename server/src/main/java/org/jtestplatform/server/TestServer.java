@@ -90,28 +90,32 @@ public class TestServer {
         transportManager = new TransportHelper();
     }
 
-    private <TM extends Message> void addCommand(Class<TM> messageClass, TestServerCommand<TM, ? extends Message> command) {
+    <TM extends Message> void addCommand(Class<TM> messageClass, TestServerCommand<TM, ? extends Message> command) {
         messageClassToCommand.put(messageClass, command);
     }
 
-    @SuppressWarnings("unchecked")
     public void start() throws Exception {
         LOGGER.info("server started");
 
         transport = transportFactory.create();
         while (true) {
-            Message message = transportManager.receive(transport);
-            TestServerCommand command = messageClassToCommand.get(message.getClass());
+            processCommand(transport);
+        }
+    }
 
-            if (command != null) {
-                try {
-                    Message result = command.execute(message);
-                    if (result != null) {
-                        transportManager.send(transport, result);
-                    }
-                } catch (Throwable t) {
-                    LOGGER.error("error in command", t);
+    @SuppressWarnings("unchecked")
+    void processCommand(Transport transport) throws TransportException {
+        Message message = transportManager.receive(transport);
+        TestServerCommand command = messageClassToCommand.get(message.getClass());
+
+        if (command != null) {
+            try {
+                Message result = command.execute(message);
+                if (result != null) {
+                    transportManager.send(transport, result);
                 }
+            } catch (Throwable t) {
+                LOGGER.error("error in command", t);
             }
         }
     }

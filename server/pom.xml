@@ -41,11 +41,17 @@
 			<scope>compile</scope><!-- we need it since we use JUnit in our test framework -->
 		</dependency>
 
+        <!-- tests -->
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
 			<scope>test</scope>
 		</dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
 	</dependencies>
 
 	<build>
