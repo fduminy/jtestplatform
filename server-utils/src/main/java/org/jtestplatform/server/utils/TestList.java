@@ -26,6 +26,7 @@ package org.jtestplatform.server.utils;
 
 import org.jtestplatform.server.TestFramework;
 import org.jtestplatform.server.TestFrameworkManager;
+import org.jtestplatform.server.UnknownTestFrameworkException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xeustechnologies.jcl.JarClassLoader;
@@ -52,11 +53,11 @@ public class TestList {
         testSources.add(new TestSource(directory, includeClassNames));
     }
 
-    public void collectTests() throws FileNotFoundException {
+    public void collectTests() throws FileNotFoundException, UnknownTestFrameworkException {
         collectTests((String[]) null);
     }
 
-    public void collectTests(String... testFrameworkNames) throws FileNotFoundException {
+    public void collectTests(String... testFrameworkNames) throws FileNotFoundException, UnknownTestFrameworkException {
         // find test frameworks to use
         final TestFrameworkManager testManager = TestFrameworkManager.getInstance();
         Collection<TestFramework> frameworks;
@@ -98,7 +99,7 @@ public class TestList {
         ps.flush();
     }
 
-    public static void readTestList(InputStream inputStream) {
+    public static void readTestList(InputStream inputStream) throws UnknownTestFrameworkException {
         TestFrameworkManager manager = TestFrameworkManager.getInstance();
         Scanner scanner = new Scanner(inputStream).useDelimiter(SEPARATOR);
         while (scanner.hasNextLine()) {

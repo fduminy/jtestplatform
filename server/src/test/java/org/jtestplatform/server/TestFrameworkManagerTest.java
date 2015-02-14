@@ -21,7 +21,9 @@
  */
 package org.jtestplatform.server;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
 import java.util.Set;
@@ -36,8 +38,34 @@ import static org.mockito.Mockito.when;
  *
  */
 public class TestFrameworkManagerTest {
+    @Rule
+    public final ExpectedException thrown = ExpectedException.none();
+
     @Test
-    public void testAddAndGetTestFramework() {
+    public void testGetTestFramework_nullString() throws UnknownTestFrameworkException {
+        testGetTestFramework(null);
+    }
+
+    @Test
+    public void testGetTestFramework_emptyString() throws UnknownTestFrameworkException {
+        testGetTestFramework("");
+    }
+
+    @Test
+    public void testGetTestFramework_blankString() throws UnknownTestFrameworkException {
+        testGetTestFramework("  ");
+    }
+
+    private void testGetTestFramework(String framework) throws UnknownTestFrameworkException {
+        thrown.expect(UnknownTestFrameworkException.class);
+        thrown.expectMessage("Unknown test framework : " + framework);
+        TestFrameworkManager manager = TestFrameworkManager.getInstance();
+
+        manager.getTestFramework(framework);
+    }
+
+    @Test
+    public void testAddAndGetTestFramework() throws UnknownTestFrameworkException {
         TestFrameworkManager manager = TestFrameworkManager.getInstance();
         int initNumberOfFrameworks = manager.getTestFrameworks().size();
 

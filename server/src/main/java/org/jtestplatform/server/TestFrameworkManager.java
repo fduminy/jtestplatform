@@ -49,15 +49,17 @@ public final class TestFrameworkManager {
     }
 
     /**
-     * @param framework
      * @return The test framework matching the given name.
      */
-    public TestFramework getTestFramework(String framework) {
-        return testFrameworks.get(framework);
+    public TestFramework getTestFramework(String framework) throws UnknownTestFrameworkException {
+        final TestFramework testFramework = testFrameworks.get(framework);
+        if (testFramework == null) {
+            throw new UnknownTestFrameworkException(framework);
+        }
+        return testFramework;
     }
 
     /**
-     * @param framework
      * @return The set of test framework names.
      */
     public Set<String> getTestFrameworks() {
