@@ -21,18 +21,7 @@
  */
 package org.jtestplatform.server;
 
-import gnu.testlet.TestHarness;
-import gnu.testlet.Testlet;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-import org.junit.Assert;
 import org.junit.Test;
-import org.junit.experimental.theories.DataPoint;
-import org.junit.experimental.theories.Theories;
-import org.junit.experimental.theories.Theory;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
 
 import java.util.*;
 
@@ -45,91 +34,24 @@ import static org.junit.Assert.*;
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
  */
-@RunWith(Theories.class)
-public class TestFrameworkTest {
-    @DataPoint
-    public static final MauveTestFramework MAUVE_TEST_FRAMEWORK = new MauveTestFramework();
-    @DataPoint
-    public static final JUnitTestFramework JUNIT_TEST_FRAMEWORK = new JUnitTestFramework();
+abstract public class TestFrameworkTest<T extends TestFramework> {
+    private final TestFrameworkData data;
+    private final T testFramework;
 
-    private static final Map<TestFramework, TestFrameworkData> TESTS = new HashMap<TestFramework, TestFrameworkData>();
-
-    private static final boolean FAIL = false;
-    private static final boolean SUCCEED = true;
-    private static void addTest(TestFramework testFramework, Class<?> testClass, boolean succeed) throws Exception {
-        addTest(testFramework, testClass, succeed, null);
-    }
-    private static void addTest(TestFramework testFramework, Class<?> testClass, boolean succeed, String method) throws Exception {
-        TestFrameworkData data = TESTS.get(testFramework);
-        if (data == null) {
-            data = new TestFrameworkData(testFramework);
-            TESTS.put(testFramework, data);
-        }
-        data.addTest(testClass, succeed, method);
-    }
-    private static boolean mustFail(TestFramework framework, String testName) {
-        TestFrameworkData data = TESTS.get(framework);
-        return data.mustFail(testName);
+    public TestFrameworkTest(T testFramework) {
+        this.testFramework = testFramework;
+        data = new TestFrameworkData(testFramework);
     }
 
-
-    /**
-     * @param testClass
-     * @return The list of expected tests.
-     */
-    private static List<String> getExpectedTests(TestFramework testFramework, Class<?> testClass) {
-        TestFrameworkData data = TESTS.get(testFramework);
-        return data.getExpectedTests(testClass);
-    }
-
-    public static List<String> getExpectedTests() {
-        List<String> tests = new ArrayList<String>();
-        for (TestFramework framework : TESTS.keySet()) {
-            TestFrameworkData data = TESTS.get(framework);
-            for (Class<?> testClass : data.getTestClasses()) {
-                tests.addAll(getExpectedTests(framework, testClass));
-            }
-        }
-        return tests;
-    }
-
-    /**
-     * @param testFramework
-     * @return The collection of test classes.
-     */
-    private static Collection<Class<?>> getTestClasses(TestFramework testFramework) {
-        TestFrameworkData data = TESTS.get(testFramework);
-        return data.getTestClasses();
-    }
-
-    static {
-        try {
-            // junit test framework
-            addTest(JUNIT_TEST_FRAMEWORK, ParameterizedTestClass.class, FAIL, "aFailingTest");
-            addTest(JUNIT_TEST_FRAMEWORK, ParameterizedTestClass.class, SUCCEED, "aTest");
-            addTest(JUNIT_TEST_FRAMEWORK, TestClass.class, FAIL, "aFailingTest");
-            addTest(JUNIT_TEST_FRAMEWORK, TestClass.class, SUCCEED, "aTest");
-            addTest(JUNIT_TEST_FRAMEWORK, JUnit3TestClassTest.class, FAIL, "testThatFails");
-            addTest(JUNIT_TEST_FRAMEWORK, JUnit3TestClassTest.class, SUCCEED, "testThatWorks");
-
-            // mauve test framework
-            addTest(MAUVE_TEST_FRAMEWORK, MauveTestClass.class, SUCCEED);
-            addTest(MAUVE_TEST_FRAMEWORK, MauveFailingTestClass.class, FAIL);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new AssertionError(e.getMessage());
-        }
-    }
-
-    @Theory
-    public void testGetName(TestFramework testFramework) {
+    @Test
+    public void testGetName() {
         String name = testFramework.getName();
         assertNotNull(name);
         assertFalse("test framework name can't be blank or empty", name.trim().isEmpty());
     }
 
-    @Theory
-    public void testGetTests(TestFramework testFramework) {
+    @Test
+    public void testGetTests() {
         Collection<String> tests = testFramework.getTests();
         assertNotNull(tests);
         assertFalse("test list can't be blank or empty", tests.isEmpty());
@@ -140,10 +62,10 @@ public class TestFrameworkTest {
         }
     }
 
-    @Theory
-    public void testGetTestsForClass(TestFramework testFramework) {
-        for (Class<?> testClass : getTestClasses(testFramework)) {
-            String[] expectedTests = getExpectedTests(testFramework, testClass).toArray(new String[0]);
+    @Test
+    public void testGetTestsForClass() {
+        for (Class<?> testClass : data.getTestClasses()) {
+            String[] expectedTests = data.getExpectedTests(testClass).toArray(new String[0]);
             String[] tests = testFramework.getTests(testClass).toArray(new String[0]);
             Arrays.sort(expectedTests);
             Arrays.sort(tests);
@@ -151,108 +73,48 @@ public class TestFrameworkTest {
         }
     }
 
-    @Theory()
-    public void testGetTestsForWrongClass(TestFramework testFramework) {
+    @Test
+    public void testGetTestsForWrongClass() {
         Class<?> aWrongClass = String.class; // must not be a valid test class for the framework
         Set<String> tests = testFramework.getTests(aWrongClass);
         assertNull("list of tests must be null for a wrong class", tests);
     }
 
-    @Theory
-    public void testRunTest(TestFramework testFramework) throws UnknownTestException {
+    @Test
+    public void testRunTest() throws UnknownTestException {
         for (String aTest : testFramework.getTests()) {
-            if (!mustFail(testFramework, aTest)) {
+            if (!data.mustFail(aTest)) {
                 boolean success = testFramework.runTest(aTest);
                 assertTrue("The test '" + aTest + "' must succeed", success);
             }
         }
     }
 
-    @Theory
-    public void testRunFailingTest(TestFramework testFramework) throws UnknownTestException {
+    @Test
+    public void testRunFailingTest() throws UnknownTestException {
         for (String aTest : testFramework.getTests()) {
-            if (mustFail(testFramework, aTest)) {
+            if (data.mustFail(aTest)) {
                 boolean success = testFramework.runTest(aTest);
                 assertFalse("The test '" + aTest + "' must fail", success);
             }
         }
     }
 
-    @Theory
     @Test(expected=UnknownTestException.class)
-    public void testRunUnknownTest(TestFramework testFramework) throws UnknownTestException {
+    public void testRunUnknownTest() throws UnknownTestException {
         testFramework.runTest("AnUnknownTest");
     }
 
-    @RunWith(Parameterized.class)
-    public static class ParameterizedTestClass {
-
-        @Parameters
-        public static Collection<Object[]> data() {
-                return Arrays.asList(new Object[][]{{1L}, {1L}});
-        }
-
-        private long param;
-
-        public ParameterizedTestClass(long param) {
-            this.param = param;
-        }
-
-        @Test
-        public void aTest() {
-
-        }
-
-        @Test
-        public void aFailingTest() {
-            Assert.fail("a failure");
-        }
+    protected final void addSucceedingTest(Class<?> testClass, String method) throws Exception {
+        addTest(testClass, true, method);
     }
 
-    public static class TestClass {
-        @Test
-        public void aTest() {
-
-        }
-
-        @Test
-        public void aFailingTest() {
-            Assert.fail("a failure");
-        }
+    protected final void addFailingTest(Class<?> testClass, String method) throws Exception {
+        addTest(testClass, false, method);
     }
 
-    public static class JUnit3TestClassTest extends TestCase {
-        public JUnit3TestClassTest() {
-            super();
-        }
-
-        public void testThatWorks() {
-
-        }
-
-        public void testThatFails() {
-            Assert.fail("a failure");
-        }
-    }
-
-    //TODO add TestSuite and "static TestSuite suite()" to JUnit tests
-    public static class TestSuiteClass extends TestSuite {
-    }
-
-    public static class MauveTestClass implements Testlet {
-
-        @Override
-        public void test(TestHarness harness) {
-            harness.check(true, true);
-        }
-    }
-
-    public static class MauveFailingTestClass implements Testlet {
-
-        @Override
-        public void test(TestHarness harness) {
-            harness.check(true, false); // will fail
-        }
+    private void addTest(Class<?> testClass, boolean succeed, String method) throws Exception {
+        data.addTest(testClass, succeed, method);
     }
 
     private static class TestFrameworkData {

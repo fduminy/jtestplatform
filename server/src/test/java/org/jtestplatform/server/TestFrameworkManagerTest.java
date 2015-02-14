@@ -32,10 +32,6 @@ import static org.mockito.Mockito.when;
 
 
 /**
- *
- */
-
-/**
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
  */

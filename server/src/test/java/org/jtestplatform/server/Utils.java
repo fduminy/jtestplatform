@@ -28,10 +28,6 @@ import org.hamcrest.Matcher;
 import java.util.Collection;
 
 /**
- *
- */
-
-/**
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
  */
