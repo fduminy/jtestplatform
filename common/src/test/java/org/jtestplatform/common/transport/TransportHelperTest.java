@@ -22,11 +22,15 @@
 package org.jtestplatform.common.transport;
 
 import org.apache.commons.lang3.mutable.MutableObject;
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
 import org.jtestplatform.common.message.*;
 import org.jtestplatform.common.message.Shutdown;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 import org.reflections.Reflections;
@@ -34,8 +38,10 @@ import org.reflections.Reflections;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeFalse;
 import static org.mockito.Mockito.*;
 
 
@@ -45,6 +51,8 @@ import static org.mockito.Mockito.*;
  */
 @RunWith(Theories.class)
 public class TransportHelperTest {
+    @Rule
+    public final ExpectedException thrown = ExpectedException.none();
 
     @Theory
     public void testSend(MessageData data) throws TransportException, InstantiationException, IllegalAccessException {
@@ -75,9 +83,54 @@ public class TransportHelperTest {
         assertThat(message).isExactlyInstanceOf(data.messageClass);
     }
 
+    @Test
+    public void testReceive_ErrorMessage() throws Exception {
+        // prepare
+        final String expectedErrorMessage = "errorMessage";
+        thrown.expect(TransportException.class);
+        thrown.expect(new BaseMatcher<Throwable>() {
+            private final String exceptionMessage = "Received Error : " + expectedErrorMessage;
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("a TransportException with ErrorMessage(" + exceptionMessage + ")");
+            }
+
+            @Override
+            public boolean matches(Object item) {
+                if (!(item instanceof TransportException)) {
+                    return false;
+                }
+
+                TransportException exception = (TransportException) item;
+                if (!equalTo(exceptionMessage).matches(exception.getMessage())) {
+                    return false;
+                }
+                ErrorMessage errorMessage = exception.getErrorMessage();
+                return (errorMessage != null) && equalTo(expectedErrorMessage).matches(errorMessage.getMessage());
+            }
+        });
+
+        final MutableObject<Message> messageWrapper = new MutableObject<Message>();
+        Transport transport = mock(Transport.class);
+        when(transport.receive()).thenReturn(ErrorMessage.class.getName(), expectedErrorMessage);
+        TransportHelper helper = new TransportHelper() {
+            @Override
+            Message createMessage(Class<? extends Message> clazz) throws InstantiationException, IllegalAccessException {
+                Message message = spy(super.createMessage(clazz));
+                messageWrapper.setValue(message);
+                return message;
+            }
+        };
+
+        // test
+        helper.receive(transport);
+    }
+
     @Theory
     public void testReceive(MessageData data) throws Exception {
         // prepare
+        assumeFalse(ErrorMessage.class.isAssignableFrom(data.messageClass));
         final MutableObject<Message> messageWrapper = new MutableObject<Message>();
         Transport transport = mock(Transport.class);
         when(transport.receive()).thenReturn(data.messageClass.getName(), data.expectedParts);
@@ -176,6 +229,12 @@ public class TransportHelperTest {
             @Override
             Message createMessage() {
                 return new FrameworkTests(Arrays.asList(expectedParts).subList(1, expectedParts.length));
+            }
+        },
+        ERRORMESSAGE(ErrorMessage.class, "errorMessage") {
+            @Override
+            Message createMessage() {
+                return new ErrorMessage(expectedParts[0]);
             }
         };
 

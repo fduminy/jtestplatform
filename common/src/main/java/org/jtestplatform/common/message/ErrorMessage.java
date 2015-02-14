@@ -19,34 +19,48 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
  * USA.
  */
-package org.jtestplatform.common.transport;
+/**
+ *
+ */
+package org.jtestplatform.common.message;
 
-import org.jtestplatform.common.message.ErrorMessage;
+import org.jtestplatform.common.transport.Transport;
+import org.jtestplatform.common.transport.TransportException;
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)
- *
  */
-@SuppressWarnings("serial")
-public class TransportException extends Exception {
-    private final ErrorMessage errorMessage;
+public class ErrorMessage implements Message {
+    private String message;
 
-    public TransportException(String message, Throwable cause) {
-        super(message, cause);
-        this.errorMessage = null;
+    public ErrorMessage() {
+        // nothing
     }
 
-    public TransportException(String message) {
-        super(message);
-        this.errorMessage = null;
+    public ErrorMessage(String message) {
+        this.message = message;
     }
 
-    public TransportException(ErrorMessage errorMessage) {
-        super("Received Error : " + errorMessage.getMessage());
-        this.errorMessage = errorMessage;
+    /**
+     * @return the framework
+     */
+    public String getMessage() {
+        return message;
     }
 
-    public ErrorMessage getErrorMessage() {
-        return errorMessage;
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void sendWith(Transport transport) throws TransportException {
+        transport.send(message);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void receiveFrom(Transport transport) throws TransportException {
+        message = transport.receive();
     }
 }

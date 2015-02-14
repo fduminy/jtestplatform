@@ -21,6 +21,7 @@
  */
 package org.jtestplatform.common.transport;
 
+import org.jtestplatform.common.message.ErrorMessage;
 import org.jtestplatform.common.message.GetTestFrameworks;
 import org.jtestplatform.common.message.Message;
 import org.jtestplatform.common.message.Shutdown;
@@ -52,6 +53,9 @@ public class TransportHelper {
             Message message = createMessage(clazz);
 
             message.receiveFrom(transport);
+            if (message instanceof ErrorMessage) {
+                throw new TransportException((ErrorMessage) message);
+            }
             return message;
         } catch (ClassNotFoundException e) {
             throw new TransportException("can't find message of type " + className, e);
