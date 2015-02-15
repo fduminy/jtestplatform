@@ -109,15 +109,31 @@ public class TestServer {
         TestServerCommand command = messageClassToCommand.get(message.getClass());
 
         if (command != null) {
+            Message result = null;
             try {
-                Message result = command.execute(message);
-                if (result != null) {
-                    transportManager.send(transport, result);
-                }
-            } catch (Throwable t) {
-                LOGGER.error("error in command", t);
+                result = command.execute(message);
+            } catch (Exception e) {
+                handleError(transport, "Error in " + command.getClass().getSimpleName() + " : " + e.getMessage(), e);
             }
+            if (result != null) {
+                try {
+                    transportManager.send(transport, result);
+                } catch (TransportException e) {
+                    LOGGER.error(e.getMessage(), e);
+                }
+            }
+        } else {
+            handleError(transport, "No command for message : " + message.getClass().getName(), null);
         }
+    }
+
+    private void handleError(Transport transport, String message, Exception e) throws TransportException {
+        if (e == null) {
+            LOGGER.error(message);
+        } else {
+            LOGGER.error(message, e);
+        }
+        transportManager.send(transport, new ErrorMessage(message));
     }
 
     private void shutdown() {

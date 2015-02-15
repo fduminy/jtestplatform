@@ -21,10 +21,12 @@
  */
 package org.jtestplatform.server;
 
+import org.jtestplatform.common.message.ErrorMessage;
 import org.jtestplatform.common.message.Message;
 import org.jtestplatform.common.transport.Transport;
 import org.jtestplatform.common.transport.TransportException;
 import org.jtestplatform.common.transport.TransportFactory;
+import org.junit.Test;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
@@ -35,6 +37,64 @@ import static org.mockito.Mockito.*;
 
 @RunWith(Theories.class)
 public class TestServerTest {
+    @Test
+    public void testProcessCommand_noCommandForMessage() throws Exception {
+        // prepare
+        Transport transport = mock(Transport.class);
+        when(transport.receive()).thenReturn(MockMessage.class.getName());
+        TestServer testServer = new TestServer(mock(TransportFactory.class));
+
+        // test
+        testServer.processCommand(transport);
+
+        // verify
+        verifySentErrorMessage(transport, "No command for message : " + MockMessage.class.getName());
+    }
+
+    @Test
+    public void testProcessCommand_errorInSendReply() throws Exception {
+        // prepare
+        Transport transport = mock(Transport.class);
+        when(transport.receive()).thenReturn(MockMessage.class.getName());
+        doThrow(new TransportException("error")).when(transport).send(any(String.class));
+        TestServer testServer = new TestServer(mock(TransportFactory.class));
+        MockCommand command = new MockCommand(null, new MockMessage("message"));
+        testServer.addCommand(MockMessage.class, command);
+
+        // test
+        testServer.processCommand(transport);
+
+        // verify
+        verify(transport, times(1)).receive();
+        verify(transport, times(1)).send(eq(command.expectedAnswer.getClass().getName()));
+        verifyNoMoreInteractions(transport);
+    }
+
+    @Test
+    public void testProcessCommand_errorInCommand() throws Exception {
+        // prepare
+        Transport transport = mock(Transport.class);
+        when(transport.receive()).thenReturn(MockMessage.class.getName());
+
+        TestServer testServer = new TestServer(mock(TransportFactory.class));
+        MockCommand command = new MockCommand("Something wrong append in the command", null);
+        testServer.addCommand(MockMessage.class, command);
+
+        // test
+        testServer.processCommand(transport);
+
+        // verify
+        verifySentErrorMessage(transport, "Error in " + command.getClass().getSimpleName() + " : " + command.expectedError);
+    }
+
+    private void verifySentErrorMessage(Transport transport, String errorMessage) throws TransportException {
+        verify(transport, times(1)).receive();
+        ArgumentCaptor<String> sentMessages = ArgumentCaptor.forClass(String.class);
+        verify(transport, times(2)).send(sentMessages.capture());
+        assertThat(sentMessages.getAllValues()).containsExactly(ErrorMessage.class.getName(), errorMessage);
+        verifyNoMoreInteractions(transport);
+    }
+
     @Theory
     public void testProcessCommand(boolean nullResult) throws Exception {
         // prepare
@@ -44,7 +104,7 @@ public class TestServerTest {
         TestServer testServer = new TestServer(mock(TransportFactory.class));
         String expectedMessage = "expectedMessage";
         MockMessage expectedAnswer = nullResult ? null : spy(new MockMessage(expectedMessage));
-        MockCommand command = spy(new MockCommand(expectedAnswer));
+        MockCommand command = spy(new MockCommand(null, expectedAnswer));
         testServer.addCommand(MockMessage.class, command);
 
         // test
@@ -61,7 +121,6 @@ public class TestServerTest {
         verify(transport, times(1)).receive();
         verify(command, times(1)).execute(any(MockMessage.class));
         verifyNoMoreInteractions(transport, command);
-
     }
 
     public static class MockMessage implements Message {
@@ -87,13 +146,18 @@ public class TestServerTest {
 
     public static class MockCommand implements TestServerCommand<MockMessage, MockMessage> {
         private final MockMessage expectedAnswer;
+        private final String expectedError;
 
-        public MockCommand(MockMessage expectedAnswer) {
+        public MockCommand(String expectedError, MockMessage expectedAnswer) {
+            this.expectedError = expectedError;
             this.expectedAnswer = expectedAnswer;
         }
 
         @Override
         public MockMessage execute(MockMessage message) throws Exception {
+            if (expectedError != null) {
+                throw new Exception(expectedError);
+            }
             return expectedAnswer;
         }
     }
