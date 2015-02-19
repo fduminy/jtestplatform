@@ -41,6 +41,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.util.Collections.synchronizedList;
 import static org.jtestplatform.cloud.domain.Utils.generateStringList;
+import static org.jtestplatform.common.transport.Utils.verifyEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -165,12 +166,5 @@ public class MultiThreadLoadBalancerTest {
             String errors = verifyEquals("remove", "size", 0, loadBalancer.size());
             assertTrue("Thread safety test has failed : " + errors, errors == null);
         }
-    }
-
-    private static String verifyEquals(String method, String valueName, int expectedValue, int actualValue) {
-        if (expectedValue != actualValue) {
-            return "\t - " + method + " : " + valueName + " should be " + expectedValue + " but is actually " + actualValue + '\n';
-        }
-        return null;
     }
 }

@@ -92,6 +92,13 @@
             <artifactId>commons-lang3</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>jtestplatform</groupId>
+            <artifactId>jtestplatform-common</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 	
     <build>

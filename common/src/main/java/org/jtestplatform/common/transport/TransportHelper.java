@@ -41,11 +41,14 @@ public class TransportHelper {
     static final String FALSE = "0";
 
     public void send(Transport transport, Message message) throws TransportException {
-        transport.send(message.getClass().getName());
-        message.sendWith(transport);
+        synchronized (transport) {
+            transport.send(message.getClass().getName());
+            message.sendWith(transport);
+        }
     }
 
     public Message receive(Transport transport) throws TransportException {
+//        synchronized (transport) {
         String className = transport.receive();
 
         try {
@@ -66,6 +69,7 @@ public class TransportHelper {
         } catch (ClassCastException cce) {
             throw new TransportException(className + " is not a message type", cce);
         }
+//        }
     }
 
     /**
