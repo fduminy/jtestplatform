@@ -88,6 +88,16 @@ public class TestDriverTest {
         assertThat(requestConsumer).isExactlyInstanceOf(RequestConsumer.class);
     }
 
+    @Test
+    public void testCreateTestReporter() throws Exception {
+        File reportDirectory = folder.newFolder();
+        TestDriver testDriver = new TestDriver();
+
+        TestReporter reporter = testDriver.createTestReporter(reportDirectory);
+
+        assertThat(reporter).isExactlyInstanceOf(JUnitTestReporter.class);
+    }
+
     @Test(timeout = 60000)
     public void testRunTests() throws Exception {
         // preparation
@@ -112,7 +122,8 @@ public class TestDriverTest {
                 return null;
             }
         }).when(requestConsumer).consume(any(TransportProvider.class), any(TestReporter.class));
-        MockTestDriver testDriver = new MockTestDriver(requests, requestProducer, requestConsumer);
+        TestReporter testReporter = mock(TestReporter.class);
+        MockTestDriver testDriver = new MockTestDriver(requests, requestProducer, requestConsumer, testReporter);
 
         // test
         testDriver.runTests(cloudConfigFile, reportDirectory);
@@ -120,10 +131,12 @@ public class TestDriverTest {
         // verifications
         ArgumentCaptor<DomainManager> domainManagerCaptor = ArgumentCaptor.forClass(DomainManager.class);
         ArgumentCaptor<DomainManager> domainManagerCaptor2 = ArgumentCaptor.forClass(DomainManager.class);
-        InOrder inOrder = inOrder(requests, requestProducer, requestConsumer);
+        InOrder inOrder = inOrder(requests, requestProducer, requestConsumer, testReporter);
         inOrder.verify(requestConsumer, times(1)).consume(domainManagerCaptor2.capture(), any(TestReporter.class));
         inOrder.verify(requestProducer, times(1)).produce(domainManagerCaptor.capture());
+        inOrder.verify(testReporter, times(1)).saveReport();
         inOrder.verifyNoMoreInteractions();
+
         assertThat(testDriver.getActualCloudConfigFile()).as("cloudConfigFile").isEqualTo(cloudConfigFile);
         Thread mainThread = Thread.currentThread();
         assertThat(requestConsumerThread.getValue()).as("requestConsumerThread").isNotNull().isNotEqualTo(mainThread);
@@ -145,12 +158,14 @@ public class TestDriverTest {
         private final BlockingQueue<Request> requests;
         private final RequestProducer requestProducer;
         private final RequestConsumer requestConsumer;
+        private final TestReporter testReporter;
         private File actualCloudConfigFile;
 
-        public MockTestDriver(BlockingQueue<Request> requests, RequestProducer requestProducer, RequestConsumer requestConsumer) {
+        public MockTestDriver(BlockingQueue<Request> requests, RequestProducer requestProducer, RequestConsumer requestConsumer, TestReporter testReporter) {
             this.requests = requests;
             this.requestProducer = requestProducer;
             this.requestConsumer = requestConsumer;
+            this.testReporter = testReporter;
         }
 
         @Override
@@ -166,6 +181,11 @@ public class TestDriverTest {
         @Override
         RequestConsumer createRequestConsumer(BlockingQueue<Request> requests) {
             return requestConsumer;
+        }
+
+        @Override
+        protected TestReporter createTestReporter(File reportDirectory) {
+            return testReporter;
         }
 
         @Override

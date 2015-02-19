@@ -46,7 +46,7 @@ public class TestDriver {
         RequestConsumer requestConsumer = createRequestConsumer(requests);
         RequestProducer requestProducer = createRequestProducer(requests);
         DomainManager domainManager = createDomainManager(cloudConfigFile);
-        final JUnitTestReporter reporter = new JUnitTestReporter(reportDirectory);
+        TestReporter reporter = createTestReporter(reportDirectory);
 
         Thread.UncaughtExceptionHandler handler = new Thread.UncaughtExceptionHandler() {
             @Override
@@ -62,11 +62,17 @@ public class TestDriver {
         producerExecutor.submit(new ProducerTask(requestProducer, domainManager));
 
         shutdown(4, TimeUnit.MINUTES, consumerExecutor, producerExecutor);
+
+        reporter.saveReport();
     }
 
     private ExecutorService newExecutor(String nameFormat, Thread.UncaughtExceptionHandler handler) {
         ThreadFactory consumerFactory = new ThreadFactoryBuilder().setNameFormat(nameFormat).setUncaughtExceptionHandler(handler).build();
         return Executors.newSingleThreadExecutor(consumerFactory);
+    }
+
+    TestReporter createTestReporter(File reportDirectory) {
+        return new JUnitTestReporter(reportDirectory);
     }
 
     protected DomainManager createDomainManager(File cloudConfigFile) throws FileNotFoundException, DomainException {
