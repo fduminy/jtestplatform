@@ -33,6 +33,7 @@ import org.junit.experimental.theories.Theory;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
+import org.mockito.Mockito;
 import org.reflections.Reflections;
 
 import java.util.*;
@@ -172,6 +173,105 @@ public class TransportHelperTest {
         Collections.sort(expectedClasses, CLASS_COMPARATOR);
 
         assertThat(actualClasses).containsExactly(expectedClasses.toArray(new Class[0]));
+    }
+
+    @Test
+    public void testReceiveInt() throws TransportException {
+        // prepare
+        Transport transport = mock(Transport.class);
+        when(transport.receive()).thenReturn("1");
+
+        // test
+        int actualValue = TransportHelper.receiveInt(transport);
+
+        // verify
+        assertThat(actualValue).isEqualTo(1);
+    }
+
+    @Test(expected = TransportException.class)
+    public void testReceiveInt_wrongValue() throws TransportException {
+        // prepare
+        Transport transport = mock(Transport.class);
+        when(transport.receive()).thenReturn("A");
+
+        // test
+        TransportHelper.receiveInt(transport);
+    }
+
+    @Test
+    public void testSendInt() throws TransportException {
+        // prepare
+        Transport transport = mock(Transport.class);
+
+        // test
+        TransportHelper.sendInt(transport, 1);
+
+        // verify
+        verify(transport, times(1)).send("1");
+    }
+
+    @Test
+    public void testReceiveList() throws TransportException {
+        // prepare
+        Transport transport = mock(Transport.class);
+        when(transport.receive()).thenReturn("1", "A");
+
+        // test
+        Collection<String> actualValue = TransportHelper.receiveList(transport);
+
+        // verify
+        assertThat(actualValue).isEqualTo(Arrays.asList("A"));
+    }
+
+    @Test
+    public void testSendList() throws TransportException {
+        // prepare
+        Transport transport = mock(Transport.class);
+        Collection<String> actualValue = Arrays.asList("A");
+
+        // test
+        TransportHelper.sendList(transport, actualValue);
+
+        // verify
+        InOrder inOrder = Mockito.inOrder(transport);
+        inOrder.verify(transport, times(1)).send("1");
+        inOrder.verify(transport, times(1)).send("A");
+        inOrder.verifyNoMoreInteractions();
+    }
+
+    @Theory
+    public void testReceiveBoolean(boolean expectedValue) throws TransportException {
+        // prepare
+        Transport transport = mock(Transport.class);
+        when(transport.receive()).thenReturn(expectedValue ? TransportHelper.TRUE : TransportHelper.FALSE);
+
+        // test
+        boolean actualValue = TransportHelper.receiveBoolean(transport);
+
+        // verify
+        assertThat(actualValue).isEqualTo(expectedValue);
+    }
+
+    @Test(expected = TransportException.class)
+    public void testReceiveBoolean_wrongValue() throws TransportException {
+        // prepare
+        Transport transport = mock(Transport.class);
+        when(transport.receive()).thenReturn("A");
+
+        // test
+        TransportHelper.receiveBoolean(transport);
+    }
+
+    @Theory
+    public void testSendBoolean(boolean expectedValue) throws TransportException {
+        // prepare
+        Transport transport = mock(Transport.class);
+
+        // test
+        TransportHelper.sendBoolean(transport, expectedValue);
+
+        // verify
+        verify(transport, times(1)).send(expectedValue ? TransportHelper.TRUE : TransportHelper.FALSE);
     }
 
     private static final Comparator<Class<?>> CLASS_COMPARATOR = new Comparator<Class<?>>() {

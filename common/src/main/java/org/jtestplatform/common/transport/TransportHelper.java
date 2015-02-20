@@ -90,8 +90,21 @@ public class TransportHelper {
         return clazz.newInstance();
     }
 
+    public static int receiveInt(Transport transport) throws TransportException {
+        String value = transport.receive();
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException nfe) {
+            throw new TransportException("Invalid integer : " + value, nfe);
+        }
+    }
+
+    public static void sendInt(Transport transport, int value) throws TransportException {
+        transport.send(Integer.toString(value));
+    }
+
     public static Collection<String> receiveList(Transport transport) throws TransportException {
-        int nbFrameworks = Integer.parseInt(transport.receive());
+        int nbFrameworks = receiveInt(transport);
         List<String> frameworks = new ArrayList<String>(nbFrameworks);
         for (int i = 0; i < nbFrameworks; i++) {
             frameworks.add(transport.receive());
@@ -100,14 +113,22 @@ public class TransportHelper {
     }
 
     public static void sendList(Transport transport, Collection<String> items) throws TransportException {
-        transport.send(Integer.toString(items.size()));
+        sendInt(transport, items.size());
         for (String item : items) {
             transport.send(item);
         }
     }
 
     public static boolean receiveBoolean(Transport transport) throws TransportException {
-        return TRUE.equals(transport.receive());
+        String value = transport.receive();
+        if (TRUE.equals(value)) {
+            return true;
+        } else if (FALSE.equals(value)) {
+            return false;
+        }
+
+        value = (value == null) ? "null" : ("\"" + value + "\"");
+        throw new TransportException(value + " doesn't represent a boolean");
     }
 
     public static void sendBoolean(Transport transport, boolean value) throws TransportException {
