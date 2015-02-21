@@ -25,25 +25,15 @@ import com.google.code.tempusfugit.concurrency.ConcurrentRule;
 import com.google.code.tempusfugit.concurrency.RepeatingRule;
 import com.google.code.tempusfugit.concurrency.annotations.Concurrent;
 import com.google.code.tempusfugit.concurrency.annotations.Repeating;
+import org.jtestplatform.common.message.Message;
 import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Vector;
-
-import static java.lang.Math.min;
-import static java.util.Arrays.deepEquals;
-import static org.jtestplatform.common.transport.Utils.verifyEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
+import static org.jtestplatform.common.transport.TransportHelperSpy.NB_REPEATS;
+import static org.jtestplatform.common.transport.TransportHelperSpy.NB_THREADS;
 
 
 /**
@@ -51,143 +41,56 @@ import static org.mockito.Mockito.mock;
  */
 @RunWith(Enclosed.class)
 public class MultiThreadTransportHelperTest {
-    private static final int NB_THREADS = 100;
-    private static final int NB_REPEATS = 10;
-    private static final int NB_CALLS = NB_REPEATS * NB_THREADS;
-
     public static class SendMethodTest {
-        private static final TransportHelper HELPER = new TransportHelper();
-
-        private static final Vector<String> EXPECTED_MESSAGE_PARTS = new Vector<String>();
-        private static final Transport TRANSPORT = mock(Transport.class);
-        private static final ArgumentCaptor<String> MESSAGE_PARTS = ArgumentCaptor.forClass(String.class);
+        private static final TransportHelperSpy HELPER = new TransportHelperSpy("send") {
+            @Override
+            void sendImpl(Transport transport, Message message) throws TransportException {
+                spyMethodCall();
+            }
+        };
 
         @Rule
         public final ConcurrentRule concurrentRule = new ConcurrentRule();
         @Rule
         public final RepeatingRule repeatingRule = new RepeatingRule();
-
-        @BeforeClass
-        public static void beforeClass() throws TransportException {
-            EXPECTED_MESSAGE_PARTS.clear();
-            Mockito.reset(TRANSPORT);
-            doNothing().when(TRANSPORT).send(MESSAGE_PARTS.capture());
-        }
 
         @Test
         @Concurrent(count = NB_THREADS)
         @Repeating(repetition = NB_REPEATS)
         public void testSend() throws TransportException {
-            MockMessage message = new MockMessage();
-            EXPECTED_MESSAGE_PARTS.addAll(message.getMessageParts());
-            HELPER.send(TRANSPORT, message);
+            HELPER.send(HELPER.transport, new MockMessage());
         }
 
         @AfterClass
         public static void afterClass() {
-            List<String> actualMessageParts = new ArrayList<String>(MESSAGE_PARTS.getAllValues());
-            String errors = verifyEquals("send", "size", NB_CALLS * (1 + MockMessage.PART_COUNT), actualMessageParts.size());
-            if (errors == null) {
-                while (!actualMessageParts.isEmpty()) {
-                    List<String> actualParts = actualMessageParts.subList(0, MockMessage.PART_COUNT);
-
-                    String messagePart = actualParts.get(1); // skip message class name (at index 0)
-                    int index = EXPECTED_MESSAGE_PARTS.indexOf(messagePart);
-                    index = (index > 0) ? (index - 1) : -1; // compute message class name index
-                    if (index < 0) {
-                        errors = "message part not found : " + messagePart;
-                        break;
-                    }
-                    List<String> expectedParts = EXPECTED_MESSAGE_PARTS.subList(index, min(index + MockMessage.PART_COUNT, EXPECTED_MESSAGE_PARTS.size()));
-
-                    if (!deepEquals(actualParts.toArray(), expectedParts.toArray())) {
-                        errors = "message parts in wrong order";
-                        break;
-                    }
-
-                    actualMessageParts = actualMessageParts.subList(1 + MockMessage.PART_COUNT, actualMessageParts.size());
-                }
-            }
-            assertTrue("Thread safety test has failed : " + errors, errors == null);
+            HELPER.verifyThreadSafety();
         }
-
     }
 
-/*
     public static class ReceiveMethodTest {
-        private static final Logger LOGGER = LoggerFactory.getLogger(ReceiveMethodTest.class);
-        private static final TransportHelper HELPER = new TransportHelper() {
+        private static final TransportHelperSpy HELPER = new TransportHelperSpy("receive") {
             @Override
-            Class<? extends Message> receiveMessageClass(Transport transport) throws TransportException, ClassNotFoundException {
-                return MockMessage.class;
+            Message receiveImpl(Transport transport) throws TransportException {
+                spyMethodCall();
+                return null;
             }
         };
-
-        private static final Vector<String> EXPECTED_MESSAGE_PARTS = new Vector<String>();
-        private static final AtomicInteger PARTS_INDEX = new AtomicInteger(0);
-        private static final Transport TRANSPORT = mock(Transport.class);
-        private static final Vector<String> ACTUAL_MESSAGE_PARTS = new Vector<String>();
 
         @Rule
         public final ConcurrentRule concurrentRule = new ConcurrentRule();
         @Rule
         public final RepeatingRule repeatingRule = new RepeatingRule();
 
-        @BeforeClass
-        public static void beforeClass() throws TransportException {
-            EXPECTED_MESSAGE_PARTS.clear();
-            Mockito.reset(TRANSPORT);
-            PARTS_INDEX.set(0);
-
-            for (int i = 0; i < NB_CALLS; i++) {
-                MockMessage message = new MockMessage();
-                EXPECTED_MESSAGE_PARTS.addAll(message.getMessageParts());
-            }
-            when(TRANSPORT.receive()).thenAnswer(new Answer<String>() {
-                @Override
-                public String answer(InvocationOnMock invocationOnMock) throws Throwable {
-                    final String messagePart = EXPECTED_MESSAGE_PARTS.get(PARTS_INDEX.getAndIncrement());
-                    LOGGER.debug(messagePart);
-                    return messagePart;
-                }
-            });
-        }
-
         @Test
         @Concurrent(count = NB_THREADS)
         @Repeating(repetition = NB_REPEATS)
         public void testReceive() throws TransportException {
-            MockMessage message = (MockMessage)HELPER.receive(TRANSPORT);
-            ACTUAL_MESSAGE_PARTS.addAll(message.getMessageParts());
+            HELPER.receive(HELPER.transport);
         }
 
         @AfterClass
         public static void afterClass() {
-            List<String> actualMessageParts = ACTUAL_MESSAGE_PARTS;
-            String errors = verifyEquals("receive", "size", NB_CALLS * (1 + MockMessage.PART_COUNT), actualMessageParts.size());
-            if (errors == null) {
-                while (!actualMessageParts.isEmpty()) {
-                    List<String> actualParts = actualMessageParts.subList(0, MockMessage.PART_COUNT);
-
-                    String messagePart = actualParts.get(1); // skip message class name (at index 0)
-                    int index = EXPECTED_MESSAGE_PARTS.indexOf(messagePart);
-                    index = (index > 0) ? (index - 1) : -1; // compute message class name index
-                    if (index < 0) {
-                        errors = "message part not found : " + messagePart;
-                        break;
-                    }
-                    List<String> expectedParts = EXPECTED_MESSAGE_PARTS.subList(index, min(index + MockMessage.PART_COUNT, EXPECTED_MESSAGE_PARTS.size()));
-
-                    if (!deepEquals(actualParts.toArray(), expectedParts.toArray())) {
-                        errors = "message parts in wrong order";
-                        break;
-                    }
-
-                    actualMessageParts = actualMessageParts.subList(1 + MockMessage.PART_COUNT, actualMessageParts.size());
-                }
-            }
-            assertTrue("Thread safety test has failed : " + errors, errors == null);
+            HELPER.verifyThreadSafety();
         }
     }
-*/
 }

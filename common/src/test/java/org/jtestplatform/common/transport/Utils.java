@@ -21,11 +21,17 @@
  */
 package org.jtestplatform.common.transport;
 
+import java.util.Collection;
+
 public class Utils {
-    public static String verifyEquals(String method, String valueName, int expectedValue, int actualValue) {
+    public static String verifyEquals(String method, String valueName, long expectedValue, long actualValue) {
         if (expectedValue != actualValue) {
             return "\t - " + method + " : " + valueName + " should be " + expectedValue + " but is actually " + actualValue + '\n';
         }
         return null;
+    }
+
+    public static String[] array(Collection<String> elements) {
+        return elements.toArray(new String[elements.size()]);
     }
 }

@@ -42,13 +42,22 @@ public class TransportHelper {
 
     public void send(Transport transport, Message message) throws TransportException {
         synchronized (transport) {
-            transport.send(message.getClass().getName());
-            message.sendWith(transport);
+            sendImpl(transport, message);
         }
     }
 
+    void sendImpl(Transport transport, Message message) throws TransportException {
+        transport.send(message.getClass().getName());
+        message.sendWith(transport);
+    }
+
     public Message receive(Transport transport) throws TransportException {
-//        synchronized (transport) {
+        synchronized (transport) {
+            return receiveImpl(transport);
+        }
+    }
+
+    Message receiveImpl(Transport transport) throws TransportException {
         String className = transport.receive();
 
         try {
@@ -69,7 +78,6 @@ public class TransportHelper {
         } catch (ClassCastException cce) {
             throw new TransportException(className + " is not a message type", cce);
         }
-//        }
     }
 
     /**

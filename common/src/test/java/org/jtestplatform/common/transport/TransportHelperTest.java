@@ -38,6 +38,7 @@ import org.reflections.Reflections;
 
 import java.util.*;
 
+import static java.lang.Boolean.TRUE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
@@ -60,12 +61,20 @@ public class TransportHelperTest {
         // prepare
         Message message = spy(data.createMessage());
         Transport transport = mock(Transport.class);
-        TransportHelper helper = new TransportHelper();
+        final MutableObject<Boolean> called = new MutableObject<Boolean>();
+        TransportHelper helper = new TransportHelper() {
+            @Override
+            void sendImpl(Transport transport, Message message) throws TransportException {
+                called.setValue(Boolean.TRUE);
+                super.sendImpl(transport, message);
+            }
+        };
 
         // test
         helper.send(transport, message);
 
         // verify
+        assertThat(called.getValue()).isEqualTo(TRUE);
         InOrder inOrder = inOrder(transport, message);
         inOrder.verify(transport, times(1)).send(eq(message.getClass().getName()));
         inOrder.verify(message, times(1)).sendWith(eq(transport));
@@ -135,7 +144,14 @@ public class TransportHelperTest {
         final MutableObject<Message> messageWrapper = new MutableObject<Message>();
         Transport transport = mock(Transport.class);
         when(transport.receive()).thenReturn(data.messageClass.getName(), data.expectedParts);
+        final MutableObject<Boolean> called = new MutableObject<Boolean>();
         TransportHelper helper = new TransportHelper() {
+            @Override
+            Message receiveImpl(Transport transport) throws TransportException {
+                called.setValue(Boolean.TRUE);
+                return super.receiveImpl(transport);
+            }
+
             @Override
             Message createMessage(Class<? extends Message> clazz) throws InstantiationException, IllegalAccessException {
                 Message message = spy(super.createMessage(clazz));
@@ -148,6 +164,7 @@ public class TransportHelperTest {
         Message actualMessage = helper.receive(transport);
 
         // verify
+        assertThat(called.getValue()).isEqualTo(TRUE);
         assertNotNull(actualMessage);
         Message message = messageWrapper.getValue();
         assertEquals(message.getClass(), actualMessage.getClass());
