@@ -56,15 +56,54 @@ public class TransportHelperTest {
     @Rule
     public final ExpectedException thrown = ExpectedException.none();
 
+    @Test
+    public void testSendRequest() throws TransportException {
+        // prepare
+        MessageData requestData = MessageData.GETTESTFRAMEWORKS;
+        MessageData answerData = MessageData.TESTFRAMEWORKS;
+        final Message requestMessage = spy(requestData.createMessage());
+        final Message answerMessage = spy(answerData.createMessage());
+        Transport transport = mock(Transport.class);
+        when(transport.receive()).thenReturn(answerData.messageClass.getName(), answerData.expectedParts);
+        final MutableObject<Boolean> sendImplCalled = new MutableObject<Boolean>(Boolean.FALSE);
+        final MutableObject<Boolean> receiveImplCalled = new MutableObject<Boolean>(Boolean.FALSE);
+        TransportHelper helper = new TransportHelper() {
+            @Override
+            protected void sendImpl(Transport transport, Message message) throws TransportException {
+                sendImplCalled.setValue(Boolean.TRUE);
+                super.sendImpl(transport, message);
+            }
+
+            @Override
+            protected Message receiveImpl(Transport transport) throws TransportException {
+                receiveImplCalled.setValue(Boolean.TRUE);
+                return super.receiveImpl(transport);
+            }
+
+            @Override
+            Message createMessage(Class<? extends Message> clazz) throws InstantiationException, IllegalAccessException {
+                return answerMessage;
+            }
+        };
+
+        // test
+        Message actualAnswerMessage = helper.sendRequest(transport, requestMessage);
+
+        // verify
+        assertThat(sendImplCalled.getValue()).as("sendImpl called").isEqualTo(TRUE);
+        assertThat(receiveImplCalled.getValue()).as("receiveImpl called").isEqualTo(TRUE);
+        assertThat(actualAnswerMessage).as("actual answer").isSameAs(answerMessage);
+    }
+
     @Theory
     public void testSend(MessageData data) throws TransportException, InstantiationException, IllegalAccessException {
         // prepare
         Message message = spy(data.createMessage());
         Transport transport = mock(Transport.class);
-        final MutableObject<Boolean> called = new MutableObject<Boolean>();
+        final MutableObject<Boolean> called = new MutableObject<Boolean>(Boolean.FALSE);
         TransportHelper helper = new TransportHelper() {
             @Override
-            void sendImpl(Transport transport, Message message) throws TransportException {
+            protected void sendImpl(Transport transport, Message message) throws TransportException {
                 called.setValue(Boolean.TRUE);
                 super.sendImpl(transport, message);
             }
@@ -74,7 +113,7 @@ public class TransportHelperTest {
         helper.send(transport, message);
 
         // verify
-        assertThat(called.getValue()).isEqualTo(TRUE);
+        assertThat(called.getValue()).as("sendImpl called").isEqualTo(TRUE);
         InOrder inOrder = inOrder(transport, message);
         inOrder.verify(transport, times(1)).send(eq(message.getClass().getName()));
         inOrder.verify(message, times(1)).sendWith(eq(transport));
@@ -144,10 +183,10 @@ public class TransportHelperTest {
         final MutableObject<Message> messageWrapper = new MutableObject<Message>();
         Transport transport = mock(Transport.class);
         when(transport.receive()).thenReturn(data.messageClass.getName(), data.expectedParts);
-        final MutableObject<Boolean> called = new MutableObject<Boolean>();
+        final MutableObject<Boolean> called = new MutableObject<Boolean>(Boolean.FALSE);
         TransportHelper helper = new TransportHelper() {
             @Override
-            Message receiveImpl(Transport transport) throws TransportException {
+            protected Message receiveImpl(Transport transport) throws TransportException {
                 called.setValue(Boolean.TRUE);
                 return super.receiveImpl(transport);
             }
@@ -164,7 +203,7 @@ public class TransportHelperTest {
         Message actualMessage = helper.receive(transport);
 
         // verify
-        assertThat(called.getValue()).isEqualTo(TRUE);
+        assertThat(called.getValue()).as("receiveImpl called").isEqualTo(TRUE);
         assertNotNull(actualMessage);
         Message message = messageWrapper.getValue();
         assertEquals(message.getClass(), actualMessage.getClass());

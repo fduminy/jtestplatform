@@ -29,6 +29,7 @@ import org.jtestplatform.common.message.GetFrameworkTests;
 import org.jtestplatform.common.message.GetTestFrameworks;
 import org.jtestplatform.common.message.TestFrameworks;
 import org.jtestplatform.common.transport.Transport;
+import org.jtestplatform.common.transport.TransportException;
 import org.jtestplatform.common.transport.TransportHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,12 +62,10 @@ public class RequestProducer {
                 Transport transport = transportProvider.get(platform);
 
                 //TODO we assume that all frameworks are available on each server. check it ?
-                transportHelper.send(transport, GetTestFrameworks.INSTANCE);
-                TestFrameworks testFrameworks = (TestFrameworks) transportHelper.receive(transport);
+                TestFrameworks testFrameworks = (TestFrameworks) transportHelper.sendRequest(transport, GetTestFrameworks.INSTANCE);
 
                 for (String testFramework : testFrameworks.getFrameworks()) {
-                    transportHelper.send(transport, new GetFrameworkTests(testFramework));
-                    FrameworkTests tests = (FrameworkTests) transportHelper.receive(transport);
+                    FrameworkTests tests = getFrameworkTests(transportHelper, transport, testFramework);
                     for (String test : tests.getTests()) {
                         final Request request = new Request(platform, testFramework, test);
                         LOGGER.info("producing {}", request);
@@ -81,6 +80,11 @@ public class RequestProducer {
             requests.put(Request.END);
             LOGGER.info("FINISHED");
         }
+    }
+
+    private FrameworkTests getFrameworkTests(TransportHelper transportHelper, Transport transport, String testFramework) throws TransportException {
+        final GetFrameworkTests requestMessage = new GetFrameworkTests(testFramework);
+        return (FrameworkTests) transportHelper.sendRequest(transport, requestMessage);
     }
 
     TransportHelper createTransportHelper() {

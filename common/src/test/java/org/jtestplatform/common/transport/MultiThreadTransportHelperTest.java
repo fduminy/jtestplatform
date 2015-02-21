@@ -41,10 +41,37 @@ import static org.jtestplatform.common.transport.TransportHelperSpy.NB_THREADS;
  */
 @RunWith(Enclosed.class)
 public class MultiThreadTransportHelperTest {
+    public static class SendRequestMethodTest {
+        private static final TransportHelperSpy HELPER = new TransportHelperSpy("sendRequest") {
+            @Override
+            Message sendRequestImpl(Transport transport, Message message) throws TransportException {
+                spyMethodCall();
+                return null;
+            }
+        };
+
+        @Rule
+        public final ConcurrentRule concurrentRule = new ConcurrentRule();
+        @Rule
+        public final RepeatingRule repeatingRule = new RepeatingRule();
+
+        @Test
+        @Concurrent(count = NB_THREADS)
+        @Repeating(repetition = NB_REPEATS)
+        public void testSendRequest() throws TransportException {
+            HELPER.sendRequest(HELPER.transport, new MockMessage());
+        }
+
+        @AfterClass
+        public static void afterClass() {
+            HELPER.verifyThreadSafety();
+        }
+    }
+
     public static class SendMethodTest {
         private static final TransportHelperSpy HELPER = new TransportHelperSpy("send") {
             @Override
-            void sendImpl(Transport transport, Message message) throws TransportException {
+            protected void sendImpl(Transport transport, Message message) throws TransportException {
                 spyMethodCall();
             }
         };
@@ -70,7 +97,7 @@ public class MultiThreadTransportHelperTest {
     public static class ReceiveMethodTest {
         private static final TransportHelperSpy HELPER = new TransportHelperSpy("receive") {
             @Override
-            Message receiveImpl(Transport transport) throws TransportException {
+            protected Message receiveImpl(Transport transport) throws TransportException {
                 spyMethodCall();
                 return null;
             }

@@ -40,13 +40,24 @@ public class TransportHelper {
     static final String TRUE = "1";
     static final String FALSE = "0";
 
+    public Message sendRequest(Transport transport, Message message) throws TransportException {
+        synchronized (transport) {
+            return sendRequestImpl(transport, message);
+        }
+    }
+
+    Message sendRequestImpl(Transport transport, Message message) throws TransportException {
+        sendImpl(transport, message);
+        return receiveImpl(transport);
+    }
+
     public void send(Transport transport, Message message) throws TransportException {
         synchronized (transport) {
             sendImpl(transport, message);
         }
     }
 
-    void sendImpl(Transport transport, Message message) throws TransportException {
+    protected void sendImpl(Transport transport, Message message) throws TransportException {
         transport.send(message.getClass().getName());
         message.sendWith(transport);
     }
@@ -57,7 +68,7 @@ public class TransportHelper {
         }
     }
 
-    Message receiveImpl(Transport transport) throws TransportException {
+    protected Message receiveImpl(Transport transport) throws TransportException {
         String className = transport.receive();
 
         try {

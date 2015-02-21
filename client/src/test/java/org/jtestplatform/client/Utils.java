@@ -96,7 +96,7 @@ public class Utils {
         }
 
         @Override
-        public void send(Transport transport, Message message) throws TransportException {
+        protected void sendImpl(Transport transport, Message message) throws TransportException {
             LOGGER.info("BEGIN send(transport, {}): state={}", message.getClass().getSimpleName(), state);
             if (state != STATE.INIT) {
                 throw new IllegalStateException("illegal state: " + state);
@@ -126,7 +126,7 @@ public class Utils {
         }
 
         @Override
-        public Message receive(Transport transport) throws TransportException {
+        protected Message receiveImpl(Transport transport) throws TransportException {
             LOGGER.info("BEGIN receive(transport): state={}", state);
 
             if (receiveError != null) {

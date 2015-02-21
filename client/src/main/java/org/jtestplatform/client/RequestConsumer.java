@@ -26,6 +26,7 @@ import org.jtestplatform.cloud.configuration.Platform;
 import org.jtestplatform.common.message.RunTest;
 import org.jtestplatform.common.message.TestResult;
 import org.jtestplatform.common.transport.Transport;
+import org.jtestplatform.common.transport.TransportException;
 import org.jtestplatform.common.transport.TransportHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,12 +62,16 @@ public class RequestConsumer {
                 }
                 Platform platform = request.getPlatform();
                 Transport transport = transportProvider.get(platform);
-                transportHelper.send(transport, new RunTest(request.getTestFramework(), request.getTestName()));
-                TestResult testResult = (TestResult) transportHelper.receive(transport);
+                TestResult testResult = runTest(transportHelper, request, transport);
                 reporter.report(platform, testResult);
             }
         }
         LOGGER.info("FINISHED");
+    }
+
+    private TestResult runTest(TransportHelper transportHelper, Request request, Transport transport) throws TransportException {
+        RunTest requestMessage = new RunTest(request.getTestFramework(), request.getTestName());
+        return (TestResult) transportHelper.sendRequest(transport, requestMessage);
     }
 
     TransportHelper createTransportHelper() {
