@@ -46,6 +46,12 @@ public class JUnitTestFrameworkTest extends TestFrameworkTest<JUnitTestFramework
         addSucceedingTest(JUnit3TestClassTest.class, "testThatWorks");
     }
 
+    public static void addTestsTo(JUnitTestFramework testFramework) throws Exception {
+        testFramework.addTestClass(ParameterizedTestClass.class);
+        testFramework.addTestClass(TestClass.class);
+        testFramework.addTestClass(JUnit3TestClassTest.class);
+    }
+
     @RunWith(Parameterized.class)
     public static class ParameterizedTestClass {
 

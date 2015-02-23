@@ -35,6 +35,11 @@ public class MauveTestFrameworkTest extends TestFrameworkTest<MauveTestFramework
         addFailingTest(MauveFailingTestClass.class, null);
     }
 
+    public static void addTestsTo(MauveTestFramework testFramework) throws Exception {
+        testFramework.addTestClass(MauveTestClass.class);
+        testFramework.addTestClass(MauveFailingTestClass.class);
+    }
+
     public static class MauveTestClass implements Testlet {
 
         @Override
