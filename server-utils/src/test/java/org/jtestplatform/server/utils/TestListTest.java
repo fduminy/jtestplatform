@@ -32,7 +32,7 @@ import org.junit.Test;
  *
  */
 public class TestListTest {
-    //FIXME
+    //FIXME (use TestName class)
     @Ignore
     @Test
     public void testCollectTests() {
@@ -52,7 +52,7 @@ public class TestListTest {
 */
     }
 
-    //FIXME
+    //FIXME (use TestName class)
     @Test
     public void test() {
 /*

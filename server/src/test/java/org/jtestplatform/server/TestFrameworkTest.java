@@ -21,12 +21,12 @@
  */
 package org.jtestplatform.server;
 
+import org.jtestplatform.common.TestName;
 import org.junit.Test;
 
 import java.util.*;
 
 import static org.jtestplatform.server.Utils.contains;
-import static org.jtestplatform.server.Utils.makeTestName;
 import static org.junit.Assert.*;
 
 
@@ -161,7 +161,7 @@ abstract public class TestFrameworkTest<T extends TestFramework> {
         }
 
         public void addTest(Class<?> testClass, boolean succeed, String method) throws Exception {
-            String testName = makeTestName(testClass, method);
+            String testName = TestName.toString(testClass, method);
 
             framework.addTestClass(testClass);
 

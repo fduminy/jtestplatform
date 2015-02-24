@@ -24,6 +24,7 @@ package org.jtestplatform.server;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
+import org.jtestplatform.common.TestName;
 
 import java.util.Collection;
 
@@ -58,12 +59,8 @@ final class Utils {
         };
     }
 
-    public static String makeTestName(Class<?> testClass, String methodName) {
-        return testClass.getName() + ((methodName == null) ? "" : ("#" + methodName));
-    }
-
     public static Matcher<Collection<String>> contains(Class<?> testClass, String methodName) {
-        return contains(makeTestName(testClass, methodName));
+        return contains(TestName.toString(testClass, methodName));
     }
 
     public static Matcher<Collection<String>> contains(Class<?> testClass) {

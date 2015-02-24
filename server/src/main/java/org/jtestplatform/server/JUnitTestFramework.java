@@ -24,6 +24,7 @@
  */
 package org.jtestplatform.server;
 
+import org.jtestplatform.common.TestName;
 import org.junit.Test;
 import org.junit.experimental.theories.Theory;
 import org.junit.runner.Description;
@@ -60,7 +61,7 @@ public class JUnitTestFramework implements TestFramework {
         }
 
         for (String method : methods) {
-            tests.put(generateTestName(testClass, method), new TestData(testClass, method));
+            tests.put(TestName.toString(testClass, method), new TestData(testClass, method));
         }
     }
 
@@ -116,7 +117,7 @@ public class JUnitTestFramework implements TestFramework {
 
             @Override
             public String describe() {
-                return generateTestName(t.getTestClass(), t.getTestMethod());
+                return TestName.toString(t.getTestClass(), t.getTestMethod());
             }
 
             private String extractRealMethodName(Description d) {
@@ -144,7 +145,7 @@ public class JUnitTestFramework implements TestFramework {
         if (methods != null) {
             tests = new HashSet<String>(methods.size());
             for (String method : methods) {
-                tests.add(generateTestName(testClass, method));
+                tests.add(TestName.toString(testClass, method));
             }
         }
 
@@ -176,10 +177,6 @@ public class JUnitTestFramework implements TestFramework {
         }
 
         return methods.isEmpty() ? null : methods;
-    }
-
-    private String generateTestName(Class<?> testClass, String method) {
-        return testClass.getName() + '#' + method;
     }
 
     private static class TestData {
