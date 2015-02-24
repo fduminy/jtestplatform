@@ -22,6 +22,7 @@
 package org.jtestplatform.client;
 
 import org.jtestplatform.cloud.configuration.Platform;
+import org.jtestplatform.common.TestName;
 import org.jtestplatform.common.message.TestResult;
 import org.jtestplatform.junitxmlreport.*;
 
@@ -66,7 +67,9 @@ public class JUnitTestReporter implements TestReporter {
                 suites.getTestsuite().add(suite);
             }
             Testcase testCase = new Testcase();
-            testCase.setName(testResult.getTest());
+            TestName testName = TestName.parse(testResult.getTest());
+            testCase.setClassname(testName.getTestClass());
+            testCase.setName(testName.getMethodName());
             suite.getTestcase().add(testCase);
         }
     }

@@ -41,5 +41,6 @@
     <orderEntry type="library" scope="TEST" name="Maven: com.google.code.tempus-fugit:tempus-fugit:1.1" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.apache.commons:commons-lang3:3.3.2" level="project" />
     <orderEntry type="library" name="Maven: com.google.guava:guava:18.0" level="project" />
+    <orderEntry type="module" module-name="jtestplatform-common" production-on-test="" />
   </component>
 </module>

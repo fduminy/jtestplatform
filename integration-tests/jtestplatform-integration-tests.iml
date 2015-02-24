@@ -32,6 +32,7 @@
     <orderEntry type="library" scope="TEST" name="Maven: net.java.dev.jna:jna:3.5.0" level="project" />
     <orderEntry type="module" module-name="junit-xmlreport" scope="TEST" />
     <orderEntry type="library" scope="TEST" name="Maven: com.google.guava:guava:18.0" level="project" />
+    <orderEntry type="module" module-name="jtestplatform-common" scope="TEST" production-on-test="" />
     <orderEntry type="module" module-name="jtestplatform-client" scope="TEST" production-on-test="" />
     <orderEntry type="module" module-name="jtestplatform-server" scope="TEST" production-on-test="" />
     <orderEntry type="module" module-name="mauve" scope="TEST" />

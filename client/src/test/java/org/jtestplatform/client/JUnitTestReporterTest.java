@@ -22,6 +22,7 @@
 package org.jtestplatform.client;
 
 import org.jtestplatform.cloud.configuration.Platform;
+import org.jtestplatform.common.TestName;
 import org.jtestplatform.common.message.TestResult;
 import org.jtestplatform.junitxmlreport.*;
 import org.junit.Rule;
@@ -35,6 +36,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.jtestplatform.client.JUnitTestReporter.PLATFORM_PROPERTY_PREFIX;
+import static org.jtestplatform.common.transport.Utils.array;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
@@ -81,7 +83,7 @@ public class JUnitTestReporterTest {
         Testsuites suites = reporter.suites;
         assertThat(suites).as("created suites").isNotNull();
         assertThat(suites.getTestsuite()).as("number of suites").hasSize(1);
-        assertTestSuite(suites, Utils.PLATFORM1, testResult.getFramework(), testResult.getTest());
+        assertTestSuite(suites, Utils.PLATFORM1, testResult.getFramework(), TestName.parse(testResult.getTest()));
     }
 
     @Test
@@ -98,7 +100,8 @@ public class JUnitTestReporterTest {
         Testsuites suites = reporter.suites;
         assertThat(suites).as("created suites").isNotNull();
         assertThat(suites.getTestsuite()).as("number of suites").hasSize(1);
-        assertTestSuite(suites, Utils.PLATFORM1, testResult1.getFramework(), testResult1.getTest(), testResult2.getTest());
+        assertTestSuite(suites, Utils.PLATFORM1, testResult1.getFramework(), TestName.parse(testResult1.getTest()),
+                TestName.parse(testResult2.getTest()));
     }
 
     @Test
@@ -115,8 +118,8 @@ public class JUnitTestReporterTest {
         Testsuites suites = reporter.suites;
         assertThat(suites).as("created suites").isNotNull();
         assertThat(suites.getTestsuite()).as("number of suites").hasSize(2);
-        assertTestSuite(suites, Utils.PLATFORM1, testResult1.getFramework(), testResult1.getTest());
-        assertTestSuite(suites, Utils.PLATFORM2, testResult2.getFramework(), testResult2.getTest());
+        assertTestSuite(suites, Utils.PLATFORM1, testResult1.getFramework(), TestName.parse(testResult1.getTest()));
+        assertTestSuite(suites, Utils.PLATFORM2, testResult2.getFramework(), TestName.parse(testResult2.getTest()));
     }
 
     private void assertProperty(List<Property> actualProperties, int index, String propertyName, Object propertyValue) {
@@ -125,19 +128,30 @@ public class JUnitTestReporterTest {
         assertThat(property.getValue()).isEqualTo(String.valueOf(propertyValue));
     }
 
-    private void assertTestSuite(Testsuites suites, Platform platform, String framework, String... expectedTestCaseNames) {
+    private void assertTestSuite(Testsuites suites, Platform platform, String framework, TestName... expectedTestNames) {
         String suitePackageName = new PlatformKeyBuilder().buildKey(platform);
         String suiteName = suitePackageName + '.' + framework;
         Testsuite testSuite = findTestSuite(suites, suiteName);
         List<Property> expectedProperties = JUnitTestReporter.getPlatformProperties(platform);
-        List<String> testCaseNames = new ArrayList<String>(testSuite.getTestcase().size());
+
+        List<String> names = new ArrayList<String>(testSuite.getTestcase().size());
+        List<String> classNames = new ArrayList<String>(testSuite.getTestcase().size());
         for (Testcase testCase : testSuite.getTestcase()) {
-            testCaseNames.add(testCase.getName());
+            names.add(testCase.getName());
+            classNames.add(testCase.getClassname());
+        }
+
+        List<String> expectedNames = new ArrayList<String>(expectedTestNames.length);
+        List<String> expectedClassNames = new ArrayList<String>(expectedTestNames.length);
+        for (TestName testName : expectedTestNames) {
+            expectedNames.add(testName.getMethodName());
+            expectedClassNames.add(testName.getTestClass());
         }
 
         assertThat(testSuite.getPackage()).as("suite package name").isEqualTo(suitePackageName);
         assertThat(testSuite.getProperties().getProperty()).usingFieldByFieldElementComparator().containsExactly(expectedProperties.toArray(new Property[0]));
-        assertThat(testCaseNames).as("testCases for suite '" + suiteName + "'").containsExactly(expectedTestCaseNames);
+        assertThat(names).as("test names for suite '" + suiteName + "'").containsExactly(array(expectedNames));
+        assertThat(classNames).as("test class names for suite '" + suiteName + "'").containsExactly(array(expectedClassNames));
     }
 
     private Testsuite findTestSuite(Testsuites suites, String suiteName) {

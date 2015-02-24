@@ -8,8 +8,8 @@
             <property value="64" name="platform.wordSize"/>
             <property value="524288" name="platform.memory"/>
         </properties>
-        <testcase name="org.jtestplatform.server.MauveTestFrameworkTest$MauveTestClass"/>
-        <testcase name="org.jtestplatform.server.MauveTestFrameworkTest$MauveFailingTestClass"/>
+        <testcase classname="org.jtestplatform.server.MauveTestFrameworkTest$MauveTestClass"/>
+        <testcase classname="org.jtestplatform.server.MauveTestFrameworkTest$MauveFailingTestClass"/>
     </testsuite>
     <testsuite package="phenom_64bits_4cores" name="phenom_64bits_4cores.junit">
         <properties>
@@ -19,11 +19,12 @@
             <property value="64" name="platform.wordSize"/>
             <property value="524288" name="platform.memory"/>
         </properties>
-        <testcase name="org.jtestplatform.server.JUnitTestFrameworkTest$ParameterizedTestClass#aFailingTest"/>
-        <testcase name="org.jtestplatform.server.JUnitTestFrameworkTest$TestClass#aFailingTest"/>
-        <testcase name="org.jtestplatform.server.JUnitTestFrameworkTest$TestClass#aTest"/>
-        <testcase name="org.jtestplatform.server.JUnitTestFrameworkTest$JUnit3TestClassTest#testThatWorks"/>
-        <testcase name="org.jtestplatform.server.JUnitTestFrameworkTest$JUnit3TestClassTest#testThatFails"/>
-        <testcase name="org.jtestplatform.server.JUnitTestFrameworkTest$ParameterizedTestClass#aTest"/>
+        <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$ParameterizedTestClass"
+                  name="aFailingTest"/>
+        <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$TestClass" name="aFailingTest"/>
+        <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$TestClass" name="aTest"/>
+        <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$JUnit3TestClassTest" name="testThatWorks"/>
+        <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$JUnit3TestClassTest" name="testThatFails"/>
+        <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$ParameterizedTestClass" name="aTest"/>
     </testsuite>
 </testsuites>
