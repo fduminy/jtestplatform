@@ -22,7 +22,6 @@
 package org.jtestplatform.server;
 
 import junit.framework.TestCase;
-import junit.framework.TestSuite;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,11 +38,13 @@ public class JUnitTestFrameworkTest extends TestFrameworkTest<JUnitTestFramework
         super(new JUnitTestFramework());
 
         addFailingTest(ParameterizedTestClass.class, "aFailingTest");
-        addSucceedingTest(ParameterizedTestClass.class, "aTest");
+        addSucceedingTest(ParameterizedTestClass.class, "aPassingTest");
+
         addFailingTest(TestClass.class, "aFailingTest");
-        addSucceedingTest(TestClass.class, "aTest");
+        addSucceedingTest(TestClass.class, "aPassingTest");
+
         addFailingTest(JUnit3TestClassTest.class, "testThatFails");
-        addSucceedingTest(JUnit3TestClassTest.class, "testThatWorks");
+        addSucceedingTest(JUnit3TestClassTest.class, "testThatPasses");
     }
 
     public static void addTestsTo(JUnitTestFramework testFramework) throws Exception {
@@ -54,7 +55,6 @@ public class JUnitTestFrameworkTest extends TestFrameworkTest<JUnitTestFramework
 
     @RunWith(Parameterized.class)
     public static class ParameterizedTestClass {
-
         @Parameterized.Parameters
         public static Collection<Object[]> data() {
             return Arrays.asList(new Object[][]{{1L}, {1L}});
@@ -67,7 +67,7 @@ public class JUnitTestFrameworkTest extends TestFrameworkTest<JUnitTestFramework
         }
 
         @Test
-        public void aTest() {
+        public void aPassingTest() {
         }
 
         @Test
@@ -78,8 +78,7 @@ public class JUnitTestFrameworkTest extends TestFrameworkTest<JUnitTestFramework
 
     public static class TestClass {
         @Test
-        public void aTest() {
-
+        public void aPassingTest() {
         }
 
         @Test
@@ -89,12 +88,7 @@ public class JUnitTestFrameworkTest extends TestFrameworkTest<JUnitTestFramework
     }
 
     public static class JUnit3TestClassTest extends TestCase {
-        public JUnit3TestClassTest() {
-            super();
-        }
-
-        public void testThatWorks() {
-
+        public void testThatPasses() {
         }
 
         public void testThatFails() {
@@ -102,7 +96,9 @@ public class JUnitTestFrameworkTest extends TestFrameworkTest<JUnitTestFramework
         }
     }
 
+/*
     //TODO add TestSuite and "static TestSuite suite()" to JUnit tests
     public static class TestSuiteClass extends TestSuite {
     }
+*/
 }

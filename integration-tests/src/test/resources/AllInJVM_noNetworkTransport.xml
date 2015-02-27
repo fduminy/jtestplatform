@@ -19,16 +19,17 @@
             <property value="64" name="platform.wordSize"/>
             <property value="524288" name="platform.memory"/>
         </properties>
-        <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$ParameterizedTestClass" time="0.003"
+        <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$TestClass" time="0.003"
+                  name="aPassingTest"/>
+        <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$ParameterizedTestClass" time="0.004"
                   name="aFailingTest"/>
-        <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$TestClass" time="0.004"
+        <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$JUnit3TestClassTest" time="0.005"
+                  name="testThatPasses"/>
+        <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$ParameterizedTestClass" time="0.006"
+                  name="aPassingTest"/>
+        <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$TestClass" time="0.007"
                   name="aFailingTest"/>
-        <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$TestClass" time="0.005" name="aTest"/>
-        <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$JUnit3TestClassTest" time="0.006"
-                  name="testThatWorks"/>
-        <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$JUnit3TestClassTest" time="0.007"
+        <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$JUnit3TestClassTest" time="0.008"
                   name="testThatFails"/>
-        <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$ParameterizedTestClass" time="0.008"
-                  name="aTest"/>
     </testsuite>
 </testsuites>
