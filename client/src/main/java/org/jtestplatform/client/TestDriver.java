@@ -21,6 +21,8 @@
  */
 package org.jtestplatform.client;
 
+import com.google.code.tempusfugit.temporal.Clock;
+import com.google.code.tempusfugit.temporal.RealClock;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.jtestplatform.cloud.TransportProvider;
@@ -37,8 +39,14 @@ import java.util.concurrent.*;
 
 public class TestDriver {
     private static final Logger LOGGER = LoggerFactory.getLogger(TestDriver.class);
+    protected final Clock clock;
 
     public TestDriver() {
+        this(RealClock.now());
+    }
+
+    public TestDriver(Clock clock) {
+        this.clock = clock;
     }
 
     public final void runTests(File cloudConfigFile, File reportDirectory) throws Exception {
@@ -87,8 +95,8 @@ public class TestDriver {
         return new RequestProducer(requests);
     }
 
-    RequestConsumer createRequestConsumer(BlockingQueue<Request> requests) {
-        return new RequestConsumer(requests);
+    protected RequestConsumer createRequestConsumer(BlockingQueue<Request> requests) {
+        return new RequestConsumer(requests, clock);
     }
 
     private void shutdown(long timeout, TimeUnit unit, ExecutorService... executors) {

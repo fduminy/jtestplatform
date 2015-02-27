@@ -21,6 +21,8 @@
  */
 package org.jtestplatform.client;
 
+import com.google.code.tempusfugit.temporal.Clock;
+import com.google.code.tempusfugit.temporal.MovableClock;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.jtestplatform.cloud.TransportProvider;
@@ -38,6 +40,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.jtestplatform.client.JUnitTestReporterTest.DURATION1;
+import static org.jtestplatform.client.JUnitTestReporterTest.DURATION2;
 import static org.jtestplatform.client.Utils.PLATFORM1;
 import static org.jtestplatform.client.Utils.PLATFORM2;
 import static org.junit.Assert.assertFalse;
@@ -46,8 +50,7 @@ import static org.mockito.Mockito.*;
 public class RequestConsumerTest {
     @Test
     public void testCreateTransportHelper() throws Exception {
-        BlockingQueue<Request> requests = mock(BlockingQueue.class);
-        RequestConsumer consumer = new RequestConsumer(requests);
+        RequestConsumer consumer = new RequestConsumer(mock(BlockingQueue.class), mock(Clock.class));
 
         TransportHelper helper = consumer.createTransportHelper();
 
@@ -62,7 +65,7 @@ public class RequestConsumerTest {
         final TestReporter reporter = mock(TestReporter.class);
         final TransportProvider transportProvider = mock(TransportProvider.class);
         final TransportHelper transportHelper = mock(TransportHelper.class);
-        final RequestConsumer consumer = new RequestConsumer(requests) {
+        final RequestConsumer consumer = new RequestConsumer(requests, mock(Clock.class)) {
             @Override
             TransportHelper createTransportHelper() {
                 return transportHelper;
@@ -92,9 +95,9 @@ public class RequestConsumerTest {
     public void testConsume() throws Exception {
         // preparation
         BlockingQueue<Request> requests = new ArrayBlockingQueue<Request>(3);
-        final Request request1 = new Request(PLATFORM1, "framework1", "test1");
+        Request request1 = new Request(PLATFORM1, "framework1", "test1");
         requests.put(request1);
-        final Request request2 = new Request(PLATFORM2, "framework2", "test5");
+        Request request2 = new Request(PLATFORM2, "framework2", "test5");
         requests.put(request2);
         requests.put(Request.END);
         TestReporter reporter = mock(TestReporter.class);
@@ -103,9 +106,11 @@ public class RequestConsumerTest {
         Transport transport2 = mock(Transport.class);
         when(transportProvider.get(refEq(PLATFORM1))).thenReturn(transport1);
         when(transportProvider.get(refEq(PLATFORM2))).thenReturn(transport2);
-        final Utils.MockTransportHelper mockTransportHelper = new Utils.MockTransportHelper(transport1, transport2);
+        MovableClock clock = new MovableClock();
+        Utils.MockTransportHelper mockTransportHelper = new Utils.MockTransportHelper(transport1, transport2);
+        mockTransportHelper.setTestDurations(clock, DURATION1, DURATION2);
         final TransportHelper transportHelper = spy(mockTransportHelper);
-        RequestConsumer consumer = new RequestConsumer(requests) {
+        RequestConsumer consumer = new RequestConsumer(requests, clock) {
             @Override
             TransportHelper createTransportHelper() {
                 return transportHelper;
@@ -117,8 +122,8 @@ public class RequestConsumerTest {
 
         // verifications
         List<TestResult> receivedMessages = mockTransportHelper.getTestResults();
-        final TestResult testResult1 = testResult(request1);
-        final TestResult testResult2 = testResult(request2);
+        TestResult testResult1 = testResult(request1);
+        TestResult testResult2 = testResult(request2);
         List<TestResult> expectedMessages = Arrays.asList(testResult1, testResult2);
         assertThat(receivedMessages).usingElementComparator(new TestResultComparator()).as("testResults").containsOnlyOnce(expectedMessages.toArray(new TestResult[0]));
         assertThat(requests).as("requests").isEmpty();
@@ -131,8 +136,8 @@ public class RequestConsumerTest {
         verify(transportHelper, times(2)).receive(actualTransports.capture());
         assertThat(actualTransports.getAllValues()).as("transports").containsOnlyOnce(new Transport[]{transport1, transport2});
 */
-        verify(reporter, times(1)).report(refEq(PLATFORM1), eqTestResult(testResult1));
-        verify(reporter, times(1)).report(refEq(PLATFORM2), eqTestResult(testResult2));
+        verify(reporter, times(1)).report(refEq(PLATFORM1), eqTestResult(testResult1), eq(DURATION1));
+        verify(reporter, times(1)).report(refEq(PLATFORM2), eqTestResult(testResult2), eq(DURATION2));
         verifyNoMoreInteractions(transportProvider, transport1, transport2, /*transportHelper,*/ reporter);
     }
 

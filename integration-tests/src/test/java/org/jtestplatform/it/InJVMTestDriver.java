@@ -21,13 +21,18 @@
  */
 package org.jtestplatform.it;
 
+import com.google.code.tempusfugit.temporal.MovableClock;
+import org.jtestplatform.client.Request;
+import org.jtestplatform.client.RequestConsumer;
 import org.jtestplatform.client.TestDriver;
 import org.jtestplatform.cloud.configuration.Connection;
 import org.jtestplatform.cloud.configuration.Platform;
 import org.jtestplatform.cloud.domain.*;
+import org.jtestplatform.common.message.TestResult;
 import org.jtestplatform.common.transport.Transport;
 import org.jtestplatform.common.transport.TransportException;
 import org.jtestplatform.common.transport.TransportFactory;
+import org.jtestplatform.common.transport.TransportHelper;
 import org.jtestplatform.server.TestServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,15 +47,33 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.google.code.tempusfugit.temporal.Duration.millis;
 import static org.jtestplatform.it.TransportLogger.wrap;
 
 /**
  * A {@link org.jtestplatform.client.TestDriver} that do everything (including domains) in the same JVM.
  */
 public class InJVMTestDriver extends TestDriver {
+    private final AtomicInteger timeCounter = new AtomicInteger(1);
+
+    public InJVMTestDriver(MovableClock clock) {
+        super(clock);
+    }
+
     @Override
     protected InJVMDomainManager createDomainManager(File cloudConfigFile) throws FileNotFoundException, DomainException {
         return new InJVMDomainManager(new FileReader(cloudConfigFile));
+    }
+
+    @Override
+    protected RequestConsumer createRequestConsumer(BlockingQueue<Request> requests) {
+        return new RequestConsumer(requests, clock) {
+            @Override
+            protected TestResult runTest(TransportHelper transportHelper, Request request, Transport transport) throws TransportException {
+                ((MovableClock) clock).incrementBy(millis(timeCounter.getAndIncrement()));
+                return super.runTest(transportHelper, request, transport);
+            }
+        };
     }
 
     private static class InJVMDomainManager extends DefaultDomainManager {

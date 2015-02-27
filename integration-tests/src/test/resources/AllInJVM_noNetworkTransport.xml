@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <testsuites>
-    <testsuite package="phenom_64bits_4cores" name="phenom_64bits_4cores.mauve">
+    <testsuite package="phenom_64bits_4cores" time="0.003" name="phenom_64bits_4cores.mauve">
         <properties>
             <property value="null" name="platform.cdrom"/>
             <property value="phenom" name="platform.cpu"/>
@@ -8,10 +8,10 @@
             <property value="64" name="platform.wordSize"/>
             <property value="524288" name="platform.memory"/>
         </properties>
-        <testcase classname="org.jtestplatform.server.MauveTestFrameworkTest$MauveTestClass"/>
-        <testcase classname="org.jtestplatform.server.MauveTestFrameworkTest$MauveFailingTestClass"/>
+        <testcase classname="org.jtestplatform.server.MauveTestFrameworkTest$MauveTestClass" time="0.001"/>
+        <testcase classname="org.jtestplatform.server.MauveTestFrameworkTest$MauveFailingTestClass" time="0.002"/>
     </testsuite>
-    <testsuite package="phenom_64bits_4cores" name="phenom_64bits_4cores.junit">
+    <testsuite package="phenom_64bits_4cores" time="0.033" name="phenom_64bits_4cores.junit">
         <properties>
             <property value="null" name="platform.cdrom"/>
             <property value="phenom" name="platform.cpu"/>
@@ -19,12 +19,16 @@
             <property value="64" name="platform.wordSize"/>
             <property value="524288" name="platform.memory"/>
         </properties>
-        <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$ParameterizedTestClass"
+        <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$ParameterizedTestClass" time="0.003"
                   name="aFailingTest"/>
-        <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$TestClass" name="aFailingTest"/>
-        <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$TestClass" name="aTest"/>
-        <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$JUnit3TestClassTest" name="testThatWorks"/>
-        <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$JUnit3TestClassTest" name="testThatFails"/>
-        <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$ParameterizedTestClass" name="aTest"/>
+        <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$TestClass" time="0.004"
+                  name="aFailingTest"/>
+        <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$TestClass" time="0.005" name="aTest"/>
+        <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$JUnit3TestClassTest" time="0.006"
+                  name="testThatWorks"/>
+        <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$JUnit3TestClassTest" time="0.007"
+                  name="testThatFails"/>
+        <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$ParameterizedTestClass" time="0.008"
+                  name="aTest"/>
     </testsuite>
 </testsuites>

@@ -38,6 +38,10 @@ public class TestName {
         return toString(testClass.getName(), methodName);
     }
 
+    public static TestName create(String testClass, String methodName) {
+        return new TestName(testClass, methodName);
+    }
+
     private TestName(String testClass, String methodName) {
         this.testClass = testClass;
         this.methodName = methodName;
@@ -58,5 +62,25 @@ public class TestName {
     @Override
     public String toString() {
         return toString(testClass, methodName);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        TestName testName = (TestName) o;
+
+        if (methodName != null ? !methodName.equals(testName.methodName) : testName.methodName != null) return false;
+        if (!testClass.equals(testName.testClass)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = testClass.hashCode();
+        result = 31 * result + (methodName != null ? methodName.hashCode() : 0);
+        return result;
     }
 }

@@ -21,6 +21,8 @@
  */
 package org.jtestplatform.client;
 
+import com.google.code.tempusfugit.temporal.Duration;
+import com.google.code.tempusfugit.temporal.MovableClock;
 import org.jtestplatform.cloud.configuration.Platform;
 import org.jtestplatform.common.message.*;
 import org.jtestplatform.common.transport.Transport;
@@ -83,8 +85,18 @@ public class Utils {
         private final List<Transport> expectedTransports;
         private final List<TestResult> testResults = new ArrayList<TestResult>();
 
+        private MovableClock clock;
+        private Duration[] testDurations;
+        private int testNum;
+
         MockTransportHelper(Transport... expectedTransports) {
             this.expectedTransports = Arrays.asList(expectedTransports);
+        }
+
+        public void setTestDurations(MovableClock clock, Duration... durations) {
+            this.clock = clock;
+            this.testDurations = durations;
+            testNum = 0;
         }
 
         public void setSendError(TransportException sendError) {
@@ -119,6 +131,11 @@ public class Utils {
                 framework = ((RunTest) message).getFramework();
                 test = ((RunTest) message).getTest();
                 state = STATE.RUN_TEST;
+
+                if (testNum < testDurations.length) {
+                    clock.incrementBy(testDurations[testNum]);
+                    testNum++;
+                }
             } else {
                 throw new IllegalStateException("illegal message: " + message);
             }

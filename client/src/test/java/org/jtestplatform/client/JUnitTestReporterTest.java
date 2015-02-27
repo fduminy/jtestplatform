@@ -21,6 +21,8 @@
  */
 package org.jtestplatform.client;
 
+import com.google.code.tempusfugit.temporal.Duration;
+import org.apache.commons.lang3.StringUtils;
 import org.jtestplatform.cloud.configuration.Platform;
 import org.jtestplatform.common.TestName;
 import org.jtestplatform.common.message.TestResult;
@@ -31,17 +33,21 @@ import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.google.code.tempusfugit.temporal.Duration.millis;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.jtestplatform.client.JUnitTestReporter.PLATFORM_PROPERTY_PREFIX;
-import static org.jtestplatform.common.transport.Utils.array;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
 public class JUnitTestReporterTest {
+    public static final Duration DURATION1 = millis(1);
+    public static final Duration DURATION2 = millis(3);
 
     @Rule
     public final TemporaryFolder folder = new TemporaryFolder();
@@ -64,7 +70,7 @@ public class JUnitTestReporterTest {
         final File reportDir = folder.getRoot();
         MockTestReporter reporter = new MockTestReporter(reportDir, writer);
         TestResult testResult = new TestResult("framework", "testCase1", true);
-        reporter.report(Utils.PLATFORM1, testResult);
+        reporter.report(Utils.PLATFORM1, testResult, millis(1));
 
         reporter.saveReport();
 
@@ -78,12 +84,13 @@ public class JUnitTestReporterTest {
         MockTestReporter reporter = new MockTestReporter(reportDir, writer);
         TestResult testResult = new TestResult("framework", "testCase1", true);
 
-        reporter.report(Utils.PLATFORM1, testResult);
+        reporter.report(Utils.PLATFORM1, testResult, DURATION1);
 
+        reporter.saveReport(); // triggers computation of suite properties
         Testsuites suites = reporter.suites;
         assertThat(suites).as("created suites").isNotNull();
         assertThat(suites.getTestsuite()).as("number of suites").hasSize(1);
-        assertTestSuite(suites, Utils.PLATFORM1, testResult.getFramework(), TestName.parse(testResult.getTest()));
+        assertTestSuite(reporter, suites, Utils.PLATFORM1, testResult.getFramework(), new TestReport(testResult, DURATION1));
     }
 
     @Test
@@ -94,14 +101,15 @@ public class JUnitTestReporterTest {
         TestResult testResult1 = new TestResult("framework", "testCase1", true);
         TestResult testResult2 = new TestResult(testResult1.getFramework(), "testCase2", true);
 
-        reporter.report(Utils.PLATFORM1, testResult1);
-        reporter.report(Utils.PLATFORM1, testResult2);
+        reporter.report(Utils.PLATFORM1, testResult1, DURATION1);
+        reporter.report(Utils.PLATFORM1, testResult2, DURATION2);
 
+        reporter.saveReport(); // triggers computation of suite properties
         Testsuites suites = reporter.suites;
         assertThat(suites).as("created suites").isNotNull();
         assertThat(suites.getTestsuite()).as("number of suites").hasSize(1);
-        assertTestSuite(suites, Utils.PLATFORM1, testResult1.getFramework(), TestName.parse(testResult1.getTest()),
-                TestName.parse(testResult2.getTest()));
+        assertTestSuite(reporter, suites, Utils.PLATFORM1, testResult1.getFramework(), new TestReport(testResult1, DURATION1),
+                new TestReport(testResult2, DURATION2));
     }
 
     @Test
@@ -112,14 +120,15 @@ public class JUnitTestReporterTest {
         TestResult testResult1 = new TestResult("framework", "testCase1", true);
         TestResult testResult2 = new TestResult("framework2", "testCase2", true);
 
-        reporter.report(Utils.PLATFORM1, testResult1);
-        reporter.report(Utils.PLATFORM2, testResult2);
+        reporter.report(Utils.PLATFORM1, testResult1, DURATION1);
+        reporter.report(Utils.PLATFORM2, testResult2, DURATION2);
 
+        reporter.saveReport(); // triggers computation of suite properties
         Testsuites suites = reporter.suites;
         assertThat(suites).as("created suites").isNotNull();
         assertThat(suites.getTestsuite()).as("number of suites").hasSize(2);
-        assertTestSuite(suites, Utils.PLATFORM1, testResult1.getFramework(), TestName.parse(testResult1.getTest()));
-        assertTestSuite(suites, Utils.PLATFORM2, testResult2.getFramework(), TestName.parse(testResult2.getTest()));
+        assertTestSuite(reporter, suites, Utils.PLATFORM1, testResult1.getFramework(), new TestReport(testResult1, DURATION1));
+        assertTestSuite(reporter, suites, Utils.PLATFORM2, testResult2.getFramework(), new TestReport(testResult2, DURATION2));
     }
 
     private void assertProperty(List<Property> actualProperties, int index, String propertyName, Object propertyValue) {
@@ -128,30 +137,37 @@ public class JUnitTestReporterTest {
         assertThat(property.getValue()).isEqualTo(String.valueOf(propertyValue));
     }
 
-    private void assertTestSuite(Testsuites suites, Platform platform, String framework, TestName... expectedTestNames) {
+    private void assertTestSuite(JUnitTestReporter reporter, Testsuites suites, Platform platform, String framework, TestReport... expectedTestReports) throws ParseException {
         String suitePackageName = new PlatformKeyBuilder().buildKey(platform);
         String suiteName = suitePackageName + '.' + framework;
         Testsuite testSuite = findTestSuite(suites, suiteName);
         List<Property> expectedProperties = JUnitTestReporter.getPlatformProperties(platform);
 
-        List<String> names = new ArrayList<String>(testSuite.getTestcase().size());
-        List<String> classNames = new ArrayList<String>(testSuite.getTestcase().size());
+        List<TestReport> testReports = new ArrayList<TestReport>(testSuite.getTestcase().size());
+        Duration totalDuration = millis(0);
         for (Testcase testCase : testSuite.getTestcase()) {
-            names.add(testCase.getName());
-            classNames.add(testCase.getClassname());
-        }
+            Duration duration = millis(0);
+            if (!StringUtils.isBlank(testCase.getTime())) {
+                duration = stringToDuration(reporter, testCase.getTime());
+            }
 
-        List<String> expectedNames = new ArrayList<String>(expectedTestNames.length);
-        List<String> expectedClassNames = new ArrayList<String>(expectedTestNames.length);
-        for (TestName testName : expectedTestNames) {
-            expectedNames.add(testName.getMethodName());
-            expectedClassNames.add(testName.getTestClass());
+            totalDuration = totalDuration.plus(duration);
+            testReports.add(new TestReport(TestName.create(testCase.getClassname(), testCase.getName()), duration));
         }
 
         assertThat(testSuite.getPackage()).as("suite package name").isEqualTo(suitePackageName);
         assertThat(testSuite.getProperties().getProperty()).usingFieldByFieldElementComparator().containsExactly(expectedProperties.toArray(new Property[0]));
-        assertThat(names).as("test names for suite '" + suiteName + "'").containsExactly(array(expectedNames));
-        assertThat(classNames).as("test class names for suite '" + suiteName + "'").containsExactly(array(expectedClassNames));
+        assertThat(stringToDuration(reporter, testSuite.getTime())).as("total duration").isEqualTo(totalDuration);
+        assertThat(testReports).as("test reports for suite '" + suiteName + "'").containsExactly(expectedTestReports);
+    }
+
+    private static Duration stringToDuration(JUnitTestReporter reporter, String durationString) throws ParseException {
+        Duration duration = millis(0);
+        if (!StringUtils.isBlank(durationString)) {
+            double seconds = reporter.format.parse(durationString).doubleValue();
+            duration = millis((long) (seconds * SECONDS.toMillis(1)));
+        }
+        return duration;
     }
 
     private Testsuite findTestSuite(Testsuites suites, String suiteName) {
@@ -184,6 +200,49 @@ public class JUnitTestReporterTest {
 
         public Testsuites getSuites() {
             return suites;
+        }
+    }
+
+    private static class TestReport {
+        private final TestName testName;
+        private final Duration testDuration;
+
+        private TestReport(TestResult testResult, Duration testDuration) {
+            this(TestName.parse(testResult.getTest()), testDuration);
+        }
+
+        private TestReport(TestName testName, Duration testDuration) {
+            this.testName = testName;
+            this.testDuration = testDuration;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            TestReport that = (TestReport) o;
+
+            if (testDuration != null ? !testDuration.equals(that.testDuration) : that.testDuration != null)
+                return false;
+            if (testName != null ? !testName.equals(that.testName) : that.testName != null) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = testName != null ? testName.hashCode() : 0;
+            result = 31 * result + (testDuration != null ? testDuration.hashCode() : 0);
+            return result;
+        }
+
+        @Override
+        public String toString() {
+            return "TestReport{" +
+                    "testName=" + testName +
+                    ", testDuration=" + testDuration +
+                    '}';
         }
     }
 }

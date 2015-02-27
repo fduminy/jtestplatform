@@ -21,6 +21,9 @@
  */
 package org.jtestplatform.client;
 
+import com.google.code.tempusfugit.temporal.Clock;
+import com.google.code.tempusfugit.temporal.Duration;
+import com.google.code.tempusfugit.temporal.StopWatch;
 import org.jtestplatform.cloud.TransportProvider;
 import org.jtestplatform.cloud.configuration.Platform;
 import org.jtestplatform.common.message.RunTest;
@@ -44,9 +47,11 @@ public class RequestConsumer {
     private static final Logger LOGGER = LoggerFactory.getLogger(RequestConsumer.class);
 
     private final BlockingQueue<Request> requests;
+    private final Clock clock;
 
-    public RequestConsumer(BlockingQueue<Request> requests) {
+    public RequestConsumer(BlockingQueue<Request> requests, Clock clock) {
         this.requests = requests;
+        this.clock = clock;
     }
 
     public void consume(TransportProvider transportProvider, TestReporter reporter) throws Exception {
@@ -62,14 +67,18 @@ public class RequestConsumer {
                 }
                 Platform platform = request.getPlatform();
                 Transport transport = transportProvider.get(platform);
+
+                StopWatch stopWatch = StopWatch.start(clock);
                 TestResult testResult = runTest(transportHelper, request, transport);
-                reporter.report(platform, testResult);
+                Duration testDuration = stopWatch.markAndGetTotalElapsedTime();
+
+                reporter.report(platform, testResult, testDuration);
             }
         }
         LOGGER.info("FINISHED");
     }
 
-    private TestResult runTest(TransportHelper transportHelper, Request request, Transport transport) throws TransportException {
+    protected TestResult runTest(TransportHelper transportHelper, Request request, Transport transport) throws TransportException {
         RunTest requestMessage = new RunTest(request.getTestFramework(), request.getTestName());
         return (TestResult) transportHelper.sendRequest(transport, requestMessage);
     }

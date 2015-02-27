@@ -54,6 +54,15 @@ public class TestNameTest {
     }
 
     @Theory
+    public void testCreate(TestNameData data) throws Exception {
+        TestName testName = TestName.create(data.className, data.methodName);
+
+        assertThat(testName.toString()).isEqualTo(data.fullName);
+        assertThat(testName.getTestClass()).isEqualTo(data.className);
+        assertThat(testName.getMethodName()).isEqualTo(data.methodName);
+    }
+
+    @Theory
     public void testToString(TestNameData data) throws Exception {
         String fullName = TestName.toString(Class.forName(data.className), data.methodName);
 

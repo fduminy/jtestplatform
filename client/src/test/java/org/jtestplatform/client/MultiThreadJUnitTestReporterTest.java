@@ -37,6 +37,7 @@ import org.junit.rules.TemporaryFolder;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.google.code.tempusfugit.temporal.Duration.millis;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
@@ -102,7 +103,7 @@ public class MultiThreadJUnitTestReporterTest {
             void report(MockTestReporter reporter, int index) throws Exception {
                 Platform platform = Utils.createPlatform("CPU" + index, 32, 2);
                 TestResult testResult = new TestResult("framework", "testCase", true);
-                reporter.report(platform, testResult);
+                reporter.report(platform, testResult, millis(1));
             }
 
             @Override
@@ -118,7 +119,7 @@ public class MultiThreadJUnitTestReporterTest {
             void report(MockTestReporter reporter, int index) throws Exception {
                 Platform platform = Utils.createPlatform("CPU", 32, 2);
                 TestResult testResult = new TestResult("framework" + index, "testCase", true);
-                reporter.report(platform, testResult);
+                reporter.report(platform, testResult, millis(1));
             }
 
             @Override
@@ -131,7 +132,7 @@ public class MultiThreadJUnitTestReporterTest {
             void report(MockTestReporter reporter, int index) throws Exception {
                 Platform platform = Utils.createPlatform("CPU", 32, 2);
                 TestResult testResult = new TestResult("framework", "testCase" + index, true);
-                reporter.report(platform, testResult);
+                reporter.report(platform, testResult, millis(1));
             }
 
             @Override

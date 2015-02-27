@@ -21,6 +21,7 @@
  */
 package org.jtestplatform.it;
 
+import com.google.code.tempusfugit.temporal.MovableClock;
 import org.jtestplatform.client.TestDriverTest;
 import org.jtestplatform.junitxmlreport.JUnitXMLReportWriterTest;
 import org.jtestplatform.server.*;
@@ -65,7 +66,8 @@ public class TestAllWithoutLibvirt {
         JUnitTestFramework testFramework2 = (JUnitTestFramework) TestFrameworkManager.getInstance().getTestFramework("junit");
         JUnitTestFrameworkTest.addTestsTo(testFramework2);
 
-        InJVMTestDriver testDriver = new InJVMTestDriver();
+        MovableClock clock = new MovableClock();
+        InJVMTestDriver testDriver = new InJVMTestDriver(clock);
         testDriver.runTests(cloudConfigFile, reportDirectory);
 
         verifyXMLReport(cloudConfigFile, "/AllInJVM_noNetworkTransport.xml");

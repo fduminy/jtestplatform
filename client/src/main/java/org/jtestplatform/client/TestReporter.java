@@ -21,6 +21,7 @@
  */
 package org.jtestplatform.client;
 
+import com.google.code.tempusfugit.temporal.Duration;
 import org.jtestplatform.cloud.configuration.Platform;
 import org.jtestplatform.common.message.TestResult;
 
@@ -28,7 +29,7 @@ import org.jtestplatform.common.message.TestResult;
  * Interface used to report the result of a test run.
  */
 public interface TestReporter {
-    void report(Platform platform, TestResult testResult) throws Exception;
+    void report(Platform platform, TestResult testResult, Duration testDuration) throws Exception;
 
     void saveReport() throws Exception;
 }

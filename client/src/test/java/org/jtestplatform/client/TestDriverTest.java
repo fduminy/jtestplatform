@@ -179,7 +179,7 @@ public class TestDriverTest {
         }
 
         @Override
-        RequestConsumer createRequestConsumer(BlockingQueue<Request> requests) {
+        protected RequestConsumer createRequestConsumer(BlockingQueue<Request> requests) {
             return requestConsumer;
         }
 

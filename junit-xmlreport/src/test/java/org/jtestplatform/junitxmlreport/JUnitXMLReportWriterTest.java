@@ -56,7 +56,13 @@ public class JUnitXMLReportWriterTest {
             assertTrue("pieces of XML are similar " + xmlDiff, xmlDiff.similar());
             assertTrue("but are they identical? " + xmlDiff, xmlDiff.identical());
         } catch (AssertionError ae) {
-            System.out.println("ActualXML=\n" + actualXML);
+            System.out.println("--------------- ActualXML ---------------");
+            System.out.println(actualXML);
+            System.out.println("=========================================");
+
+            System.out.println("-------------- ExpectedXML --------------");
+            System.out.println(expectedXML);
+            System.out.println("=========================================");
             throw ae;
         }
     }
