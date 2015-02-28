@@ -75,10 +75,9 @@ public class Utils {
             INIT,
             GET_FRAMEWORKS,
             GET_TESTS,
-            RUN_TEST;
+            RUN_TEST
         }
 
-        ;
         private STATE state = STATE.INIT;
         private String framework;
         private String test;
