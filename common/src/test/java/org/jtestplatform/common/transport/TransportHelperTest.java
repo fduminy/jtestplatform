@@ -41,8 +41,6 @@ import java.util.*;
 import static java.lang.Boolean.TRUE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assume.assumeFalse;
 import static org.mockito.Mockito.*;
 
@@ -180,38 +178,16 @@ public class TransportHelperTest {
     public void testReceive(MessageData data) throws Exception {
         // prepare
         assumeFalse(ErrorMessage.class.isAssignableFrom(data.messageClass));
-        final MutableObject<Message> messageWrapper = new MutableObject<Message>();
         Transport transport = mock(Transport.class);
         when(transport.receive()).thenReturn(data.messageClass.getName(), data.expectedParts);
-        final MutableObject<Boolean> called = new MutableObject<Boolean>(Boolean.FALSE);
-        TransportHelper helper = new TransportHelper() {
-            @Override
-            protected Message receiveImpl(Transport transport) throws TransportException {
-                called.setValue(Boolean.TRUE);
-                return super.receiveImpl(transport);
-            }
-
-            @Override
-            Message createMessage(Class<? extends Message> clazz) throws InstantiationException, IllegalAccessException {
-                Message message = spy(super.createMessage(clazz));
-                messageWrapper.setValue(message);
-                return message;
-            }
-        };
+        TransportHelper helper = new TransportHelper();
 
         // test
         Message actualMessage = helper.receive(transport);
 
         // verify
-        assertThat(called.getValue()).as("receiveImpl called").isEqualTo(TRUE);
-        assertNotNull(actualMessage);
-        Message message = messageWrapper.getValue();
-        assertEquals(message.getClass(), actualMessage.getClass());
-        InOrder inOrder = inOrder(transport, message);
-        inOrder.verify(transport, times(1)).receive();
-        inOrder.verify(message, times(1)).receiveFrom(eq(transport));
-        inOrder.verify(transport, times(data.expectedParts.length)).receive();
-        inOrder.verifyNoMoreInteractions();
+        verify(transport, times(1 + data.expectedParts.length)).receive();
+        data.verifyMessage(actualMessage);
     }
 
     @Test
@@ -354,7 +330,7 @@ public class TransportHelperTest {
         TESTFRAMEWORKS(TestFrameworks.class, "2", "framework1", "framework2") {
             @Override
             Message createMessage() {
-                return new TestFrameworks(new HashSet<String>(Arrays.asList(expectedParts).subList(1, expectedParts.length)));
+                return new TestFrameworks(Arrays.asList(expectedParts).subList(1, expectedParts.length));
             }
         },
         TESTRESULT_SUCCESS(TestResult.class, true, "framework", "test", TransportHelper.TRUE) {
@@ -409,6 +385,10 @@ public class TransportHelperTest {
         }
 
         abstract Message createMessage();
+
+        void verifyMessage(Message actualMessage) {
+            assertThat(actualMessage).isEqualToComparingFieldByField(createMessage());
+        }
 
         @Override
         public String toString() {
