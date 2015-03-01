@@ -24,14 +24,17 @@
  */
 package org.jtestplatform.server;
 
+import gnu.testlet.ResourceNotFoundException;
+import gnu.testlet.TestHarness;
 import gnu.testlet.Testlet;
-import gnu.testlet.runner.CheckResult;
 import gnu.testlet.runner.Filter;
 import gnu.testlet.runner.Filter.LineProcessor;
-import gnu.testlet.runner.Mauve;
-import gnu.testlet.runner.RunResult;
+import org.jtestplatform.common.message.TestResult;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
 import java.util.*;
 
 
@@ -92,41 +95,86 @@ public class MauveTestFramework implements TestFramework {
      * @throws UnknownTestException
      */
     @Override
-    public boolean runTest(String test) throws UnknownTestException {
-        if (!getTests().contains(test)) {
-            throw new UnknownTestException(test);
+    public void runTest(TestResult testResult) throws UnknownTestException {
+        if (!getTests().contains(testResult.getTest())) {
+            throw new UnknownTestException(testResult.getTest());
         }
 
         JTSMauve m = new JTSMauve();
-        RunResult result = m.runTest(test);
-
-        /*
-        int cc = result.getCheckCount();
-        int cc2 = result.getCheckCount(true);
-        int cc3 = result.getCheckCount(false);
-        PackageResult pr = (PackageResult) result.getPackageIterator().next();
-        ClassResult cr = (ClassResult) pr.getClassIterator().next();
-        TestResult tr = (TestResult) cr.getTestIterator().next();
-        */
-
-        return result.getCheckCount(false) == 0;
+        try {
+            m.runTest(testResult.getTest());
+            if ((m.testPassed != null) && !m.testPassed.booleanValue()) {
+                testResult.setFailure(AssertionError.class.getName(), m.debugLog.toString(), null);
+            }
+        } catch (Exception e) {
+            testResult.setFailure(e.getClass().getName(), null, e.getMessage());
+        }
     }
 
-    private class JTSMauve extends Mauve {
-        public RunResult runTest(String testName) {
+    private class JTSMauve extends TestHarness {
+        private final StringBuilder debugLog = new StringBuilder();
+        private Boolean testPassed;
+
+        public void runTest(String testName) throws Exception {
             // save the default locale, some tests change the default
             Locale savedLocale = Locale.getDefault();
 
-            result = new RunResult("Mauve Test Run");
-            addSystemProperties(result);
-            currentCheck = new CheckResult(0, false);
+            try {
+                Class<?> testClass = Class.forName(testName);
+                Testlet testlet = (Testlet) testClass.newInstance();
+                testlet.test(this);
+            } finally {
+                // restore the default locale
+                Locale.setDefault(savedLocale);
+            }
+        }
 
-            executeLine("", testName);
+        @Override
+        public void check(boolean testPassed) {
+            this.testPassed = testPassed;
+        }
 
-            // restore the default locale
-            Locale.setDefault(savedLocale);
+        @Override
+        public Reader getResourceReader(String s) throws ResourceNotFoundException {
+            return null;
+        }
 
-            return getResult();
+        @Override
+        public InputStream getResourceStream(String s) throws ResourceNotFoundException {
+            return null;
+        }
+
+        @Override
+        public File getResourceFile(String s) throws ResourceNotFoundException {
+            return null;
+        }
+
+        @Override
+        public void checkPoint(String s) {
+        }
+
+        @Override
+        public void verbose(String s) {
+        }
+
+        @Override
+        public void debug(String s) {
+            debugLog.append(s);
+        }
+
+        @Override
+        public void debug(String s, boolean b) {
+            debugLog.append(s + ' ' + b);
+        }
+
+        @Override
+        public void debug(Throwable throwable) {
+            debugLog.append(throwable);
+        }
+
+        @Override
+        public void debug(Object[] objects, String s) {
+            debugLog.append(objects + " " + s);
         }
     }
 

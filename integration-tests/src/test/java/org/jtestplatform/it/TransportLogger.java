@@ -33,6 +33,7 @@ import java.io.IOException;
  */
 public class TransportLogger implements Transport {
     private static final Logger LOGGER = LoggerFactory.getLogger(TransportLogger.class);
+    static final String NULL_MESSAGE = "null";
 
     private final String owner;
     private final Transport wrapped;
@@ -53,14 +54,14 @@ public class TransportLogger implements Transport {
 
     @Override
     public void send(String message) throws TransportException {
-        logMessage("SEND", message);
+        logMessage("SEND", (message == null) ? NULL_MESSAGE : message);
         wrapped.send(message);
     }
 
     @Override
     public String receive() throws TransportException {
         String received = wrapped.receive();
-        logMessage("RECEIVE", received);
+        logMessage("RECEIVE", (received == null) ? NULL_MESSAGE : received);
         return received;
     }
 

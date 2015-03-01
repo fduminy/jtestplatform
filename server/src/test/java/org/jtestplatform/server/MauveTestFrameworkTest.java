@@ -32,7 +32,7 @@ public class MauveTestFrameworkTest extends TestFrameworkTest<MauveTestFramework
         super(new MauveTestFramework());
 
         addSucceedingTest(MauveTestClass.class, null);
-        addFailingTest(MauveFailingTestClass.class, null);
+        addFailingTest(MauveFailingTestClass.class, null, AssertionError.class.getName(), "got true but expected false", null);
     }
 
     public static void addTestsTo(MauveTestFramework testFramework) throws Exception {

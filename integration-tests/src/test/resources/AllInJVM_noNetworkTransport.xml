@@ -9,7 +9,9 @@
             <property value="524288" name="platform.memory"/>
         </properties>
         <testcase classname="org.jtestplatform.server.MauveTestFrameworkTest$MauveTestClass" time="0.001"/>
-        <testcase classname="org.jtestplatform.server.MauveTestFrameworkTest$MauveFailingTestClass" time="0.002"/>
+        <testcase classname="org.jtestplatform.server.MauveTestFrameworkTest$MauveFailingTestClass" time="0.002">
+            <failure type="java.lang.AssertionError">got true but expected false</failure>
+        </testcase>
     </testsuite>
     <testsuite package="phenom_64bits_4cores" time="0.033" name="phenom_64bits_4cores.junit">
         <properties>
@@ -22,14 +24,107 @@
         <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$TestClass" time="0.003"
                   name="aPassingTest"/>
         <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$ParameterizedTestClass" time="0.004"
-                  name="aFailingTest"/>
+                  name="aFailingTest">
+            <failure message="a failure" type="java.lang.AssertionError">java.lang.AssertionError: a failure
+                at org.jtestplatform.server.JUnitTestFrameworkTest.&lt;clinit&gt;(JUnitTestFrameworkTest.java:38)
+                at
+                org.jtestplatform.it.TestAllWithoutLibvirt.testAllInJVM_noNetworkTransport(TestAllWithoutLibvirt.java:67)
+                at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+                at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+                at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+                at java.lang.reflect.Method.invoke(Method.java:597)
+                at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+                at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+                at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+                at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+                at org.junit.rules.ExternalResource$1.evaluate(ExternalResource.java:48)
+                at org.junit.rules.RunRules.evaluate(RunRules.java:20)
+                at org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:325)
+                at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:78)
+                at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:57)
+                at org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)
+                at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)
+                at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)
+                at org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)
+                at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)
+                at org.junit.runners.ParentRunner.run(ParentRunner.java:363)
+                at org.apache.maven.surefire.junit4.JUnit4Provider.execute(JUnit4Provider.java:264)
+                at org.apache.maven.surefire.junit4.JUnit4Provider.executeTestSet(JUnit4Provider.java:153)
+                at org.apache.maven.surefire.junit4.JUnit4Provider.invoke(JUnit4Provider.java:124)
+                at org.apache.maven.surefire.booter.ForkedBooter.invokeProviderInSameClassLoader(ForkedBooter.java:200)
+                at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:153)
+                at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:103)
+            </failure>
+        </testcase>
         <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$JUnit3TestClassTest" time="0.005"
                   name="testThatPasses"/>
         <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$ParameterizedTestClass" time="0.006"
                   name="aPassingTest"/>
         <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$TestClass" time="0.007"
-                  name="aFailingTest"/>
+                  name="aFailingTest">
+            <failure message="a failure" type="java.lang.AssertionError">java.lang.AssertionError: a failure
+                at org.jtestplatform.server.JUnitTestFrameworkTest.&lt;clinit&gt;(JUnitTestFrameworkTest.java:38)
+                at
+                org.jtestplatform.it.TestAllWithoutLibvirt.testAllInJVM_noNetworkTransport(TestAllWithoutLibvirt.java:67)
+                at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+                at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+                at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+                at java.lang.reflect.Method.invoke(Method.java:597)
+                at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+                at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+                at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+                at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+                at org.junit.rules.ExternalResource$1.evaluate(ExternalResource.java:48)
+                at org.junit.rules.RunRules.evaluate(RunRules.java:20)
+                at org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:325)
+                at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:78)
+                at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:57)
+                at org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)
+                at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)
+                at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)
+                at org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)
+                at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)
+                at org.junit.runners.ParentRunner.run(ParentRunner.java:363)
+                at org.apache.maven.surefire.junit4.JUnit4Provider.execute(JUnit4Provider.java:264)
+                at org.apache.maven.surefire.junit4.JUnit4Provider.executeTestSet(JUnit4Provider.java:153)
+                at org.apache.maven.surefire.junit4.JUnit4Provider.invoke(JUnit4Provider.java:124)
+                at org.apache.maven.surefire.booter.ForkedBooter.invokeProviderInSameClassLoader(ForkedBooter.java:200)
+                at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:153)
+                at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:103)
+            </failure>
+        </testcase>
         <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$JUnit3TestClassTest" time="0.008"
-                  name="testThatFails"/>
+                  name="testThatFails">
+            <failure message="a failure" type="java.lang.AssertionError">java.lang.AssertionError: a failure
+                at org.jtestplatform.server.JUnitTestFrameworkTest.&lt;clinit&gt;(JUnitTestFrameworkTest.java:38)
+                at
+                org.jtestplatform.it.TestAllWithoutLibvirt.testAllInJVM_noNetworkTransport(TestAllWithoutLibvirt.java:67)
+                at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+                at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+                at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+                at java.lang.reflect.Method.invoke(Method.java:597)
+                at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+                at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+                at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+                at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+                at org.junit.rules.ExternalResource$1.evaluate(ExternalResource.java:48)
+                at org.junit.rules.RunRules.evaluate(RunRules.java:20)
+                at org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:325)
+                at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:78)
+                at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:57)
+                at org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)
+                at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)
+                at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)
+                at org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)
+                at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)
+                at org.junit.runners.ParentRunner.run(ParentRunner.java:363)
+                at org.apache.maven.surefire.junit4.JUnit4Provider.execute(JUnit4Provider.java:264)
+                at org.apache.maven.surefire.junit4.JUnit4Provider.executeTestSet(JUnit4Provider.java:153)
+                at org.apache.maven.surefire.junit4.JUnit4Provider.invoke(JUnit4Provider.java:124)
+                at org.apache.maven.surefire.booter.ForkedBooter.invokeProviderInSameClassLoader(ForkedBooter.java:200)
+                at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:153)
+                at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:103)
+            </failure>
+        </testcase>
     </testsuite>
 </testsuites>

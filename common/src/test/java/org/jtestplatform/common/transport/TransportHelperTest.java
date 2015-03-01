@@ -333,16 +333,30 @@ public class TransportHelperTest {
                 return new TestFrameworks(Arrays.asList(expectedParts).subList(1, expectedParts.length));
             }
         },
-        TESTRESULT_SUCCESS(TestResult.class, true, "framework", "test", TransportHelper.TRUE) {
+        TESTRESULT_SUCCESS(TestResult.class, true, "framework", "test", null) { // failureType=null
             @Override
             Message createMessage() {
-                return new TestResult(expectedParts[0], expectedParts[1], TransportHelper.TRUE.equals(expectedParts[2]));
+                return new TestResult(expectedParts[0], expectedParts[1]);
+            }
+
+            @Override
+            void verifyMessage(Message actualMessage) {
+                super.verifyMessage(actualMessage);
+                assertThat(((TestResult) actualMessage).isSuccess()).as("success").isTrue();
             }
         },
-        TESTRESULT_FAILURE(TestResult.class, true, "framework", "test", TransportHelper.FALSE) {
+        TESTRESULT_FAILURE(TestResult.class, true, "framework", "test", "failureType", "failureContent", "failureMessage") {
             @Override
             Message createMessage() {
-                return new TestResult(expectedParts[0], expectedParts[1], TransportHelper.TRUE.equals(expectedParts[2]));
+                TestResult testResult = (TestResult) TESTRESULT_SUCCESS.createMessage();
+                testResult.setFailure(expectedParts[2], expectedParts[3], expectedParts[4]);
+                return testResult;
+            }
+
+            @Override
+            void verifyMessage(Message actualMessage) {
+                super.verifyMessage(actualMessage);
+                assertThat(((TestResult) actualMessage).isSuccess()).as("success").isFalse();
             }
         },
         GETTESTFRAMEWORKS(GetTestFrameworks.class) {
@@ -388,11 +402,6 @@ public class TransportHelperTest {
 
         void verifyMessage(Message actualMessage) {
             assertThat(actualMessage).isEqualToComparingFieldByField(createMessage());
-        }
-
-        @Override
-        public String toString() {
-            return messageClass.getSimpleName();
         }
     }
 }

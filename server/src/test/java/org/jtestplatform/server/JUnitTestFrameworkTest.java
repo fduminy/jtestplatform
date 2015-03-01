@@ -22,11 +22,12 @@
 package org.jtestplatform.server;
 
 import junit.framework.TestCase;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -34,6 +35,8 @@ import java.util.Collection;
  * @author Fabien DUMINY (fduminy@jnode.org)
  */
 public class JUnitTestFrameworkTest extends TestFrameworkTest<JUnitTestFramework> {
+    private static final AssertionError FAILURE = new AssertionError("a failure");
+
     public JUnitTestFrameworkTest() throws Exception {
         super(new JUnitTestFramework());
 
@@ -45,6 +48,12 @@ public class JUnitTestFrameworkTest extends TestFrameworkTest<JUnitTestFramework
 
         addFailingTest(JUnit3TestClassTest.class, "testThatFails");
         addSucceedingTest(JUnit3TestClassTest.class, "testThatPasses");
+    }
+
+    protected void addFailingTest(Class<?> testClass, String method) throws Exception {
+        StringWriter writer = new StringWriter();
+        FAILURE.printStackTrace(new PrintWriter(writer));
+        addFailingTest(testClass, method, FAILURE.getClass().getName(), writer.toString(), FAILURE.getMessage());
     }
 
     public static void addTestsTo(JUnitTestFramework testFramework) throws Exception {
@@ -72,7 +81,7 @@ public class JUnitTestFrameworkTest extends TestFrameworkTest<JUnitTestFramework
 
         @Test
         public void aFailingTest() {
-            Assert.fail("a failure");
+            throw FAILURE;
         }
     }
 
@@ -83,7 +92,7 @@ public class JUnitTestFrameworkTest extends TestFrameworkTest<JUnitTestFramework
 
         @Test
         public void aFailingTest() {
-            Assert.fail("a failure");
+            throw FAILURE;
         }
     }
 
@@ -92,7 +101,7 @@ public class JUnitTestFrameworkTest extends TestFrameworkTest<JUnitTestFramework
         }
 
         public void testThatFails() {
-            Assert.fail("a failure");
+            throw FAILURE;
         }
     }
 

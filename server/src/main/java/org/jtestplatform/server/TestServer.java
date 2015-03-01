@@ -67,7 +67,7 @@ public class TestServer {
     public TestServer(TransportFactory transportFactory) throws Exception {
         messageClassToCommand = new HashMap<Class<? extends Message>, TestServerCommand<? extends Message, ? extends Message>>();
 
-        addCommand(RunTest.class, new RunTestCommand(this));
+        addCommand(RunTest.class, new RunTestCommand());
         addCommand(Shutdown.class, new ShutdownCommand(this));
         addCommand(GetTestFrameworks.class, new GetTestFrameworksCommand());
         addCommand(GetFrameworkTests.class, new GetFrameworkTestsCommand());

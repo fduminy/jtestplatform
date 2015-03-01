@@ -21,6 +21,8 @@
  */
 package org.jtestplatform.server;
 
+import org.jtestplatform.common.message.TestResult;
+
 import java.util.Collection;
 import java.util.Set;
 
@@ -40,7 +42,7 @@ public interface TestFramework {
 
     Collection<String> getTests();
 
-    boolean runTest(String test) throws UnknownTestException;
+    void runTest(TestResult testResult) throws UnknownTestException;
 
     /**
      * @param testClass

@@ -25,11 +25,16 @@ import com.google.code.tempusfugit.temporal.Duration;
 import org.apache.commons.lang3.StringUtils;
 import org.jtestplatform.cloud.configuration.Platform;
 import org.jtestplatform.common.TestName;
+import org.jtestplatform.common.TestNameTest;
 import org.jtestplatform.common.message.TestResult;
 import org.jtestplatform.junitxmlreport.*;
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.theories.Theories;
+import org.junit.experimental.theories.Theory;
 import org.junit.rules.TemporaryFolder;
+import org.junit.runner.RunWith;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -41,10 +46,13 @@ import static com.google.code.tempusfugit.temporal.Duration.millis;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.jtestplatform.client.JUnitTestReporter.PLATFORM_PROPERTY_PREFIX;
+import static org.jtestplatform.client.JUnitTestReporterTest.TestedClass.Method.method1;
+import static org.jtestplatform.client.JUnitTestReporterTest.TestedClass.Method.method2;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
+@RunWith(Theories.class)
 public class JUnitTestReporterTest {
     public static final Duration DURATION1 = millis(1);
     public static final Duration DURATION2 = millis(3);
@@ -69,7 +77,7 @@ public class JUnitTestReporterTest {
         JUnitXMLReportWriter writer = mock(JUnitXMLReportWriter.class);
         final File reportDir = folder.getRoot();
         MockTestReporter reporter = new MockTestReporter(reportDir, writer);
-        TestResult testResult = new TestResult("framework", "testCase1", true);
+        TestResult testResult = new TestResult("framework", "testCase1");
         reporter.report(Utils.PLATFORM1, testResult, millis(1));
 
         reporter.saveReport();
@@ -77,12 +85,12 @@ public class JUnitTestReporterTest {
         verify(writer, times(1)).write(any(FileOutputStream.class), eq(reporter.suites));
     }
 
-    @Test
-    public void testReport_onePlatform_oneTest() throws Exception {
+    @Theory
+    public void testReport_onePlatform_oneTest(ResultType resultType) throws Exception {
         JUnitXMLReportWriter writer = mock(JUnitXMLReportWriter.class);
         final File reportDir = folder.getRoot();
         MockTestReporter reporter = new MockTestReporter(reportDir, writer);
-        TestResult testResult = new TestResult("framework", "testCase1", true);
+        TestResult testResult = resultType.createTestResult("framework", method1);
 
         reporter.report(Utils.PLATFORM1, testResult, DURATION1);
 
@@ -93,13 +101,13 @@ public class JUnitTestReporterTest {
         assertTestSuite(reporter, suites, Utils.PLATFORM1, testResult.getFramework(), new TestReport(testResult, DURATION1));
     }
 
-    @Test
-    public void testReport_onePlatform_twoTests() throws Exception {
+    @Theory
+    public void testReport_onePlatform_twoTests(ResultType resultType) throws Exception {
         JUnitXMLReportWriter writer = mock(JUnitXMLReportWriter.class);
         final File reportDir = folder.getRoot();
         MockTestReporter reporter = new MockTestReporter(reportDir, writer);
-        TestResult testResult1 = new TestResult("framework", "testCase1", true);
-        TestResult testResult2 = new TestResult(testResult1.getFramework(), "testCase2", true);
+        TestResult testResult1 = resultType.createTestResult("framework", method1);
+        TestResult testResult2 = resultType.createTestResult(testResult1.getFramework(), method2);
 
         reporter.report(Utils.PLATFORM1, testResult1, DURATION1);
         reporter.report(Utils.PLATFORM1, testResult2, DURATION2);
@@ -112,13 +120,13 @@ public class JUnitTestReporterTest {
                 new TestReport(testResult2, DURATION2));
     }
 
-    @Test
-    public void testReport_twoPlatforms() throws Exception {
+    @Theory
+    public void testReport_twoPlatforms(ResultType resultType) throws Exception {
         JUnitXMLReportWriter writer = mock(JUnitXMLReportWriter.class);
         final File reportDir = folder.getRoot();
         MockTestReporter reporter = new MockTestReporter(reportDir, writer);
-        TestResult testResult1 = new TestResult("framework", "testCase1", true);
-        TestResult testResult2 = new TestResult("framework2", "testCase2", true);
+        TestResult testResult1 = resultType.createTestResult("framework", method1);
+        TestResult testResult2 = resultType.createTestResult("framework2", method2);
 
         reporter.report(Utils.PLATFORM1, testResult1, DURATION1);
         reporter.report(Utils.PLATFORM2, testResult2, DURATION2);
@@ -152,7 +160,7 @@ public class JUnitTestReporterTest {
             }
 
             totalDuration = totalDuration.plus(duration);
-            testReports.add(new TestReport(TestName.create(testCase.getClassname(), testCase.getName()), duration));
+            testReports.add(new TestReport(testCase, duration));
         }
 
         assertThat(testSuite.getPackage()).as("suite package name").isEqualTo(suitePackageName);
@@ -204,16 +212,31 @@ public class JUnitTestReporterTest {
     }
 
     private static class TestReport {
-        private final TestName testName;
+        private final String test;
         private final Duration testDuration;
 
-        private TestReport(TestResult testResult, Duration testDuration) {
-            this(TestName.parse(testResult.getTest()), testDuration);
+        private final String failureType;
+        private final String failureContent;
+        private final String failureMessage;
+
+        private TestReport(Testcase testCase, Duration testDuration) {
+            this.test = TestName.create(testCase.getClassname(), testCase.getName()).toString();
+            this.testDuration = testDuration;
+
+            List<Failure> failures = testCase.getFailure();
+            Failure failure = failures.isEmpty() ? null : failures.get(0);
+            this.failureType = (failure == null) ? null : failure.getType();
+            this.failureContent = (failure == null) ? null : failure.getContent();
+            this.failureMessage = (failure == null) ? null : failure.getMessage();
         }
 
-        private TestReport(TestName testName, Duration testDuration) {
-            this.testName = testName;
+        private TestReport(TestResult testResult, Duration testDuration) {
+            this.test = testResult.getTest();
             this.testDuration = testDuration;
+
+            this.failureType = testResult.getFailureType();
+            this.failureContent = testResult.getFailureContent();
+            this.failureMessage = testResult.getFailureMessage();
         }
 
         @Override
@@ -223,26 +246,61 @@ public class JUnitTestReporterTest {
 
             TestReport that = (TestReport) o;
 
-            if (testDuration != null ? !testDuration.equals(that.testDuration) : that.testDuration != null)
+            if (failureContent != null ? !failureContent.equals(that.failureContent) : that.failureContent != null)
                 return false;
-            if (testName != null ? !testName.equals(that.testName) : that.testName != null) return false;
+            if (failureMessage != null ? !failureMessage.equals(that.failureMessage) : that.failureMessage != null)
+                return false;
+            if (failureType != null ? !failureType.equals(that.failureType) : that.failureType != null) return false;
+            if (!test.equals(that.test)) return false;
+            if (!testDuration.equals(that.testDuration)) return false;
 
             return true;
         }
 
         @Override
         public int hashCode() {
-            int result = testName != null ? testName.hashCode() : 0;
-            result = 31 * result + (testDuration != null ? testDuration.hashCode() : 0);
-            return result;
+            return 0;
         }
 
         @Override
         public String toString() {
-            return "TestReport{" +
-                    "testName=" + testName +
+            return "test='" + test + '\'' +
                     ", testDuration=" + testDuration +
-                    '}';
+                    ", failureType='" + failureType + '\'' +
+                    ", failureContent='" + failureContent + '\'' +
+                    ", failureMessage='" + failureMessage + '\'';
+        }
+    }
+
+    public static enum ResultType {
+        SUCCESS,
+        FAILURE {
+            @Override
+            public TestResult createTestResult(String framework, TestedClass.Method method) {
+                TestResult testResult = super.createTestResult(framework, method);
+                int id = method.ordinal();
+                testResult.setFailure("failureType" + id, "failureContent" + id, "failureMessage" + id);
+                return testResult;
+            }
+        };
+
+        public TestResult createTestResult(String framework, TestedClass.Method method) {
+            return new TestResult(framework, TestName.toString(TestNameTest.class, method.name()));
+        }
+    }
+
+    public static class TestedClass {
+        public static enum Method {
+            method1,
+            method2;
+        }
+
+        public void method1() {
+            Assert.fail("failure");
+        }
+
+        public void method2() {
+            Assert.fail("failure");
         }
     }
 }

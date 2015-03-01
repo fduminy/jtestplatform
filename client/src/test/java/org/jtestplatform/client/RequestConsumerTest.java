@@ -146,7 +146,7 @@ public class RequestConsumerTest {
     }
 
     private static TestResult testResult(Request request) {
-        return new TestResult(request.getTestFramework(), request.getTestName(), true);
+        return new TestResult(request.getTestFramework(), request.getTestName());
     }
 
     static class TestResultComparator implements Comparator<TestResult> {

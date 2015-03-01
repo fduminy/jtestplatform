@@ -288,6 +288,7 @@ public class InJVMTestDriver extends TestDriver {
 
         @Override
         public void send(String message) throws TransportException {
+            message = (message == null) ? TransportLogger.NULL_MESSAGE : message;
             try {
                 outBox.put(message);
             } catch (InterruptedException e) {
@@ -298,7 +299,8 @@ public class InJVMTestDriver extends TestDriver {
         @Override
         public String receive() throws TransportException {
             try {
-                return inBox.take();
+                String message = inBox.take();
+                return (message == TransportLogger.NULL_MESSAGE) ? null : message;
             } catch (InterruptedException e) {
                 throw new TransportException(e.getMessage(), e);
             }

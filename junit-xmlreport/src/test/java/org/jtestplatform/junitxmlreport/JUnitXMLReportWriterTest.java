@@ -31,20 +31,23 @@ import org.xml.sax.SAXException;
 
 import java.io.*;
 
+import static org.apache.commons.lang3.StringUtils.strip;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public class JUnitXMLReportWriterTest {
+    private static final String LINE_SEPARATOR = System.getProperty("line.separator");
+
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
 
     @Test
     public void testWrite() throws Exception {
-        String expectedXML = readResource("/testsuites-full.xml");
+        String expectedXML = readResource("/testsuites-full.xml", false);
 
         File actualFile = folder.newFile("actualFile");
         new JUnitXMLReportWriter().write(new FileOutputStream(actualFile), buildReport());
-        String actualXML = readFile(actualFile.getAbsolutePath());
+        String actualXML = readFile(actualFile.getAbsolutePath(), false);
 
         compareXML(expectedXML, actualXML);
     }
@@ -151,17 +154,28 @@ public class JUnitXMLReportWriterTest {
         properties.getProperty().add(property);
     }
 
-    public static String readResource(String name) throws IOException {
+    public static String readResource(String name, boolean trimText) throws IOException {
         StringWriter os = new StringWriter();
         final InputStream stream = JUnitXMLReportWriterTest.class.getResourceAsStream(name);
         assertNotNull(name + " not found", stream);
         IOUtils.copy(stream, os);
-        return os.toString();
+        return trimText(trimText, os.toString());
     }
 
-    public static String readFile(String file) throws IOException {
+    public static String readFile(String file, boolean trimText) throws IOException {
         StringWriter os = new StringWriter();
         IOUtils.copy(new FileInputStream(file), os);
-        return os.toString();
+        return trimText(trimText, os.toString());
+    }
+
+    private static String trimText(boolean trimText, String content) {
+        if (trimText) {
+            StringBuilder buffer = new StringBuilder();
+            for (String line : content.split(LINE_SEPARATOR)) {
+                buffer.append(strip(line)).append(LINE_SEPARATOR);
+            }
+            content = buffer.toString();
+        }
+        return content;
     }
 }

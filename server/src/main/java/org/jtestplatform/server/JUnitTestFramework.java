@@ -25,6 +25,7 @@
 package org.jtestplatform.server;
 
 import org.jtestplatform.common.TestName;
+import org.jtestplatform.common.message.TestResult;
 import org.junit.Test;
 import org.junit.experimental.theories.Theory;
 import org.junit.runner.Description;
@@ -36,6 +37,8 @@ import org.junit.runners.model.FrameworkMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.util.*;
 
@@ -86,12 +89,12 @@ public class JUnitTestFramework implements TestFramework {
      * @throws UnknownTestException
      */
     @Override
-    public boolean runTest(String test) throws UnknownTestException {
-        if (!getTests().contains(test)) { // will also find the tests
-            throw new UnknownTestException(test);
+    public void runTest(TestResult testResult) throws UnknownTestException {
+        if (!getTests().contains(testResult.getTest())) { // will also find the tests
+            throw new UnknownTestException(testResult.getTest());
         }
 
-        final TestData t = tests.get(test);
+        final TestData t = tests.get(testResult.getTest());
         JUnitCore core = new JUnitCore();
 
         Request request = Request.aClass(t.getTestClass()).filterWith(new Filter() {
@@ -133,7 +136,12 @@ public class JUnitTestFramework implements TestFramework {
         });
 
         Result result = core.run(request);
-        return result.getFailureCount() == 0;
+        if (result.getFailureCount() != 0) {
+            Throwable failure = result.getFailures().get(0).getException();
+            StringWriter writer = new StringWriter();
+            failure.printStackTrace(new PrintWriter(writer));
+            testResult.setFailure(failure.getClass().getName(), writer.toString(), failure.getMessage());
+        }
     }
 
     @SuppressWarnings("unchecked")

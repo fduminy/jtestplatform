@@ -23,7 +23,6 @@ package org.jtestplatform.common.message;
 
 import org.jtestplatform.common.transport.Transport;
 import org.jtestplatform.common.transport.TransportException;
-import org.jtestplatform.common.transport.TransportHelper;
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)
@@ -32,16 +31,18 @@ import org.jtestplatform.common.transport.TransportHelper;
 public class TestResult implements Message {
     private String framework;
     private String test;
-    private boolean success;
+
+    private String failureType;
+    private String failureContent;
+    private String failureMessage;
 
     public TestResult() {
         // nothing
     }
 
-    public TestResult(String framework, String test, boolean success) {
+    public TestResult(String framework, String test) {
         this.framework = framework;
         this.test = test;
-        this.success = success;
     }
 
     /**
@@ -55,12 +56,24 @@ public class TestResult implements Message {
         return test;
     }
 
+    public String getFailureType() {
+        return failureType;
+    }
+
+    public String getFailureContent() {
+        return failureContent;
+    }
+
+    public String getFailureMessage() {
+        return failureMessage;
+    }
+
     /**
      * Get the success of the test.
      * @return The success of the test.
      */
     public boolean isSuccess() {
-        return success;
+        return failureType == null;
     }
 
     /**
@@ -70,7 +83,11 @@ public class TestResult implements Message {
     public void sendWith(Transport transport) throws TransportException {
         transport.send(framework);
         transport.send(test);
-        TransportHelper.sendBoolean(transport, success);
+        transport.send(failureType);
+        if (failureType != null) {
+            transport.send(failureContent);
+            transport.send(failureMessage);
+        }
     }
 
     /**
@@ -80,6 +97,16 @@ public class TestResult implements Message {
     public void receiveFrom(Transport transport) throws TransportException {
         framework = transport.receive();
         test = transport.receive();
-        success = TransportHelper.receiveBoolean(transport);
+        failureType = transport.receive();
+        if (failureType != null) {
+            failureContent = transport.receive();
+            failureMessage = transport.receive();
+        }
+    }
+
+    public void setFailure(String failureType, String failureContent, String failureMessage) {
+        this.failureType = failureType;
+        this.failureContent = failureContent;
+        this.failureMessage = failureMessage;
     }
 }

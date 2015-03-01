@@ -26,19 +26,12 @@ import org.jtestplatform.common.message.RunTest;
 import org.jtestplatform.common.message.TestResult;
 import org.jtestplatform.server.TestFramework;
 import org.jtestplatform.server.TestFrameworkManager;
-import org.jtestplatform.server.TestServer;
 import org.jtestplatform.server.TestServerCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class RunTestCommand implements TestServerCommand<RunTest, TestResult> {
     private static final Logger LOGGER = LoggerFactory.getLogger(RunTestCommand.class);
-
-    private final TestServer testServer;
-
-    public RunTestCommand(TestServer testServer) {
-        this.testServer = testServer;
-    }
 
     @Override
     public TestResult execute(RunTest message) throws Exception {
@@ -47,7 +40,8 @@ public class RunTestCommand implements TestServerCommand<RunTest, TestResult> {
 
         TestFrameworkManager manager = TestFrameworkManager.getInstance();
         TestFramework testFramework = manager.getTestFramework(message.getFramework());
-        boolean success = testFramework.runTest(test);
-        return new TestResult(message.getFramework(), message.getTest(), success);
+        TestResult testResult = new TestResult(message.getFramework(), message.getTest());
+        testFramework.runTest(testResult);
+        return testResult;
     }
 }

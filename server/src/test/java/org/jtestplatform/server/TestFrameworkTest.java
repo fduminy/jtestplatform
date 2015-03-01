@@ -22,10 +22,13 @@
 package org.jtestplatform.server;
 
 import org.jtestplatform.common.TestName;
+import org.jtestplatform.common.message.TestResult;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.*;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.jtestplatform.server.Utils.contains;
 import static org.junit.Assert.*;
 
@@ -83,9 +86,18 @@ abstract public class TestFrameworkTest<T extends TestFramework> {
     @Test
     public void testRunTest() throws UnknownTestException {
         for (String aTest : testFramework.getTests()) {
-            if (!data.mustFail(aTest)) {
-                boolean success = testFramework.runTest(aTest);
-                assertTrue("The test '" + aTest + "' must succeed", success);
+            TestFailure failure = data.getTestFailure(aTest);
+            if (failure == null) {
+                // prepare
+                TestResult testResult = createTestResult(aTest);
+
+                // test
+                testFramework.runTest(testResult);
+
+                // verify
+                assertThat(testResult.getFailureType()).as("failureType").isNull();
+                assertThat(testResult.getFailureContent()).as("failureContent").isNull();
+                assertThat(testResult.getFailureMessage()).as("failureMessage").isNull();
             }
         }
     }
@@ -93,74 +105,72 @@ abstract public class TestFrameworkTest<T extends TestFramework> {
     @Test
     public void testRunFailingTest() throws UnknownTestException {
         for (String aTest : testFramework.getTests()) {
-            if (data.mustFail(aTest)) {
-                boolean success = testFramework.runTest(aTest);
-                assertFalse("The test '" + aTest + "' must fail", success);
+            TestFailure failure = data.getTestFailure(aTest);
+            if (failure != null) {
+                // prepare
+                TestResult testResult = createTestResult(aTest);
+
+                // test
+                testFramework.runTest(testResult);
+
+                // verify
+                assertThat(testResult.getFailureType()).as("failureType").isEqualTo(failure.failureType);
+                assertThat(testResult.getFailureContent()).as("failureContent").isEqualTo(failure.failureContent);
+                assertThat(testResult.getFailureMessage()).as("failureMessage").isEqualTo(failure.failureMessage);
             }
         }
     }
 
     @Test(expected=UnknownTestException.class)
     public void testRunUnknownTest() throws UnknownTestException {
-        testFramework.runTest("AnUnknownTest");
+        testFramework.runTest(createTestResult("AnUnknownTest"));
+    }
+
+    private TestResult createTestResult(String test) {
+        return new TestResult(testFramework.getClass().getSimpleName(), test);
     }
 
     protected final void addSucceedingTest(Class<?> testClass, String method) throws Exception {
-        addTest(testClass, true, method);
+        addTest(testClass, true, method, null, null, null);
     }
 
-    protected final void addFailingTest(Class<?> testClass, String method) throws Exception {
-        addTest(testClass, false, method);
+    protected final void addFailingTest(Class<?> testClass, String method,
+                                        String failureType, String failureContent, String failureMessage) throws Exception {
+        addTest(testClass, false, method, failureType, failureContent, failureMessage);
     }
 
-    private void addTest(Class<?> testClass, boolean succeed, String method) throws Exception {
-        data.addTest(testClass, succeed, method);
+    private void addTest(Class<?> testClass, boolean succeed, String method,
+                         String failureType, String failureContent, String failureMessage) throws Exception {
+        data.addTest(testClass, succeed, method, failureType, failureContent, failureMessage);
     }
 
     private static class TestFrameworkData {
         private final TestFramework framework;
-        private final List<String> failingTests = new ArrayList<String>();
-        private final List<String> succeedingTests = new ArrayList<String>();
+        private final Map<String, TestFailure> testFailures = new HashMap<String, TestFailure>();
         private final Map<Class<?>, List<String>> tests = new HashMap<Class<?>, List<String>>();
 
         public TestFrameworkData(TestFramework framework) {
             this.framework = framework;
         }
 
-        /**
-         * @param testClass
-         * @return The list of expected tests.
-         */
         public List<String> getExpectedTests(Class<?> testClass) {
             return tests.get(testClass);
         }
 
-        /**
-         * @return The collections of test classes.
-         */
         public Collection<Class<?>> getTestClasses() {
             return tests.keySet();
         }
 
-        /**
-         * @param testName
-         * @return false if the given test must fail, true otherwise.
-         */
-        public boolean mustFail(String testName) {
-            boolean result;
-
-            if (failingTests.contains(testName)) {
-                result = true;
-            } else if (succeedingTests.contains(testName)) {
-                result = false;
-            } else {
+        public TestFailure getTestFailure(String testName) {
+            if (!testFailures.containsKey(testName)) {
                 throw new AssertionError("unexpected test : " + testName);
             }
 
-            return result;
+            return testFailures.get(testName);
         }
 
-        public void addTest(Class<?> testClass, boolean succeed, String method) throws Exception {
+        public void addTest(Class<?> testClass, boolean succeed, String method,
+                            String failureType, String failureContent, String failureMessage) throws Exception {
             String testName = TestName.toString(testClass, method);
 
             framework.addTestClass(testClass);
@@ -173,12 +183,24 @@ abstract public class TestFrameworkTest<T extends TestFramework> {
             testsForClass.add(testName);
 
             if (succeed) {
-                succeedingTests.add(testName);
+                testFailures.put(testName, null);
             } else {
-                failingTests.add(testName);
+                testFailures.put(testName, new TestFailure(failureType, failureContent, failureMessage));
             }
 
-            assertThat(framework.getTests(), contains(testClass, method));
+            Assert.assertThat(framework.getTests(), contains(testClass, method));
+        }
+    }
+
+    private static class TestFailure {
+        private final String failureType;
+        private final String failureContent;
+        private final String failureMessage;
+
+        private TestFailure(String failureType, String failureContent, String failureMessage) {
+            this.failureType = failureType;
+            this.failureContent = failureContent;
+            this.failureMessage = failureMessage;
         }
     }
 }

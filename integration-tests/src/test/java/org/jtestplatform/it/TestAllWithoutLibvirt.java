@@ -91,8 +91,8 @@ public class TestAllWithoutLibvirt {
 
         assertThat(xmlReportFile).as("xml report file").isNotNull();
 
-        String actualContent = JUnitXMLReportWriterTest.readFile(xmlReportFile.getAbsolutePath());
-        String expectedContent = JUnitXMLReportWriterTest.readResource(expectedContentResource);
+        String actualContent = JUnitXMLReportWriterTest.readFile(xmlReportFile.getAbsolutePath(), true);
+        String expectedContent = JUnitXMLReportWriterTest.readResource(expectedContentResource, true);
         JUnitXMLReportWriterTest.compareXML(expectedContent, actualContent);
     }
 }

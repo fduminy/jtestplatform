@@ -167,7 +167,7 @@ public class Utils {
                     break;
                 case RUN_TEST:
                     state = STATE.INIT;
-                    result = new TestResult(framework, test, true);
+                    result = new TestResult(framework, test);
                     testResults.add((TestResult) result);
                     break;
                 case INIT:
