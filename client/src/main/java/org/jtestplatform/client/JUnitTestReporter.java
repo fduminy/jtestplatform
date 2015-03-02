@@ -25,6 +25,7 @@ import com.google.code.tempusfugit.temporal.Duration;
 import org.jtestplatform.cloud.configuration.Platform;
 import org.jtestplatform.common.TestName;
 import org.jtestplatform.common.message.TestResult;
+import org.jtestplatform.junitxmlreport.Error;
 import org.jtestplatform.junitxmlreport.*;
 import org.jtestplatform.junitxmlreport.Properties;
 
@@ -85,11 +86,19 @@ public class JUnitTestReporter implements TestReporter {
             testCase.setName(testName.getMethodName());
             testCase.setTime(durationToString(testDuration));
             if (!testResult.isSuccess()) {
-                Failure failure = new Failure();
-                failure.setType(testResult.getFailureType());
-                failure.setContent(testResult.getFailureContent());
-                failure.setMessage(testResult.getFailureMessage());
-                testCase.getFailure().add(failure);
+                if (testResult.isError()) {
+                    Error error = new Error();
+                    error.setType(testResult.getFailureType());
+                    error.setContent(testResult.getFailureContent());
+                    error.setMessage(testResult.getFailureMessage());
+                    testCase.getError().add(error);
+                } else {
+                    Failure failure = new Failure();
+                    failure.setType(testResult.getFailureType());
+                    failure.setContent(testResult.getFailureContent());
+                    failure.setMessage(testResult.getFailureMessage());
+                    testCase.getFailure().add(failure);
+                }
             }
             suite.getTestcase().add(testCase);
         }

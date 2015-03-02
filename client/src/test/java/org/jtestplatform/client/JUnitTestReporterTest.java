@@ -27,6 +27,7 @@ import org.jtestplatform.cloud.configuration.Platform;
 import org.jtestplatform.common.TestName;
 import org.jtestplatform.common.TestNameTest;
 import org.jtestplatform.common.message.TestResult;
+import org.jtestplatform.junitxmlreport.Error;
 import org.jtestplatform.junitxmlreport.*;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -145,7 +146,7 @@ public class JUnitTestReporterTest {
         assertThat(property.getValue()).isEqualTo(String.valueOf(propertyValue));
     }
 
-    private void assertTestSuite(JUnitTestReporter reporter, Testsuites suites, Platform platform, String framework, TestReport... expectedTestReports) throws ParseException {
+    private void assertTestSuite(JUnitTestReporter reporter, Testsuites suites, Platform platform, String framework, TestReport... expectedTestReports) throws Exception {
         String suitePackageName = new PlatformKeyBuilder().buildKey(platform);
         String suiteName = suitePackageName + '.' + framework;
         Testsuite testSuite = findTestSuite(suites, suiteName);
@@ -218,16 +219,32 @@ public class JUnitTestReporterTest {
         private final String failureType;
         private final String failureContent;
         private final String failureMessage;
+        private final boolean error;
 
-        private TestReport(Testcase testCase, Duration testDuration) {
+        private TestReport(Testcase testCase, Duration testDuration) throws ClassNotFoundException {
             this.test = TestName.create(testCase.getClassname(), testCase.getName()).toString();
             this.testDuration = testDuration;
 
             List<Failure> failures = testCase.getFailure();
-            Failure failure = failures.isEmpty() ? null : failures.get(0);
-            this.failureType = (failure == null) ? null : failure.getType();
-            this.failureContent = (failure == null) ? null : failure.getContent();
-            this.failureMessage = (failure == null) ? null : failure.getMessage();
+            List<Error> errors = testCase.getError();
+            if (!failures.isEmpty()) {
+                Failure failure = failures.get(0);
+                this.failureType = (failure == null) ? null : failure.getType();
+                this.failureContent = (failure == null) ? null : failure.getContent();
+                this.failureMessage = (failure == null) ? null : failure.getMessage();
+                this.error = false;
+            } else if (!errors.isEmpty()) {
+                Error error = errors.get(0);
+                this.failureType = error.getType();
+                this.failureContent = error.getContent();
+                this.failureMessage = error.getMessage();
+                this.error = true;
+            } else {
+                this.failureType = null;
+                this.failureContent = null;
+                this.failureMessage = null;
+                this.error = false;
+            }
         }
 
         private TestReport(TestResult testResult, Duration testDuration) {
@@ -237,6 +254,7 @@ public class JUnitTestReporterTest {
             this.failureType = testResult.getFailureType();
             this.failureContent = testResult.getFailureContent();
             this.failureMessage = testResult.getFailureMessage();
+            this.error = testResult.isError();
         }
 
         @Override
@@ -246,6 +264,7 @@ public class JUnitTestReporterTest {
 
             TestReport that = (TestReport) o;
 
+            if (error != that.error) return false;
             if (failureContent != null ? !failureContent.equals(that.failureContent) : that.failureContent != null)
                 return false;
             if (failureMessage != null ? !failureMessage.equals(that.failureMessage) : that.failureMessage != null)
@@ -268,7 +287,8 @@ public class JUnitTestReporterTest {
                     ", testDuration=" + testDuration +
                     ", failureType='" + failureType + '\'' +
                     ", failureContent='" + failureContent + '\'' +
-                    ", failureMessage='" + failureMessage + '\'';
+                    ", failureMessage='" + failureMessage + '\'' +
+                    ", error=" + error;
         }
     }
 
@@ -279,7 +299,18 @@ public class JUnitTestReporterTest {
             public TestResult createTestResult(String framework, TestedClass.Method method) {
                 TestResult testResult = super.createTestResult(framework, method);
                 int id = method.ordinal();
-                testResult.setFailure("failureType" + id, "failureContent" + id, "failureMessage" + id);
+                AssertionError failure = new AssertionError("failureMessage" + id);
+                testResult.setFailure(failure.getClass().getName(), "failureContent" + id, failure.getMessage(), false);
+                return testResult;
+            }
+        },
+        ERROR {
+            @Override
+            public TestResult createTestResult(String framework, TestedClass.Method method) {
+                TestResult testResult = super.createTestResult(framework, method);
+                int id = method.ordinal();
+                Exception error = new Exception("errorMessage" + id);
+                testResult.setFailure(error.getClass().getName(), "errorContent" + id, error.getMessage(), true);
                 return testResult;
             }
         };

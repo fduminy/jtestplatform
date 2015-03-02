@@ -41,6 +41,7 @@ import java.util.*;
 import static java.lang.Boolean.TRUE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.jtestplatform.common.transport.TransportHelper.FALSE;
 import static org.junit.Assume.assumeFalse;
 import static org.mockito.Mockito.*;
 
@@ -275,7 +276,7 @@ public class TransportHelperTest {
     public void testReceiveBoolean(boolean expectedValue) throws TransportException {
         // prepare
         Transport transport = mock(Transport.class);
-        when(transport.receive()).thenReturn(expectedValue ? TransportHelper.TRUE : TransportHelper.FALSE);
+        when(transport.receive()).thenReturn(expectedValue ? TransportHelper.TRUE : FALSE);
 
         // test
         boolean actualValue = TransportHelper.receiveBoolean(transport);
@@ -303,7 +304,7 @@ public class TransportHelperTest {
         TransportHelper.sendBoolean(transport, expectedValue);
 
         // verify
-        verify(transport, times(1)).send(expectedValue ? TransportHelper.TRUE : TransportHelper.FALSE);
+        verify(transport, times(1)).send(expectedValue ? TransportHelper.TRUE : FALSE);
     }
 
     private static final Comparator<Class<?>> CLASS_COMPARATOR = new Comparator<Class<?>>() {
@@ -345,11 +346,25 @@ public class TransportHelperTest {
                 assertThat(((TestResult) actualMessage).isSuccess()).as("success").isTrue();
             }
         },
-        TESTRESULT_FAILURE(TestResult.class, true, "framework", "test", "failureType", "failureContent", "failureMessage") {
+        TESTRESULT_FAILURE(TestResult.class, true, "framework", "test", "failureType", "failureContent", "failureMessage", FALSE) {
             @Override
             Message createMessage() {
                 TestResult testResult = (TestResult) TESTRESULT_SUCCESS.createMessage();
-                testResult.setFailure(expectedParts[2], expectedParts[3], expectedParts[4]);
+                testResult.setFailure(expectedParts[2], expectedParts[3], expectedParts[4], false);
+                return testResult;
+            }
+
+            @Override
+            void verifyMessage(Message actualMessage) {
+                super.verifyMessage(actualMessage);
+                assertThat(((TestResult) actualMessage).isSuccess()).as("success").isFalse();
+            }
+        },
+        TESTRESULT_ERROR(TestResult.class, true, "framework", "test", "errorType", "errorContent", "errorMessage", TransportHelper.TRUE) {
+            @Override
+            Message createMessage() {
+                TestResult testResult = (TestResult) TESTRESULT_SUCCESS.createMessage();
+                testResult.setFailure(expectedParts[2], expectedParts[3], expectedParts[4], true);
                 return testResult;
             }
 

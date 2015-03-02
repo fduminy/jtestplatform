@@ -26,10 +26,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Collection;
+
+import static org.jtestplatform.server.ServerUtils.printStackTrace;
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)
@@ -42,18 +42,19 @@ public class JUnitTestFrameworkTest extends TestFrameworkTest<JUnitTestFramework
 
         addFailingTest(ParameterizedTestClass.class, "aFailingTest");
         addSucceedingTest(ParameterizedTestClass.class, "aPassingTest");
+        addTestWithError(ParameterizedTestClass.class, "aTestThrowingAnError");
 
         addFailingTest(TestClass.class, "aFailingTest");
         addSucceedingTest(TestClass.class, "aPassingTest");
+        addTestWithError(TestClass.class, "aTestThrowingAnError");
 
         addFailingTest(JUnit3TestClassTest.class, "testThatFails");
         addSucceedingTest(JUnit3TestClassTest.class, "testThatPasses");
+        addTestWithError(JUnit3TestClassTest.class, "testThatThrowsAnError");
     }
 
     protected void addFailingTest(Class<?> testClass, String method) throws Exception {
-        StringWriter writer = new StringWriter();
-        FAILURE.printStackTrace(new PrintWriter(writer));
-        addFailingTest(testClass, method, FAILURE.getClass().getName(), writer.toString(), FAILURE.getMessage());
+        addFailingTest(testClass, method, FAILURE.getClass().getName(), printStackTrace(FAILURE), FAILURE.getMessage());
     }
 
     public static void addTestsTo(JUnitTestFramework testFramework) throws Exception {
@@ -83,6 +84,11 @@ public class JUnitTestFrameworkTest extends TestFrameworkTest<JUnitTestFramework
         public void aFailingTest() {
             throw FAILURE;
         }
+
+        @Test
+        public void aTestThrowingAnError() {
+            throw ERROR;
+        }
     }
 
     public static class TestClass {
@@ -94,6 +100,11 @@ public class JUnitTestFrameworkTest extends TestFrameworkTest<JUnitTestFramework
         public void aFailingTest() {
             throw FAILURE;
         }
+
+        @Test
+        public void aTestThrowingAnError() {
+            throw ERROR;
+        }
     }
 
     public static class JUnit3TestClassTest extends TestCase {
@@ -102,6 +113,10 @@ public class JUnitTestFrameworkTest extends TestFrameworkTest<JUnitTestFramework
 
         public void testThatFails() {
             throw FAILURE;
+        }
+
+        public void testThatThrowsAnError() {
+            throw ERROR;
         }
     }
 

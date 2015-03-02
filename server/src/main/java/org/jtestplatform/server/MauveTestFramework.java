@@ -37,6 +37,8 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.util.*;
 
+import static org.jtestplatform.server.ServerUtils.printStackTrace;
+
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)
@@ -104,10 +106,10 @@ public class MauveTestFramework implements TestFramework {
         try {
             m.runTest(testResult.getTest());
             if ((m.testPassed != null) && !m.testPassed.booleanValue()) {
-                testResult.setFailure(AssertionError.class.getName(), m.debugLog.toString(), null);
+                testResult.setFailure(AssertionError.class.getName(), m.debugLog.toString(), null, false);
             }
         } catch (Exception e) {
-            testResult.setFailure(e.getClass().getName(), null, e.getMessage());
+            testResult.setFailure(e.getClass().getName(), printStackTrace(e), e.getMessage(), true);
         }
     }
 

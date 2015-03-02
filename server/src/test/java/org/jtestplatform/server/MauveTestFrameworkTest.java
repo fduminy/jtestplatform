@@ -33,11 +33,13 @@ public class MauveTestFrameworkTest extends TestFrameworkTest<MauveTestFramework
 
         addSucceedingTest(MauveTestClass.class, null);
         addFailingTest(MauveFailingTestClass.class, null, AssertionError.class.getName(), "got true but expected false", null);
+        addTestWithError(MauveTestClassWithError.class, null);
     }
 
     public static void addTestsTo(MauveTestFramework testFramework) throws Exception {
         testFramework.addTestClass(MauveTestClass.class);
         testFramework.addTestClass(MauveFailingTestClass.class);
+        testFramework.addTestClass(MauveTestClassWithError.class);
     }
 
     public static class MauveTestClass implements Testlet {
@@ -53,6 +55,14 @@ public class MauveTestFrameworkTest extends TestFrameworkTest<MauveTestFramework
         @Override
         public void test(TestHarness harness) {
             harness.check(true, false); // will fail
+        }
+    }
+
+    public static class MauveTestClassWithError implements Testlet {
+
+        @Override
+        public void test(TestHarness harness) {
+            throw ERROR;
         }
     }
 }

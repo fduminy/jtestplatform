@@ -37,10 +37,10 @@ import org.junit.runners.model.FrameworkMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.util.*;
+
+import static org.jtestplatform.server.ServerUtils.printStackTrace;
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)
@@ -138,9 +138,8 @@ public class JUnitTestFramework implements TestFramework {
         Result result = core.run(request);
         if (result.getFailureCount() != 0) {
             Throwable failure = result.getFailures().get(0).getException();
-            StringWriter writer = new StringWriter();
-            failure.printStackTrace(new PrintWriter(writer));
-            testResult.setFailure(failure.getClass().getName(), writer.toString(), failure.getMessage());
+            boolean error = !(failure instanceof AssertionError);
+            testResult.setFailure(failure.getClass().getName(), printStackTrace(failure), failure.getMessage(), error);
         }
     }
 

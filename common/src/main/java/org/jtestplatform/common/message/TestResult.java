@@ -24,6 +24,9 @@ package org.jtestplatform.common.message;
 import org.jtestplatform.common.transport.Transport;
 import org.jtestplatform.common.transport.TransportException;
 
+import static org.jtestplatform.common.transport.TransportHelper.receiveBoolean;
+import static org.jtestplatform.common.transport.TransportHelper.sendBoolean;
+
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)
  *
@@ -32,6 +35,7 @@ public class TestResult implements Message {
     private String framework;
     private String test;
 
+    private boolean error;
     private String failureType;
     private String failureContent;
     private String failureMessage;
@@ -68,6 +72,10 @@ public class TestResult implements Message {
         return failureMessage;
     }
 
+    public boolean isError() {
+        return error;
+    }
+
     /**
      * Get the success of the test.
      * @return The success of the test.
@@ -87,6 +95,7 @@ public class TestResult implements Message {
         if (failureType != null) {
             transport.send(failureContent);
             transport.send(failureMessage);
+            sendBoolean(transport, error);
         }
     }
 
@@ -101,12 +110,14 @@ public class TestResult implements Message {
         if (failureType != null) {
             failureContent = transport.receive();
             failureMessage = transport.receive();
+            error = receiveBoolean(transport);
         }
     }
 
-    public void setFailure(String failureType, String failureContent, String failureMessage) {
+    public void setFailure(String failureType, String failureContent, String failureMessage, boolean error) {
         this.failureType = failureType;
         this.failureContent = failureContent;
         this.failureMessage = failureMessage;
+        this.error = error;
     }
 }

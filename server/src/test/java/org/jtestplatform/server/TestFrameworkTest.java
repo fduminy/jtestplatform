@@ -29,6 +29,9 @@ import org.junit.Test;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.jtestplatform.server.ServerUtils.printStackTrace;
+import static org.jtestplatform.server.TestFrameworkTest.TestResultType.FAILURE;
+import static org.jtestplatform.server.TestFrameworkTest.TestResultType.SUCCESS;
 import static org.jtestplatform.server.Utils.contains;
 import static org.junit.Assert.*;
 
@@ -38,6 +41,8 @@ import static org.junit.Assert.*;
  *
  */
 abstract public class TestFrameworkTest<T extends TestFramework> {
+    static final NullPointerException ERROR = new NullPointerException("an unexpected error");
+
     private final TestFrameworkData data;
     private final T testFramework;
 
@@ -98,6 +103,8 @@ abstract public class TestFrameworkTest<T extends TestFramework> {
                 assertThat(testResult.getFailureType()).as("failureType").isNull();
                 assertThat(testResult.getFailureContent()).as("failureContent").isNull();
                 assertThat(testResult.getFailureMessage()).as("failureMessage").isNull();
+                assertThat(testResult.isSuccess()).as("success").isTrue();
+                assertThat(testResult.isError()).as("error").isFalse();
             }
         }
     }
@@ -106,7 +113,7 @@ abstract public class TestFrameworkTest<T extends TestFramework> {
     public void testRunFailingTest() throws UnknownTestException {
         for (String aTest : testFramework.getTests()) {
             TestFailure failure = data.getTestFailure(aTest);
-            if (failure != null) {
+            if ((failure != null) && !failure.error) {
                 // prepare
                 TestResult testResult = createTestResult(aTest);
 
@@ -117,6 +124,29 @@ abstract public class TestFrameworkTest<T extends TestFramework> {
                 assertThat(testResult.getFailureType()).as("failureType").isEqualTo(failure.failureType);
                 assertThat(testResult.getFailureContent()).as("failureContent").isEqualTo(failure.failureContent);
                 assertThat(testResult.getFailureMessage()).as("failureMessage").isEqualTo(failure.failureMessage);
+                assertThat(testResult.isSuccess()).as("success").isFalse();
+                assertThat(testResult.isError()).as("error").isFalse();
+            }
+        }
+    }
+
+    @Test
+    public void testRunTestWithAnError() throws UnknownTestException {
+        for (String aTest : testFramework.getTests()) {
+            TestFailure failure = data.getTestFailure(aTest);
+            if ((failure != null) && failure.error) {
+                // prepare
+                TestResult testResult = createTestResult(aTest);
+
+                // test
+                testFramework.runTest(testResult);
+
+                // verify
+                assertThat(testResult.getFailureType()).as("failureType").isEqualTo(failure.failureType);
+                assertThat(testResult.getFailureContent()).as("failureContent").isEqualTo(failure.failureContent);
+                assertThat(testResult.getFailureMessage()).as("failureMessage").isEqualTo(failure.failureMessage);
+                assertThat(testResult.isSuccess()).as("success").isFalse();
+                assertThat(testResult.isError()).as("error").isTrue();
             }
         }
     }
@@ -131,17 +161,21 @@ abstract public class TestFrameworkTest<T extends TestFramework> {
     }
 
     protected final void addSucceedingTest(Class<?> testClass, String method) throws Exception {
-        addTest(testClass, true, method, null, null, null);
+        addTest(testClass, SUCCESS, method, null, null, null);
     }
 
     protected final void addFailingTest(Class<?> testClass, String method,
                                         String failureType, String failureContent, String failureMessage) throws Exception {
-        addTest(testClass, false, method, failureType, failureContent, failureMessage);
+        addTest(testClass, FAILURE, method, failureType, failureContent, failureMessage);
     }
 
-    private void addTest(Class<?> testClass, boolean succeed, String method,
+    protected void addTestWithError(Class<?> testClass, String method) throws Exception {
+        addTest(testClass, TestResultType.ERROR, method, ERROR.getClass().getName(), printStackTrace(ERROR), ERROR.getMessage());
+    }
+
+    private void addTest(Class<?> testClass, TestResultType resultType, String method,
                          String failureType, String failureContent, String failureMessage) throws Exception {
-        data.addTest(testClass, succeed, method, failureType, failureContent, failureMessage);
+        data.addTest(testClass, resultType, method, failureType, failureContent, failureMessage);
     }
 
     private static class TestFrameworkData {
@@ -169,7 +203,7 @@ abstract public class TestFrameworkTest<T extends TestFramework> {
             return testFailures.get(testName);
         }
 
-        public void addTest(Class<?> testClass, boolean succeed, String method,
+        public void addTest(Class<?> testClass, TestResultType resultType, String method,
                             String failureType, String failureContent, String failureMessage) throws Exception {
             String testName = TestName.toString(testClass, method);
 
@@ -182,22 +216,31 @@ abstract public class TestFrameworkTest<T extends TestFramework> {
             }
             testsForClass.add(testName);
 
-            if (succeed) {
+            if (resultType == SUCCESS) {
                 testFailures.put(testName, null);
             } else {
-                testFailures.put(testName, new TestFailure(failureType, failureContent, failureMessage));
+                boolean error = resultType == TestResultType.ERROR;
+                testFailures.put(testName, new TestFailure(error, failureType, failureContent, failureMessage));
             }
 
             Assert.assertThat(framework.getTests(), contains(testClass, method));
         }
     }
 
+    static enum TestResultType {
+        SUCCESS,
+        FAILURE,
+        ERROR;
+    }
+
     private static class TestFailure {
+        private final boolean error;
         private final String failureType;
         private final String failureContent;
         private final String failureMessage;
 
-        private TestFailure(String failureType, String failureContent, String failureMessage) {
+        private TestFailure(boolean error, String failureType, String failureContent, String failureMessage) {
+            this.error = error;
             this.failureType = failureType;
             this.failureContent = failureContent;
             this.failureMessage = failureMessage;
