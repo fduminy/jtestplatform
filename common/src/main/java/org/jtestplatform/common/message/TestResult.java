@@ -23,6 +23,7 @@ package org.jtestplatform.common.message;
 
 import org.jtestplatform.common.transport.Transport;
 import org.jtestplatform.common.transport.TransportException;
+import org.jtestplatform.common.transport.TransportHelper;
 
 import static org.jtestplatform.common.transport.TransportHelper.receiveBoolean;
 import static org.jtestplatform.common.transport.TransportHelper.sendBoolean;
@@ -35,6 +36,7 @@ public class TestResult implements Message {
     private String framework;
     private String test;
 
+    private boolean ignored;
     private boolean error;
     private String failureType;
     private String failureContent;
@@ -81,7 +83,7 @@ public class TestResult implements Message {
      * @return The success of the test.
      */
     public boolean isSuccess() {
-        return failureType == null;
+        return !ignored && (failureType == null);
     }
 
     /**
@@ -91,11 +93,14 @@ public class TestResult implements Message {
     public void sendWith(Transport transport) throws TransportException {
         transport.send(framework);
         transport.send(test);
-        transport.send(failureType);
-        if (failureType != null) {
-            transport.send(failureContent);
-            transport.send(failureMessage);
-            sendBoolean(transport, error);
+        TransportHelper.sendBoolean(transport, ignored);
+        if (!ignored) {
+            transport.send(failureType);
+            if (failureType != null) {
+                transport.send(failureContent);
+                transport.send(failureMessage);
+                sendBoolean(transport, error);
+            }
         }
     }
 
@@ -106,11 +111,14 @@ public class TestResult implements Message {
     public void receiveFrom(Transport transport) throws TransportException {
         framework = transport.receive();
         test = transport.receive();
-        failureType = transport.receive();
-        if (failureType != null) {
-            failureContent = transport.receive();
-            failureMessage = transport.receive();
-            error = receiveBoolean(transport);
+        ignored = TransportHelper.receiveBoolean(transport);
+        if (!ignored) {
+            failureType = transport.receive();
+            if (failureType != null) {
+                failureContent = transport.receive();
+                failureMessage = transport.receive();
+                error = receiveBoolean(transport);
+            }
         }
     }
 
@@ -119,5 +127,13 @@ public class TestResult implements Message {
         this.failureContent = failureContent;
         this.failureMessage = failureMessage;
         this.error = error;
+    }
+
+    public boolean isIgnored() {
+        return ignored;
+    }
+
+    public void setIgnored() {
+        ignored = true;
     }
 }

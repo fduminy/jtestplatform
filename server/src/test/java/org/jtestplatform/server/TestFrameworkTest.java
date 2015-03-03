@@ -30,8 +30,7 @@ import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.jtestplatform.server.ServerUtils.printStackTrace;
-import static org.jtestplatform.server.TestFrameworkTest.TestResultType.FAILURE;
-import static org.jtestplatform.server.TestFrameworkTest.TestResultType.SUCCESS;
+import static org.jtestplatform.server.TestFrameworkTest.TestResultType.*;
 import static org.jtestplatform.server.Utils.contains;
 import static org.junit.Assert.*;
 
@@ -92,7 +91,7 @@ abstract public class TestFrameworkTest<T extends TestFramework> {
     public void testRunTest() throws UnknownTestException {
         for (String aTest : testFramework.getTests()) {
             TestFailure failure = data.getTestFailure(aTest);
-            if (failure == null) {
+            if (!data.isIgnored(aTest) && (failure == null)) {
                 // prepare
                 TestResult testResult = createTestResult(aTest);
 
@@ -105,6 +104,7 @@ abstract public class TestFrameworkTest<T extends TestFramework> {
                 assertThat(testResult.getFailureMessage()).as("failureMessage").isNull();
                 assertThat(testResult.isSuccess()).as("success").isTrue();
                 assertThat(testResult.isError()).as("error").isFalse();
+                assertThat(testResult.isIgnored()).as("ignored").isFalse();
             }
         }
     }
@@ -126,6 +126,7 @@ abstract public class TestFrameworkTest<T extends TestFramework> {
                 assertThat(testResult.getFailureMessage()).as("failureMessage").isEqualTo(failure.failureMessage);
                 assertThat(testResult.isSuccess()).as("success").isFalse();
                 assertThat(testResult.isError()).as("error").isFalse();
+                assertThat(testResult.isIgnored()).as("ignored").isFalse();
             }
         }
     }
@@ -147,6 +148,28 @@ abstract public class TestFrameworkTest<T extends TestFramework> {
                 assertThat(testResult.getFailureMessage()).as("failureMessage").isEqualTo(failure.failureMessage);
                 assertThat(testResult.isSuccess()).as("success").isFalse();
                 assertThat(testResult.isError()).as("error").isTrue();
+                assertThat(testResult.isIgnored()).as("ignored").isFalse();
+            }
+        }
+    }
+
+    @Test
+    public void testRunIgnoredTest() throws UnknownTestException {
+        for (String aTest : testFramework.getTests()) {
+            if (data.isIgnored(aTest)) {
+                // prepare
+                TestResult testResult = createTestResult(aTest);
+
+                // test
+                testFramework.runTest(testResult);
+
+                // verify
+                assertThat(testResult.getFailureType()).as("failureType").isNull();
+                assertThat(testResult.getFailureContent()).as("failureContent").isNull();
+                assertThat(testResult.getFailureMessage()).as("failureMessage").isNull();
+                assertThat(testResult.isSuccess()).as("success").isFalse();
+                assertThat(testResult.isError()).as("error").isFalse();
+                assertThat(testResult.isIgnored()).as("ignored").isTrue();
             }
         }
     }
@@ -162,6 +185,10 @@ abstract public class TestFrameworkTest<T extends TestFramework> {
 
     protected final void addSucceedingTest(Class<?> testClass, String method) throws Exception {
         addTest(testClass, SUCCESS, method, null, null, null);
+    }
+
+    protected final void addIgnoredTest(Class<?> testClass, String method) throws Exception {
+        addTest(testClass, IGNORED, method, null, null, null);
     }
 
     protected final void addFailingTest(Class<?> testClass, String method,
@@ -181,6 +208,7 @@ abstract public class TestFrameworkTest<T extends TestFramework> {
     private static class TestFrameworkData {
         private final TestFramework framework;
         private final Map<String, TestFailure> testFailures = new HashMap<String, TestFailure>();
+        private final Set<String> ignoredTests = new HashSet<String>();
         private final Map<Class<?>, List<String>> tests = new HashMap<Class<?>, List<String>>();
 
         public TestFrameworkData(TestFramework framework) {
@@ -195,8 +223,12 @@ abstract public class TestFrameworkTest<T extends TestFramework> {
             return tests.keySet();
         }
 
+        public boolean isIgnored(String testName) {
+            return ignoredTests.contains(testName);
+        }
+
         public TestFailure getTestFailure(String testName) {
-            if (!testFailures.containsKey(testName)) {
+            if (!isIgnored(testName) && !testFailures.containsKey(testName)) {
                 throw new AssertionError("unexpected test : " + testName);
             }
 
@@ -216,11 +248,16 @@ abstract public class TestFrameworkTest<T extends TestFramework> {
             }
             testsForClass.add(testName);
 
-            if (resultType == SUCCESS) {
-                testFailures.put(testName, null);
-            } else {
-                boolean error = resultType == TestResultType.ERROR;
-                testFailures.put(testName, new TestFailure(error, failureType, failureContent, failureMessage));
+            switch (resultType) {
+                case IGNORED:
+                    ignoredTests.add(testName);
+                    break;
+                case SUCCESS:
+                    testFailures.put(testName, null);
+                    break;
+                default:
+                    boolean error = resultType == TestResultType.ERROR;
+                    testFailures.put(testName, new TestFailure(error, failureType, failureContent, failureMessage));
             }
 
             Assert.assertThat(framework.getTests(), contains(testClass, method));
@@ -230,7 +267,8 @@ abstract public class TestFrameworkTest<T extends TestFramework> {
     static enum TestResultType {
         SUCCESS,
         FAILURE,
-        ERROR;
+        ERROR,
+        IGNORED;
     }
 
     private static class TestFailure {

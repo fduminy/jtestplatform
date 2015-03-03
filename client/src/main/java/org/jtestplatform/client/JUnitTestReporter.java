@@ -85,7 +85,9 @@ public class JUnitTestReporter implements TestReporter {
             testCase.setClassname(testName.getTestClass());
             testCase.setName(testName.getMethodName());
             testCase.setTime(durationToString(testDuration));
-            if (!testResult.isSuccess()) {
+            if (testResult.isIgnored()) {
+                testCase.setSkipped("");
+            } else if (!testResult.isSuccess()) {
                 if (testResult.isError()) {
                     Error error = new Error();
                     error.setType(testResult.getFailureType());

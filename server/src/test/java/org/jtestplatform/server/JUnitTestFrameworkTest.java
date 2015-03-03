@@ -22,6 +22,7 @@
 package org.jtestplatform.server;
 
 import junit.framework.TestCase;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -47,6 +48,7 @@ public class JUnitTestFrameworkTest extends TestFrameworkTest<JUnitTestFramework
         addFailingTest(TestClass.class, "aFailingTest");
         addSucceedingTest(TestClass.class, "aPassingTest");
         addTestWithError(TestClass.class, "aTestThrowingAnError");
+        addIgnoredTest(TestClass.class, "anIgnoredTest");
 
         addFailingTest(JUnit3TestClassTest.class, "testThatFails");
         addSucceedingTest(JUnit3TestClassTest.class, "testThatPasses");
@@ -94,6 +96,12 @@ public class JUnitTestFrameworkTest extends TestFrameworkTest<JUnitTestFramework
     public static class TestClass {
         @Test
         public void aPassingTest() {
+        }
+
+        @Test
+        @Ignore
+        public void anIgnoredTest() {
+            throw FAILURE; // should never be executed
         }
 
         @Test

@@ -136,7 +136,9 @@ public class JUnitTestFramework implements TestFramework {
         });
 
         Result result = core.run(request);
-        if (result.getFailureCount() != 0) {
+        if (result.getIgnoreCount() > 0) {
+            testResult.setIgnored();
+        } else if (result.getFailureCount() != 0) {
             Throwable failure = result.getFailures().get(0).getException();
             boolean error = !(failure instanceof AssertionError);
             testResult.setFailure(failure.getClass().getName(), printStackTrace(failure), failure.getMessage(), error);

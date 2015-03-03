@@ -38,10 +38,10 @@ import org.reflections.Reflections;
 
 import java.util.*;
 
-import static java.lang.Boolean.TRUE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.jtestplatform.common.transport.TransportHelper.FALSE;
+import static org.jtestplatform.common.transport.TransportHelper.TRUE;
 import static org.junit.Assume.assumeFalse;
 import static org.mockito.Mockito.*;
 
@@ -64,18 +64,18 @@ public class TransportHelperTest {
         final Message answerMessage = spy(answerData.createMessage());
         Transport transport = mock(Transport.class);
         when(transport.receive()).thenReturn(answerData.messageClass.getName(), answerData.expectedParts);
-        final MutableObject<Boolean> sendImplCalled = new MutableObject<Boolean>(Boolean.FALSE);
-        final MutableObject<Boolean> receiveImplCalled = new MutableObject<Boolean>(Boolean.FALSE);
+        final MutableObject<Boolean> sendImplCalled = new MutableObject<Boolean>(false);
+        final MutableObject<Boolean> receiveImplCalled = new MutableObject<Boolean>(false);
         TransportHelper helper = new TransportHelper() {
             @Override
             protected void sendImpl(Transport transport, Message message) throws TransportException {
-                sendImplCalled.setValue(Boolean.TRUE);
+                sendImplCalled.setValue(true);
                 super.sendImpl(transport, message);
             }
 
             @Override
             protected Message receiveImpl(Transport transport) throws TransportException {
-                receiveImplCalled.setValue(Boolean.TRUE);
+                receiveImplCalled.setValue(true);
                 return super.receiveImpl(transport);
             }
 
@@ -89,8 +89,8 @@ public class TransportHelperTest {
         Message actualAnswerMessage = helper.sendRequest(transport, requestMessage);
 
         // verify
-        assertThat(sendImplCalled.getValue()).as("sendImpl called").isEqualTo(TRUE);
-        assertThat(receiveImplCalled.getValue()).as("receiveImpl called").isEqualTo(TRUE);
+        assertThat(sendImplCalled.getValue()).as("sendImpl called").isTrue();
+        assertThat(receiveImplCalled.getValue()).as("receiveImpl called").isTrue();
         assertThat(actualAnswerMessage).as("actual answer").isSameAs(answerMessage);
     }
 
@@ -99,11 +99,11 @@ public class TransportHelperTest {
         // prepare
         Message message = spy(data.createMessage());
         Transport transport = mock(Transport.class);
-        final MutableObject<Boolean> called = new MutableObject<Boolean>(Boolean.FALSE);
+        final MutableObject<Boolean> called = new MutableObject<Boolean>(false);
         TransportHelper helper = new TransportHelper() {
             @Override
             protected void sendImpl(Transport transport, Message message) throws TransportException {
-                called.setValue(Boolean.TRUE);
+                called.setValue(true);
                 super.sendImpl(transport, message);
             }
         };
@@ -112,7 +112,7 @@ public class TransportHelperTest {
         helper.send(transport, message);
 
         // verify
-        assertThat(called.getValue()).as("sendImpl called").isEqualTo(TRUE);
+        assertThat(called.getValue()).as("sendImpl called").isTrue();
         InOrder inOrder = inOrder(transport, message);
         inOrder.verify(transport, times(1)).send(eq(message.getClass().getName()));
         inOrder.verify(message, times(1)).sendWith(eq(transport));
@@ -276,7 +276,7 @@ public class TransportHelperTest {
     public void testReceiveBoolean(boolean expectedValue) throws TransportException {
         // prepare
         Transport transport = mock(Transport.class);
-        when(transport.receive()).thenReturn(expectedValue ? TransportHelper.TRUE : FALSE);
+        when(transport.receive()).thenReturn(expectedValue ? TRUE : FALSE);
 
         // test
         boolean actualValue = TransportHelper.receiveBoolean(transport);
@@ -304,7 +304,7 @@ public class TransportHelperTest {
         TransportHelper.sendBoolean(transport, expectedValue);
 
         // verify
-        verify(transport, times(1)).send(expectedValue ? TransportHelper.TRUE : FALSE);
+        verify(transport, times(1)).send(expectedValue ? TRUE : FALSE);
     }
 
     private static final Comparator<Class<?>> CLASS_COMPARATOR = new Comparator<Class<?>>() {
@@ -334,7 +334,7 @@ public class TransportHelperTest {
                 return new TestFrameworks(Arrays.asList(expectedParts).subList(1, expectedParts.length));
             }
         },
-        TESTRESULT_SUCCESS(TestResult.class, true, "framework", "test", null) { // failureType=null
+        TESTRESULT_SUCCESS(TestResult.class, true, "framework", "test", FALSE, null) { // failureType=null
             @Override
             Message createMessage() {
                 return new TestResult(expectedParts[0], expectedParts[1]);
@@ -346,11 +346,11 @@ public class TransportHelperTest {
                 assertThat(((TestResult) actualMessage).isSuccess()).as("success").isTrue();
             }
         },
-        TESTRESULT_FAILURE(TestResult.class, true, "framework", "test", "failureType", "failureContent", "failureMessage", FALSE) {
+        TESTRESULT_IGNORE(TestResult.class, true, "framework", "test", TRUE) {
             @Override
             Message createMessage() {
-                TestResult testResult = (TestResult) TESTRESULT_SUCCESS.createMessage();
-                testResult.setFailure(expectedParts[2], expectedParts[3], expectedParts[4], false);
+                TestResult testResult = new TestResult(expectedParts[0], expectedParts[1]);
+                testResult.setIgnored();
                 return testResult;
             }
 
@@ -360,11 +360,25 @@ public class TransportHelperTest {
                 assertThat(((TestResult) actualMessage).isSuccess()).as("success").isFalse();
             }
         },
-        TESTRESULT_ERROR(TestResult.class, true, "framework", "test", "errorType", "errorContent", "errorMessage", TransportHelper.TRUE) {
+        TESTRESULT_FAILURE(TestResult.class, true, "framework", "test", FALSE, "failureType", "failureContent", "failureMessage", FALSE) {
             @Override
             Message createMessage() {
                 TestResult testResult = (TestResult) TESTRESULT_SUCCESS.createMessage();
-                testResult.setFailure(expectedParts[2], expectedParts[3], expectedParts[4], true);
+                testResult.setFailure(expectedParts[3], expectedParts[4], expectedParts[5], false);
+                return testResult;
+            }
+
+            @Override
+            void verifyMessage(Message actualMessage) {
+                super.verifyMessage(actualMessage);
+                assertThat(((TestResult) actualMessage).isSuccess()).as("success").isFalse();
+            }
+        },
+        TESTRESULT_ERROR(TestResult.class, true, "framework", "test", FALSE, "errorType", "errorContent", "errorMessage", TRUE) {
+            @Override
+            Message createMessage() {
+                TestResult testResult = (TestResult) TESTRESULT_SUCCESS.createMessage();
+                testResult.setFailure(expectedParts[3], expectedParts[4], expectedParts[5], true);
                 return testResult;
             }
 

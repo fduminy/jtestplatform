@@ -219,6 +219,7 @@ public class JUnitTestReporterTest {
         private final String failureType;
         private final String failureContent;
         private final String failureMessage;
+        private final boolean ignored;
         private final boolean error;
 
         private TestReport(Testcase testCase, Duration testDuration) throws ClassNotFoundException {
@@ -233,17 +234,20 @@ public class JUnitTestReporterTest {
                 this.failureContent = (failure == null) ? null : failure.getContent();
                 this.failureMessage = (failure == null) ? null : failure.getMessage();
                 this.error = false;
+                this.ignored = false;
             } else if (!errors.isEmpty()) {
                 Error error = errors.get(0);
                 this.failureType = error.getType();
                 this.failureContent = error.getContent();
                 this.failureMessage = error.getMessage();
                 this.error = true;
+                this.ignored = false;
             } else {
                 this.failureType = null;
                 this.failureContent = null;
                 this.failureMessage = null;
                 this.error = false;
+                this.ignored = (testCase.getSkipped() != null);
             }
         }
 
@@ -255,6 +259,7 @@ public class JUnitTestReporterTest {
             this.failureContent = testResult.getFailureContent();
             this.failureMessage = testResult.getFailureMessage();
             this.error = testResult.isError();
+            this.ignored = testResult.isIgnored();
         }
 
         @Override
@@ -265,6 +270,7 @@ public class JUnitTestReporterTest {
             TestReport that = (TestReport) o;
 
             if (error != that.error) return false;
+            if (ignored != that.ignored) return false;
             if (failureContent != null ? !failureContent.equals(that.failureContent) : that.failureContent != null)
                 return false;
             if (failureMessage != null ? !failureMessage.equals(that.failureMessage) : that.failureMessage != null)
@@ -288,7 +294,8 @@ public class JUnitTestReporterTest {
                     ", failureType='" + failureType + '\'' +
                     ", failureContent='" + failureContent + '\'' +
                     ", failureMessage='" + failureMessage + '\'' +
-                    ", error=" + error;
+                    ", error=" + error +
+                    ", ignored=" + ignored;
         }
     }
 
@@ -301,6 +308,14 @@ public class JUnitTestReporterTest {
                 int id = method.ordinal();
                 AssertionError failure = new AssertionError("failureMessage" + id);
                 testResult.setFailure(failure.getClass().getName(), "failureContent" + id, failure.getMessage(), false);
+                return testResult;
+            }
+        },
+        IGNORE {
+            @Override
+            public TestResult createTestResult(String framework, TestedClass.Method method) {
+                TestResult testResult = super.createTestResult(framework, method);
+                testResult.setIgnored();
                 return testResult;
             }
         },
