@@ -24,6 +24,7 @@ package org.jtestplatform.client;
 import com.google.code.tempusfugit.temporal.Duration;
 import org.apache.commons.lang3.StringUtils;
 import org.jtestplatform.cloud.configuration.Platform;
+import org.jtestplatform.common.ConfigUtils;
 import org.jtestplatform.common.TestName;
 import org.jtestplatform.common.TestNameTest;
 import org.jtestplatform.common.message.TestResult;
@@ -154,6 +155,10 @@ public class JUnitTestReporterTest {
 
         List<TestReport> testReports = new ArrayList<TestReport>(testSuite.getTestcase().size());
         Duration totalDuration = millis(0);
+        int nbTests = 0;
+        int nbErrors = 0;
+        int nbSkipped = 0;
+        int nbFailures = 0;
         for (Testcase testCase : testSuite.getTestcase()) {
             Duration duration = millis(0);
             if (!StringUtils.isBlank(testCase.getTime())) {
@@ -161,13 +166,32 @@ public class JUnitTestReporterTest {
             }
 
             totalDuration = totalDuration.plus(duration);
+            nbTests++;
+            if (!testCase.getError().isEmpty()) {
+                nbErrors++;
+            }
+            if (testCase.getSkipped() != null) {
+                nbSkipped++;
+            }
+            if (!testCase.getFailure().isEmpty()) {
+                nbFailures++;
+            }
+
             testReports.add(new TestReport(testCase, duration));
         }
 
         assertThat(testSuite.getPackage()).as("suite package name").isEqualTo(suitePackageName);
         assertThat(testSuite.getProperties().getProperty()).usingFieldByFieldElementComparator().containsExactly(expectedProperties.toArray(new Property[0]));
         assertThat(stringToDuration(reporter, testSuite.getTime())).as("total duration").isEqualTo(totalDuration);
+        assertThat(stringToInteger(testSuite.getTests())).as("number of tests").isEqualTo(nbTests);
+        assertThat(stringToInteger(testSuite.getErrors())).as("number of errors").isEqualTo(nbErrors);
+        assertThat(stringToInteger(testSuite.getSkipped())).as("number of skipped").isEqualTo(nbSkipped);
+        assertThat(stringToInteger(testSuite.getFailures())).as("number of failures").isEqualTo(nbFailures);
         assertThat(testReports).as("test reports for suite '" + suiteName + "'").containsExactly(expectedTestReports);
+    }
+
+    private static Integer stringToInteger(String integerString) throws ParseException {
+        return ConfigUtils.isBlank(integerString) ? null : Integer.parseInt(integerString);
     }
 
     private static Duration stringToDuration(JUnitTestReporter reporter, String durationString) throws ParseException {

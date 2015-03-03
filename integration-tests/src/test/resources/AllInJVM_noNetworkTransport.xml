@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <testsuites>
-    <testsuite package="phenom_64bits_4cores" time="0.006" name="phenom_64bits_4cores.mauve">
+    <testsuite package="phenom_64bits_4cores" skipped="0" time="0.006" errors="1" failures="1" tests="3"
+               name="phenom_64bits_4cores.mauve">
         <properties>
             <property value="null" name="platform.cdrom"/>
             <property value="phenom" name="platform.cpu"/>
@@ -15,7 +16,7 @@
         <testcase classname="org.jtestplatform.server.MauveTestFrameworkTest$MauveTestClassWithError" time="0.003">
             <error message="an unexpected error" type="java.lang.NullPointerException">java.lang.NullPointerException:
                 an unexpected error
-                at org.jtestplatform.server.TestFrameworkTest.&lt;clinit&gt;(TestFrameworkTest.java:45)
+                at org.jtestplatform.server.TestFrameworkTest.&lt;clinit&gt;(TestFrameworkTest.java:43)
                 at
                 org.jtestplatform.it.TestAllWithoutLibvirt.testAllInJVM_noNetworkTransport(TestAllWithoutLibvirt.java:65)
                 at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
@@ -46,7 +47,8 @@
             </error>
         </testcase>
     </testsuite>
-    <testsuite package="phenom_64bits_4cores" time="0.085" name="phenom_64bits_4cores.junit">
+    <testsuite package="phenom_64bits_4cores" skipped="1" time="0.085" errors="3" failures="3" tests="10"
+               name="phenom_64bits_4cores.junit">
         <properties>
             <property value="null" name="platform.cdrom"/>
             <property value="phenom" name="platform.cpu"/>
@@ -58,7 +60,7 @@
                   name="testThatThrowsAnError">
             <error message="an unexpected error" type="java.lang.NullPointerException">java.lang.NullPointerException:
                 an unexpected error
-                at org.jtestplatform.server.TestFrameworkTest.&lt;clinit&gt;(TestFrameworkTest.java:45)
+                at org.jtestplatform.server.TestFrameworkTest.&lt;clinit&gt;(TestFrameworkTest.java:43)
                 at
                 org.jtestplatform.it.TestAllWithoutLibvirt.testAllInJVM_noNetworkTransport(TestAllWithoutLibvirt.java:65)
                 at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
@@ -92,7 +94,7 @@
                   name="aTestThrowingAnError">
             <error message="an unexpected error" type="java.lang.NullPointerException">java.lang.NullPointerException:
                 an unexpected error
-                at org.jtestplatform.server.TestFrameworkTest.&lt;clinit&gt;(TestFrameworkTest.java:45)
+                at org.jtestplatform.server.TestFrameworkTest.&lt;clinit&gt;(TestFrameworkTest.java:43)
                 at
                 org.jtestplatform.it.TestAllWithoutLibvirt.testAllInJVM_noNetworkTransport(TestAllWithoutLibvirt.java:65)
                 at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
@@ -235,7 +237,7 @@
                   name="aTestThrowingAnError">
             <error message="an unexpected error" type="java.lang.NullPointerException">java.lang.NullPointerException:
                 an unexpected error
-                at org.jtestplatform.server.TestFrameworkTest.&lt;clinit&gt;(TestFrameworkTest.java:45)
+                at org.jtestplatform.server.TestFrameworkTest.&lt;clinit&gt;(TestFrameworkTest.java:43)
                 at
                 org.jtestplatform.it.TestAllWithoutLibvirt.testAllInJVM_noNetworkTransport(TestAllWithoutLibvirt.java:65)
                 at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)

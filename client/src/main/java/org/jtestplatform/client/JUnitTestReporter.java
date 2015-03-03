@@ -47,7 +47,7 @@ public class JUnitTestReporter implements TestReporter {
     final NumberFormat format = NumberFormat.getNumberInstance(Locale.ENGLISH);
 
     private final File reportDirectory;
-    private final Map<Testsuite, Duration> totalDurations = new HashMap<Testsuite, Duration>();
+    private final Map<Testsuite, Stats> testSuiteStats = new HashMap<Testsuite, Stats>();
     private Testsuites suites;
 
     public JUnitTestReporter(File reportDirectory) {
@@ -64,6 +64,7 @@ public class JUnitTestReporter implements TestReporter {
             String suitePackageName = PLATFORM_KEY_BUILDER.buildKey(platform);
             String suiteName = suitePackageName + '.' + testResult.getFramework();
             Testsuite suite = findTestSuite(suites, suiteName);
+            Stats stats;
             if (suite == null) {
                 suite = new Testsuite();
                 suite.setPackage(suitePackageName);
@@ -73,11 +74,11 @@ public class JUnitTestReporter implements TestReporter {
                 suite.setProperties(properties);
                 suites.getTestsuite().add(suite);
 
-                totalDurations.put(suite, testDuration);
+                stats = new Stats(testDuration);
+                testSuiteStats.put(suite, stats);
             } else {
-                Duration totalDuration = totalDurations.get(suite);
-                totalDuration = totalDuration.plus(testDuration);
-                totalDurations.put(suite, totalDuration);
+                stats = testSuiteStats.get(suite);
+                stats.addDuration(testDuration);
             }
 
             Testcase testCase = new Testcase();
@@ -85,8 +86,10 @@ public class JUnitTestReporter implements TestReporter {
             testCase.setClassname(testName.getTestClass());
             testCase.setName(testName.getMethodName());
             testCase.setTime(durationToString(testDuration));
+            stats.nbTests++;
             if (testResult.isIgnored()) {
                 testCase.setSkipped("");
+                stats.nbSkipped++;
             } else if (!testResult.isSuccess()) {
                 if (testResult.isError()) {
                     Error error = new Error();
@@ -94,12 +97,14 @@ public class JUnitTestReporter implements TestReporter {
                     error.setContent(testResult.getFailureContent());
                     error.setMessage(testResult.getFailureMessage());
                     testCase.getError().add(error);
+                    stats.nbErrors++;
                 } else {
                     Failure failure = new Failure();
                     failure.setType(testResult.getFailureType());
                     failure.setContent(testResult.getFailureContent());
                     failure.setMessage(testResult.getFailureMessage());
                     testCase.getFailure().add(failure);
+                    stats.nbFailures++;
                 }
             }
             suite.getTestcase().add(testCase);
@@ -109,8 +114,12 @@ public class JUnitTestReporter implements TestReporter {
     @Override
     public void saveReport() throws Exception {
         for (Testsuite suite : suites.getTestsuite()) {
-            Duration totalDuration = totalDurations.get(suite);
-            suite.setTime(durationToString(totalDuration));
+            Stats stats = testSuiteStats.get(suite);
+            suite.setTime(durationToString(stats.duration));
+            suite.setTests(Integer.toString(stats.nbTests));
+            suite.setSkipped(Integer.toString(stats.nbSkipped));
+            suite.setErrors(Integer.toString(stats.nbErrors));
+            suite.setFailures(Integer.toString(stats.nbFailures));
         }
 
         JUnitXMLReportWriter writer = createJUnitXMLReportWriter();
@@ -156,5 +165,21 @@ public class JUnitTestReporter implements TestReporter {
         property.setName(propertyName);
         property.setValue(String.valueOf(propertyValue));
         return property;
+    }
+
+    private static class Stats {
+        private Duration duration;
+        private int nbTests = 0;
+        private int nbErrors = 0;
+        private int nbSkipped = 0;
+        private int nbFailures = 0;
+
+        private Stats(Duration duration) {
+            this.duration = duration;
+        }
+
+        public void addDuration(Duration testDuration) {
+            duration = duration.plus(testDuration);
+        }
     }
 }
