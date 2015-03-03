@@ -77,7 +77,7 @@ public class TestServerTest {
         when(transport.receive()).thenReturn(MockMessage.class.getName());
 
         TestServer testServer = new TestServer(mock(TransportFactory.class));
-        MockCommand command = new MockCommand("Something wrong append in the command", null);
+        MockCommand command = new MockCommand("Something wrong happened in the command", null);
         testServer.addCommand(MockMessage.class, command);
 
         // test
