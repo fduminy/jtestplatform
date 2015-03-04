@@ -57,9 +57,7 @@ public class JUnitTestReporter implements TestReporter {
     @Override
     public void report(Platform platform, TestResult testResult, Duration testDuration) throws Exception {
         synchronized (reportLock) {
-            if (suites == null) {
-                suites = createTestSuites();
-            }
+            ensureTestSuitesCreated();
 
             String suitePackageName = PLATFORM_KEY_BUILDER.buildKey(platform);
             String suiteName = suitePackageName + '.' + testResult.getFramework();
@@ -111,8 +109,16 @@ public class JUnitTestReporter implements TestReporter {
         }
     }
 
+    private void ensureTestSuitesCreated() {
+        if (suites == null) {
+            suites = createTestSuites();
+        }
+    }
+
     @Override
     public void saveReport() throws Exception {
+        ensureTestSuitesCreated();
+
         for (Testsuite suite : suites.getTestsuite()) {
             Stats stats = testSuiteStats.get(suite);
             suite.setTime(durationToString(stats.duration));

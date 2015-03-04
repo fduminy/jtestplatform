@@ -87,6 +87,17 @@ public class JUnitTestReporterTest {
         verify(writer, times(1)).write(any(FileOutputStream.class), eq(reporter.suites));
     }
 
+    @Test
+    public void testSaveReport_noCallToReport() throws Exception {
+        JUnitXMLReportWriter writer = mock(JUnitXMLReportWriter.class);
+        final File reportDir = folder.getRoot();
+        MockTestReporter reporter = new MockTestReporter(reportDir, writer);
+
+        reporter.saveReport();
+
+        verify(writer, times(1)).write(any(FileOutputStream.class), eq(reporter.suites));
+    }
+
     @Theory
     public void testReport_onePlatform_oneTest(ResultType resultType) throws Exception {
         JUnitXMLReportWriter writer = mock(JUnitXMLReportWriter.class);
