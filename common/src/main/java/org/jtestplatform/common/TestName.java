@@ -28,10 +28,14 @@ public class TestName {
     private final String methodName;
 
     public static TestName parse(String name) {
-        int index = name.indexOf(SEPARATOR);
+        int index = indexOfSeparator(name);
         String testClass = (index < 0) ? name : name.substring(0, index);
         String methodName = (index < 0) ? null : name.substring(index + 1);
         return new TestName(testClass, methodName);
+    }
+
+    public static int indexOfSeparator(String name) {
+        return name.indexOf(SEPARATOR);
     }
 
     public static String toString(Class<?> testClass, String methodName) {

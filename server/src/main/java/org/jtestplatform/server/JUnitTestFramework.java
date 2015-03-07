@@ -141,7 +141,7 @@ public class JUnitTestFramework implements TestFramework {
         } else if (result.getFailureCount() != 0) {
             Throwable failure = result.getFailures().get(0).getException();
             boolean error = !(failure instanceof AssertionError);
-            testResult.setFailure(failure.getClass().getName(), printStackTrace(failure), failure.getMessage(), error);
+            testResult.setFailure(failure.getClass().getName(), printStackTrace(failure, testResult), failure.getMessage(), error);
         }
     }
 

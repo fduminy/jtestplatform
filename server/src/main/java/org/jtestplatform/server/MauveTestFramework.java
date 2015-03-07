@@ -105,11 +105,11 @@ public class MauveTestFramework implements TestFramework {
         JTSMauve m = new JTSMauve();
         try {
             m.runTest(testResult.getTest());
-            if ((m.testPassed != null) && !m.testPassed.booleanValue()) {
+            if ((m.testPassed != null) && !m.testPassed) {
                 testResult.setFailure(AssertionError.class.getName(), m.debugLog.toString(), null, false);
             }
         } catch (Exception e) {
-            testResult.setFailure(e.getClass().getName(), printStackTrace(e), e.getMessage(), true);
+            testResult.setFailure(e.getClass().getName(), printStackTrace(e, testResult), e.getMessage(), true);
         }
     }
 

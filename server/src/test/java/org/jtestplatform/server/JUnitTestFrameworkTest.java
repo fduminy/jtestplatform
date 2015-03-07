@@ -56,7 +56,8 @@ public class JUnitTestFrameworkTest extends TestFrameworkTest<JUnitTestFramework
     }
 
     protected void addFailingTest(Class<?> testClass, String method) throws Exception {
-        addFailingTest(testClass, method, FAILURE.getClass().getName(), printStackTrace(FAILURE), FAILURE.getMessage());
+        String stackTrace = printStackTrace(FAILURE, testClass.getName(), method);
+        addFailingTest(testClass, method, FAILURE.getClass().getName(), stackTrace, FAILURE.getMessage());
     }
 
     public static void addTestsTo(JUnitTestFramework testFramework) throws Exception {

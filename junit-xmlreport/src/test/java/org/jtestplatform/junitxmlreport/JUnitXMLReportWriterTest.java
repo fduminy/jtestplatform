@@ -54,6 +54,7 @@ public class JUnitXMLReportWriterTest {
 
     public static void compareXML(String expectedXML, String actualXML) throws SAXException, IOException {
         XMLUnit.setIgnoreWhitespace(true);
+        XMLUnit.setIgnoreAttributeOrder(true);
         Diff xmlDiff = new Diff(expectedXML, actualXML);
         try {
             assertTrue("pieces of XML are similar " + xmlDiff, xmlDiff.similar());

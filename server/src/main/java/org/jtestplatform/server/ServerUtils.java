@@ -21,13 +21,51 @@
  */
 package org.jtestplatform.server;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import org.jtestplatform.common.TestName;
+import org.jtestplatform.common.message.TestResult;
 
 public class ServerUtils {
-    public static String printStackTrace(Throwable throwable) {
-        StringWriter writer = new StringWriter();
-        throwable.printStackTrace(new PrintWriter(writer));
-        return writer.toString();
+    public static String printStackTrace(Throwable throwable, TestResult testResult) {
+        final String test = testResult.getTest();
+        int index = TestName.indexOfSeparator(test);
+        if (index < 0) {
+            return printStackTrace(throwable, test);
+        } else {
+            // TODO try to avoid allocating 2 sub-strings (using CharSequence instead of String instances)
+            return printStackTrace(throwable, test.substring(0, index), test.substring(index + 1));
+        }
+    }
+
+    public static String printStackTrace(Throwable throwable, String className) {
+        return printStackTrace(throwable, className, null);
+    }
+
+    public static String printStackTrace(Throwable throwable, String className, String methodName) {
+        // estimate result size
+        StackTraceElement[] stackTrace = throwable.getStackTrace();
+        int nbLines;
+        for (nbLines = stackTrace.length - 1; nbLines >= 0; nbLines--) {
+            final StackTraceElement element = stackTrace[nbLines];
+            if (element.getClassName().equals(className) &&
+                    ((methodName == null) || element.getMethodName().equals(methodName))) {
+                break;
+            }
+        }
+        nbLines = (nbLines < 0) ? 0 : nbLines;
+//        int nbLines = stackTrace.length - 1;
+        int size = 90 * (nbLines + 2);
+
+        StringBuilder buffer = new StringBuilder(size);
+        buffer.append(throwable.getClass().getName()).append(": ").append(throwable.getMessage()).append('\n');
+        boolean first = true;
+        for (int i = 0; i <= nbLines; i++) {
+            StackTraceElement ste = stackTrace[i];
+            if (!first) {
+                buffer.append('\n');
+            }
+            buffer.append('\t').append("at ").append(ste.toString());
+            first = false;
+        }
+        return buffer.toString();
     }
 }

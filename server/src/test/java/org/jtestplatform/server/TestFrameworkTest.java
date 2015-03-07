@@ -197,7 +197,8 @@ abstract public class TestFrameworkTest<T extends TestFramework> {
     }
 
     protected void addTestWithError(Class<?> testClass, String method) throws Exception {
-        addTest(testClass, TestResultType.ERROR, method, ERROR.getClass().getName(), printStackTrace(ERROR), ERROR.getMessage());
+        String stackTrace = printStackTrace(ERROR, testClass.getName(), method);
+        addTest(testClass, TestResultType.ERROR, method, ERROR.getClass().getName(), stackTrace, ERROR.getMessage());
     }
 
     private void addTest(Class<?> testClass, TestResultType resultType, String method,
