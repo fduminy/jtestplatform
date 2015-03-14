@@ -32,11 +32,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * @author Fabien DUMINY (fduminy@jnode.org)
+ */
 public class TestServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(TestServer.class);
 
@@ -78,7 +80,7 @@ public class TestServer {
                 @Override
                 public Transport create() throws TransportException {
                     try {
-                        return new UDPTransport(new DatagramSocket(SERVER_PORT));
+                        return new UDPTransport(SERVER_PORT);
                     } catch (SocketException e) {
                         throw new TransportException("unable to create a transport", e);
                     }

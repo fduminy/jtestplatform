@@ -29,9 +29,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetSocketAddress;
+import java.net.*;
 import java.nio.ByteBuffer;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -45,43 +43,70 @@ import static org.mockito.Mockito.*;
  */
 @RunWith(Theories.class)
 public class UDPTransportTest {
+
+    private static final int SERVER_PORT = 12345;
+
     @Theory
     public void testSend(StringMessage message) throws IOException, TransportException {
-        InetSocketAddress socketAddress = spy(new InetSocketAddress("localhost", 12345));
-        DatagramSocket datagramSocket = mock(DatagramSocket.class);
+        // prepare
+        InetAddress serverAddress = InetAddress.getLocalHost();
+        InetSocketAddress socketAddress = spy(new InetSocketAddress(serverAddress, SERVER_PORT));
+        final DatagramSocket datagramSocket = mock(DatagramSocket.class);
         when(datagramSocket.getRemoteSocketAddress()).thenReturn(socketAddress);
-        UDPTransport transport = new UDPTransport(datagramSocket);
+        UDPTransport transport = new UDPTransport(serverAddress, SERVER_PORT, 0) {
+            @Override
+            protected DatagramSocket createDatagramSocket() throws SocketException {
+                return datagramSocket;
+            }
+        };
 
+        // test
         transport.send(message.value);
+
+        // verify
+        assertThat(transport.getAddress()).as("transport.address").isEqualTo(socketAddress.getAddress());
+        assertThat(transport.getPort()).as("transport.port").isEqualTo(SERVER_PORT);
 
         ArgumentCaptor<DatagramPacket> packetCaptor = ArgumentCaptor.forClass(DatagramPacket.class);
         verify(datagramSocket, times(message.getNbPackets())).send(packetCaptor.capture());
-        verify(datagramSocket, times(1)).getRemoteSocketAddress();
         verifyNoMoreInteractions(datagramSocket, socketAddress);
-        verifyPackets(message, socketAddress, packetCaptor);
+        verifyPackets(message, socketAddress, SERVER_PORT, packetCaptor);
     }
 
     @Theory
     public void testReceive(final StringMessage message) throws IOException, TransportException {
-        DatagramSocket datagramSocket = mock(DatagramSocket.class);
-        doAnswer(simulateReceive(message)).when(datagramSocket).receive(any(DatagramPacket.class));
-        UDPTransport transport = new UDPTransport(datagramSocket);
+        // prepare
+        final DatagramSocket datagramSocket = mock(DatagramSocket.class);
+        InetAddress serverAddress = InetAddress.getLocalHost();
+        doAnswer(simulateReceive(message, serverAddress, SERVER_PORT)).when(datagramSocket).receive(any(DatagramPacket.class));
+        UDPTransport transport = new UDPTransport(SERVER_PORT) {
+            @Override
+            DatagramSocket createDatagramSocket(int serverPort) throws SocketException {
+                return datagramSocket;
+            }
+        };
 
+        // test
         String receivedMessage = transport.receive();
+
+        // verify
+        assertThat(receivedMessage).isEqualTo(message.value);
+        assertThat(transport.getAddress()).as("transport.address").isEqualTo(serverAddress);
+        assertThat(transport.getPort()).as("transport.port").isEqualTo(SERVER_PORT);
 
         ArgumentCaptor<DatagramPacket> packetCaptor = ArgumentCaptor.forClass(DatagramPacket.class);
         verify(datagramSocket, times(message.getNbPackets())).receive(packetCaptor.capture());
         verifyNoMoreInteractions(datagramSocket);
-        verifyPackets(message, null, packetCaptor);
-        assertThat(receivedMessage).isEqualTo(message.value);
+        verifyPackets(message, null, SERVER_PORT, packetCaptor);
     }
 
-    private void verifyPackets(StringMessage message, InetSocketAddress socketAddress, ArgumentCaptor<DatagramPacket> packetCaptor) {
+    private void verifyPackets(StringMessage message, InetSocketAddress socketAddress, int serverPort, ArgumentCaptor<DatagramPacket> packetCaptor) {
         // first packet
         DatagramPacket packet1 = packetCaptor.getAllValues().get(0);
         assertThat(packet1).as("DatagramPacket").isNotNull();
         if (socketAddress != null) {
-            assertThat(packet1.getSocketAddress()).as("socketAddress").isEqualTo(socketAddress);
+            assertThat(packet1.getSocketAddress()).as("serverAddress").isEqualTo(socketAddress);
+            assertThat(packet1.getPort()).as("serverPort").isEqualTo(serverPort);
         }
         assertThat(packet1.getLength()).as("packet1.length").isEqualTo(4);
         assertThat(packet1.getData()).as("packet1.intValue").isEqualTo(message.getSizeAsBytes());
@@ -94,14 +119,18 @@ public class UDPTransportTest {
         }
     }
 
-    private Answer<Void> simulateReceive(final StringMessage message) {
+    private Answer<Void> simulateReceive(final StringMessage message, final InetAddress serverAddress, final int serverPort) {
         return new Answer<Void>() {
             int callNumber = 0;
 
             @Override
             public Void answer(InvocationOnMock invocationOnMock) throws Throwable {
                 callNumber++;
+
                 DatagramPacket packet = (DatagramPacket) invocationOnMock.getArguments()[0];
+                packet.setAddress(serverAddress);
+                packet.setPort(serverPort);
+
                 byte[] data;
                 if (callNumber == 1) {
                     data = message.getSizeAsBytes();

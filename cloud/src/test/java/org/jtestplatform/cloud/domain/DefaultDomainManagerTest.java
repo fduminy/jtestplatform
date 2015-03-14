@@ -25,7 +25,6 @@ import org.dom4j.DocumentException;
 import org.jtestplatform.cloud.configuration.*;
 import org.jtestplatform.cloud.configuration.io.dom4j.ConfigurationDom4jReader;
 import org.jtestplatform.common.transport.Transport;
-import org.jtestplatform.common.transport.TransportException;
 import org.jtestplatform.common.transport.UDPTransport;
 import org.junit.Rule;
 import org.junit.Test;
@@ -35,7 +34,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -44,7 +45,6 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.jtestplatform.cloud.domain.Utils.FixedState.ALWAYS_ALIVE;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.mock;
 
 /**
  * @author Fabien DUMINY (fduminy@jnode.org)
@@ -150,26 +150,25 @@ public class DefaultDomainManagerTest {
     }
 
     @Test
-    public void testCreateUDPTransport() throws DomainException {
+    public void testCreateUDPTransport() throws DomainException, SocketException, UnknownHostException {
         DefaultDomainManager domainManager = createDomainManager(createConfiguration(), true, null);
-        DatagramSocket socket = mock(DatagramSocket.class);
 
-        Transport transport = domainManager.createTransport(socket);
+        Transport transport = domainManager.createTransport(InetAddress.getLocalHost(), 1234, -1);
 
         assertThat(transport).isExactlyInstanceOf(UDPTransport.class);
     }
 
     @Test
-    public void testGetTransport_noTimeout() throws TransportException, DomainException, SocketException {
+    public void testGetTransport_noTimeout() throws Exception {
         testGetTransport(0);
     }
 
     @Test
-    public void testGetTransport_timeout() throws TransportException, DomainException, SocketException {
+    public void testGetTransport_timeout() throws Exception {
         testGetTransport(10000);
     }
 
-    private void testGetTransport(int timeout) throws TransportException, DomainException, SocketException {
+    private void testGetTransport(int timeout) throws Exception {
         List<DatagramSocket> sockets = new ArrayList<DatagramSocket>();
         final Configuration configuration = createConfiguration();
         if (timeout > 0) {
@@ -177,15 +176,15 @@ public class DefaultDomainManagerTest {
         }
         DomainManager domainManager = createDomainManager(configuration, true, sockets);
 
-        Transport transport = domainManager.get(new Platform());
+        UDPTransport transport = (UDPTransport) domainManager.get(new Platform());
 
         assertNotNull(transport);
         assertThat(sockets).hasSize(1);
         final DatagramSocket socket = sockets.get(0);
         assertThat(socket).isNotNull();
         assertThat(socket.getSoTimeout()).as("timeout").isEqualTo(timeout);
-        assertThat(socket.getPort()).as("port").isEqualTo(configuration.getServerPort());
-        assertThat(socket.getInetAddress().getHostAddress()).as("host").isEqualTo("127.0.0.1");
+        assertThat(transport.getAddress()).as("address").isEqualTo(InetAddress.getLocalHost());
+        assertThat(transport.getPort()).as("port").isEqualTo(configuration.getServerPort());
     }
 
     private Configuration createConfiguration() {
@@ -223,11 +222,19 @@ public class DefaultDomainManagerTest {
             }
 
             @Override
-            protected Transport createTransport(DatagramSocket socket) {
-                if (sockets != null) {
-                    sockets.add(socket);
+            protected Transport createTransport(InetAddress address, int port, int timeout) throws SocketException {
+                if (sockets == null) {
+                    return super.createTransport(address, port, timeout);
                 }
-                return super.createTransport(socket);
+
+                return new UDPTransport(address, port, timeout) {
+                    @Override
+                    protected DatagramSocket createDatagramSocket() throws SocketException {
+                        DatagramSocket socket = super.createDatagramSocket();
+                        sockets.add(socket);
+                        return socket;
+                    }
+                };
             }
         };
     }
@@ -242,7 +249,11 @@ public class DefaultDomainManagerTest {
         @Override
         public Domain createDomain(DomainConfig config, Connection connection)
             throws DomainException {
-            return Utils.createFixedStateDomain(ALWAYS_ALIVE);
+            try {
+                return Utils.createFixedStateDomain(ALWAYS_ALIVE, InetAddress.getLocalHost().getHostName());
+            } catch (UnknownHostException e) {
+                throw new DomainException(e);
+            }
         }
 
         @Override

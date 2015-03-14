@@ -22,10 +22,7 @@
 package org.jtestplatform.common.transport;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.SocketAddress;
-import java.net.SocketTimeoutException;
+import java.net.*;
 import java.nio.ByteBuffer;
 
 /**
@@ -41,59 +38,53 @@ public class UDPTransport implements Transport {
      */
     private static final int INT_SIZE = Integer.SIZE / 8;
 
+    private InetAddress address;
+    private int port;
     private final DatagramSocket socket;
 
-    /**
-     *
-     */
-    public UDPTransport(DatagramSocket socket) {
-        this.socket = socket;
+    public UDPTransport(int serverPort) throws SocketException {
+        this.socket = createDatagramSocket(serverPort);
+        port = serverPort;
     }
 
-    /**
-     *
-     */
+    public UDPTransport(InetAddress serverAddress, int serverPort, int timeout) throws SocketException {
+        this.socket = createDatagramSocket();
+        if (timeout > 0) {
+            socket.setSoTimeout(timeout);
+        }
+
+        address = serverAddress;
+        port = serverPort;
+    }
+
+    protected DatagramSocket createDatagramSocket() throws SocketException {
+        return new DatagramSocket();
+    }
+
+    DatagramSocket createDatagramSocket(int serverPort) throws SocketException {
+        return new DatagramSocket(serverPort);
+    }
+
     @Override
     public void send(String message) throws TransportException {
         try {
             if (message == null) {
-                // send a null message
-                ByteBuffer byteBuffer = ByteBuffer.allocate(INT_SIZE).putInt(NULL_SIZE);
-                byte[] data = byteBuffer.array();
-                SocketAddress remoteAddress = socket.getRemoteSocketAddress();
-                DatagramPacket packet = new DatagramPacket(data, data.length, remoteAddress);
-
-                socket.send(packet);
+                sendInt(NULL_SIZE);
             } else {
-                final byte[] bytes = message.getBytes();
-
-                // send size of data
-                ByteBuffer byteBuffer = ByteBuffer.allocate(INT_SIZE).putInt(bytes.length);
-                byte[] data = byteBuffer.array();
-                SocketAddress remoteAddress = socket.getRemoteSocketAddress();
-                DatagramPacket packet = new DatagramPacket(data, data.length, remoteAddress);
-
-                socket.send(packet);
-
-                // send data
-                packet = new DatagramPacket(bytes, bytes.length, remoteAddress);
-                socket.send(packet);
+                sendInt(message.length());
+                sendString(message);
             }
         } catch (SocketTimeoutException e) {
-            throw new TransportException("timeout in send", e);
+            throw new TransportException("timeout in receive", e);
         } catch (IOException e) {
-            throw new TransportException("error in send", e);
+            throw new TransportException("error in receive", e);
         }
     }
 
     @Override
     public String receive() throws TransportException {
         try {
-            // receive size of data
-            byte[] data = new byte[INT_SIZE];
-            DatagramPacket packet = new DatagramPacket(data, data.length);
-            socket.receive(packet);
-            int size = ByteBuffer.wrap(data).getInt();
+            int size = receiveInt();
 
             String message = null;
             if (size != NULL_SIZE) {
@@ -103,12 +94,7 @@ public class UDPTransport implements Transport {
                             + MAX_SIZE + " bytes (" + size + ")");
                 }
 
-                // receive actual data
-                data = new byte[size];
-                packet = new DatagramPacket(data, data.length);
-                socket.receive(packet);
-
-                message = new String(packet.getData());
+                message = receiveString(size);
             }
 
             return message;
@@ -119,9 +105,6 @@ public class UDPTransport implements Transport {
         }
     }
 
-    /**
-     *
-     */
     @Override
     public void close() throws IOException {
         socket.close();
@@ -143,5 +126,45 @@ public class UDPTransport implements Transport {
         }
         sb.append(']');
         return sb.toString();
+    }
+
+    private void sendInt(int integer) throws IOException {
+        sendBytes(ByteBuffer.allocate(INT_SIZE).putInt(integer).array());
+    }
+
+    private void sendString(String message) throws IOException {
+        sendBytes(message.getBytes());
+    }
+
+    private void sendBytes(byte[] buffer) throws IOException {
+        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, address, port);
+        socket.send(packet);
+    }
+
+    private int receiveInt() throws IOException {
+        return ByteBuffer.wrap(receiveBytes(INT_SIZE)).getInt();
+    }
+
+    private String receiveString(int length) throws IOException {
+        return new String(receiveBytes(length));
+    }
+
+    private byte[] receiveBytes(int length) throws IOException {
+        byte[] buffer = new byte[length];
+        DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+        socket.receive(packet);
+        if (address == null) {
+            address = packet.getAddress();
+            port = packet.getPort();
+        }
+        return buffer;
+    }
+
+    public InetAddress getAddress() {
+        return address;
+    }
+
+    public int getPort() {
+        return port;
     }
 }

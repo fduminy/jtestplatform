@@ -66,6 +66,10 @@ public class Utils {
     }
 
     public static Domain createFixedStateDomain(final FixedState fixedState) throws DomainException {
+        return createFixedStateDomain(fixedState, null);
+    }
+
+    public static Domain createFixedStateDomain(final FixedState fixedState, String ipAddress) throws DomainException {
         Domain domain = mock(Domain.class);
         when(domain.isAlive()).thenAnswer(new Answer<Boolean>() {
 
@@ -74,6 +78,7 @@ public class Utils {
                 return ALWAYS_ALIVE.equals(fixedState);
             }
         });
+        when(domain.getIPAddress()).thenReturn(ipAddress);
         return domain;
     }
 

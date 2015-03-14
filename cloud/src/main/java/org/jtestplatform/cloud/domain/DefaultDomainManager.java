@@ -44,7 +44,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
@@ -56,6 +55,9 @@ import java.util.Map;
 import static com.google.code.tempusfugit.temporal.Duration.millis;
 import static com.google.code.tempusfugit.temporal.Duration.seconds;
 
+/**
+ * @author Fabien DUMINY (fduminy@jnode.org)
+ */
 public class DefaultDomainManager implements DomainManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultDomainManager.class);
     private static final Duration MAX_ZOMBIE_DURATION = seconds(10);
@@ -154,12 +156,8 @@ public class DefaultDomainManager implements DomainManager {
 
     protected Transport createTransport(String host, int port, int timeout) throws TransportException {
         try {
-            DatagramSocket socket = new DatagramSocket();
-            if (timeout > 0) {
-                socket.setSoTimeout(timeout);
-            }
-            socket.connect(InetAddress.getByName(host), port);
-            return createTransport(socket);
+            InetAddress address = InetAddress.getByName(host);
+            return createTransport(address, port, timeout);
         } catch (SocketException e) {
             throw new TransportException("failed to create socket", e);
         } catch (UnknownHostException e) {
@@ -167,8 +165,8 @@ public class DefaultDomainManager implements DomainManager {
         }
     }
 
-    protected Transport createTransport(DatagramSocket socket) {
-        return new UDPTransport(socket);
+    protected Transport createTransport(InetAddress address, int port, int timeout) throws SocketException {
+        return new UDPTransport(address, port, timeout);
     }
 
     private synchronized String getNextIP(Platform platform) throws TransportException {
