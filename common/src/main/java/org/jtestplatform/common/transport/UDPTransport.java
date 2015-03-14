@@ -42,15 +42,23 @@ public class UDPTransport implements Transport {
     private int port;
     private final DatagramSocket socket;
 
-    public UDPTransport(int serverPort) throws SocketException {
-        this.socket = createDatagramSocket(serverPort);
+    public UDPTransport(int serverPort) throws TransportException {
+        try {
+            this.socket = createDatagramSocket(serverPort);
+        } catch (SocketException e) {
+            throw new TransportException(e.getMessage(), e);
+        }
         port = serverPort;
     }
 
-    public UDPTransport(InetAddress serverAddress, int serverPort, int timeout) throws SocketException {
-        this.socket = createDatagramSocket();
-        if (timeout > 0) {
-            socket.setSoTimeout(timeout);
+    public UDPTransport(InetAddress serverAddress, int serverPort, int timeout) throws TransportException {
+        try {
+            this.socket = createDatagramSocket();
+            if (timeout > 0) {
+                socket.setSoTimeout(timeout);
+            }
+        } catch (SocketException e) {
+            throw new TransportException(e.getMessage(), e);
         }
 
         address = serverAddress;

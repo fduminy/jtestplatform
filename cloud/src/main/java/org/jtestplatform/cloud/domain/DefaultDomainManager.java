@@ -45,7 +45,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.Reader;
 import java.net.InetAddress;
-import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -158,14 +157,12 @@ public class DefaultDomainManager implements DomainManager {
         try {
             InetAddress address = InetAddress.getByName(host);
             return createTransport(address, port, timeout);
-        } catch (SocketException e) {
-            throw new TransportException("failed to create socket", e);
         } catch (UnknownHostException e) {
             throw new TransportException("failed to find host", e);
         }
     }
 
-    protected Transport createTransport(InetAddress address, int port, int timeout) throws SocketException {
+    protected Transport createTransport(InetAddress address, int port, int timeout) throws TransportException {
         return new UDPTransport(address, port, timeout);
     }
 

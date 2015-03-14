@@ -25,6 +25,7 @@ import org.dom4j.DocumentException;
 import org.jtestplatform.cloud.configuration.*;
 import org.jtestplatform.cloud.configuration.io.dom4j.ConfigurationDom4jReader;
 import org.jtestplatform.common.transport.Transport;
+import org.jtestplatform.common.transport.TransportException;
 import org.jtestplatform.common.transport.UDPTransport;
 import org.junit.Rule;
 import org.junit.Test;
@@ -150,7 +151,7 @@ public class DefaultDomainManagerTest {
     }
 
     @Test
-    public void testCreateUDPTransport() throws DomainException, SocketException, UnknownHostException {
+    public void testCreateUDPTransport() throws Exception {
         DefaultDomainManager domainManager = createDomainManager(createConfiguration(), true, null);
 
         Transport transport = domainManager.createTransport(InetAddress.getLocalHost(), 1234, -1);
@@ -222,7 +223,7 @@ public class DefaultDomainManagerTest {
             }
 
             @Override
-            protected Transport createTransport(InetAddress address, int port, int timeout) throws SocketException {
+            protected Transport createTransport(InetAddress address, int port, int timeout) throws TransportException {
                 if (sockets == null) {
                     return super.createTransport(address, port, timeout);
                 }

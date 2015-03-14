@@ -39,7 +39,7 @@ public class ServerUtilsTest {
         String actualValue = ServerUtils.printStackTrace(e, (String) null);
 
         assertThat(actualValue).isEqualTo("java.lang.Exception: message\n" +
-                "\tat org.jtestplatform.server.ServerUtilsTest.testPrintStackTrace_nullClass(ServerUtilsTest.java:39)");
+                "\tat org.jtestplatform.server.ServerUtilsTest.testPrintStackTrace_nullClass(ServerUtilsTest.java:37)");
     }
 
     @Test
@@ -49,7 +49,7 @@ public class ServerUtilsTest {
         String actualValue = ServerUtils.printStackTrace(e, "unknownClass");
 
         assertThat(actualValue).isEqualTo("java.lang.Exception: message\n" +
-                "\tat org.jtestplatform.server.ServerUtilsTest.testPrintStackTrace_classNotFound(ServerUtilsTest.java:49)");
+                "\tat org.jtestplatform.server.ServerUtilsTest.testPrintStackTrace_classNotFound(ServerUtilsTest.java:47)");
     }
 
     @Test

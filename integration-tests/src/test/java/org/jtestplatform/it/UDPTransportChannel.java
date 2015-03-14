@@ -25,7 +25,6 @@ import org.jtestplatform.common.transport.TransportException;
 import org.jtestplatform.common.transport.UDPTransport;
 
 import java.net.InetAddress;
-import java.net.SocketException;
 import java.net.UnknownHostException;
 
 /**
@@ -42,7 +41,7 @@ public class UDPTransportChannel extends InJVMTransportChannel<UDPTransport> {
     }
 
     @Override
-    protected UDPTransport createServerTransport() throws SocketException {
+    protected UDPTransport createServerTransport() throws TransportException {
         return new UDPTransport(serverPort);
     }
 
@@ -50,8 +49,6 @@ public class UDPTransportChannel extends InJVMTransportChannel<UDPTransport> {
     protected UDPTransport createClientTransport() throws TransportException {
         try {
             return new UDPTransport(InetAddress.getLocalHost(), serverPort, 0);
-        } catch (SocketException e) {
-            throw new TransportException(e.getMessage(), e);
         } catch (UnknownHostException e) {
             throw new TransportException(e.getMessage(), e);
         }

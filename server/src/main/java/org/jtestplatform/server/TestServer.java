@@ -32,7 +32,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -79,11 +78,7 @@ public class TestServer {
             this.transportFactory = new TransportFactory() {
                 @Override
                 public Transport create() throws TransportException {
-                    try {
-                        return new UDPTransport(SERVER_PORT);
-                    } catch (SocketException e) {
-                        throw new TransportException("unable to create a transport", e);
-                    }
+                    return new UDPTransport(SERVER_PORT);
                 }
             };
         } else {
