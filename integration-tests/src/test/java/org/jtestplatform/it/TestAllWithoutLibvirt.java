@@ -25,6 +25,7 @@ import com.google.code.tempusfugit.temporal.MovableClock;
 import org.jtestplatform.client.TestDriverTest;
 import org.jtestplatform.junitxmlreport.JUnitXMLReportWriterTest;
 import org.jtestplatform.server.*;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -38,10 +39,19 @@ import static org.junit.Assert.fail;
 
 /**
  * This class contains integration tests.
+ * @author Fabien DUMINY (fduminy at jnode dot org)
  */
 public class TestAllWithoutLibvirt {
     @Rule
     public final TemporaryFolder folder = new TemporaryFolder();
+
+    @BeforeClass
+    public static void beforeClass() throws Exception {
+        MauveTestFramework testFramework = (MauveTestFramework) TestFrameworkManager.getInstance().getTestFramework("mauve");
+        MauveTestFrameworkTest.addTestsTo(testFramework);
+        JUnitTestFramework testFramework2 = (JUnitTestFramework) TestFrameworkManager.getInstance().getTestFramework("junit");
+        JUnitTestFrameworkTest.addTestsTo(testFramework2);
+    }
 
 /*
     //TODO find a way to get .iso files with a running TestServer
@@ -57,17 +67,26 @@ public class TestAllWithoutLibvirt {
 */
 
     @Test
+    public void testAllInJVM_UDPTransport() throws Exception {
+        File reportDirectory = folder.getRoot();
+        File cloudConfigFile = TestDriverTest.copyStreamToFile(folder, "/cloud-it.xml");
+
+        MovableClock clock = new MovableClock();
+        UDPTransportChannelFactory channelFactory = UDPTransportChannelFactory.INSTANCE;
+        InJVMTestDriver testDriver = new InJVMTestDriver<UDPTransportChannel>(clock, channelFactory);
+        testDriver.runTests(cloudConfigFile, reportDirectory);
+
+        verifyXMLReport(cloudConfigFile, "/AllInJVM_noNetworkTransport.xml");
+    }
+
+    @Test
     public void testAllInJVM_noNetworkTransport() throws Exception {
         File reportDirectory = folder.getRoot();
         File cloudConfigFile = TestDriverTest.copyStreamToFile(folder, "/cloud-it.xml");
 
-        MauveTestFramework testFramework = (MauveTestFramework) TestFrameworkManager.getInstance().getTestFramework("mauve");
-        MauveTestFrameworkTest.addTestsTo(testFramework);
-        JUnitTestFramework testFramework2 = (JUnitTestFramework) TestFrameworkManager.getInstance().getTestFramework("junit");
-        JUnitTestFrameworkTest.addTestsTo(testFramework2);
-
         MovableClock clock = new MovableClock();
-        InJVMTestDriver testDriver = new InJVMTestDriver(clock);
+        NoNetworkTransportChannelFactory channelFactory = NoNetworkTransportChannelFactory.INSTANCE;
+        InJVMTestDriver testDriver = new InJVMTestDriver<NoNetworkTransportChannel>(clock, channelFactory);
         testDriver.runTests(cloudConfigFile, reportDirectory);
 
         verifyXMLReport(cloudConfigFile, "/AllInJVM_noNetworkTransport.xml");

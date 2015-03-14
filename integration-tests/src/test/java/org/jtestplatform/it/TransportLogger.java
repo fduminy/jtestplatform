@@ -30,6 +30,7 @@ import java.io.IOException;
 
 /**
  * An implementation of {@link org.jtestplatform.common.transport.Transport} that logging its messages.
+ * @author Fabien DUMINY (fduminy at jnode dot org)
  */
 public class TransportLogger implements Transport {
     private static final Logger LOGGER = LoggerFactory.getLogger(TransportLogger.class);
