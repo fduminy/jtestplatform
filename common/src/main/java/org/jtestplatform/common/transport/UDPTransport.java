@@ -41,6 +41,7 @@ public class UDPTransport implements Transport {
     private InetAddress address;
     private int port;
     private final DatagramSocket socket;
+    private DatagramPacket packet;
 
     public UDPTransport(int serverPort) throws TransportException {
         try {
@@ -145,7 +146,9 @@ public class UDPTransport implements Transport {
     }
 
     private void sendBytes(byte[] buffer) throws IOException {
-        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, address, port);
+        DatagramPacket packet = getDatagramPacket(buffer);
+        packet.setAddress(address);
+        packet.setPort(port);
         socket.send(packet);
     }
 
@@ -159,7 +162,7 @@ public class UDPTransport implements Transport {
 
     private byte[] receiveBytes(int length) throws IOException {
         byte[] buffer = new byte[length];
-        DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+        DatagramPacket packet = getDatagramPacket(buffer);
         socket.receive(packet);
         if (address == null) {
             address = packet.getAddress();
@@ -174,5 +177,14 @@ public class UDPTransport implements Transport {
 
     public int getPort() {
         return port;
+    }
+
+    private DatagramPacket getDatagramPacket(byte[] buffer) {
+        if (packet == null) {
+            packet = new DatagramPacket(buffer, buffer.length);
+        } else {
+            packet.setData(buffer);
+        }
+        return packet;
     }
 }

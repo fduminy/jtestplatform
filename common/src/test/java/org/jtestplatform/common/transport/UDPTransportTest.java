@@ -24,13 +24,14 @@ package org.jtestplatform.common.transport;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import java.io.IOException;
 import java.net.*;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.jtestplatform.common.transport.UDPTransport.NULL_SIZE;
@@ -53,6 +54,8 @@ public class UDPTransportTest {
         InetSocketAddress socketAddress = spy(new InetSocketAddress(serverAddress, SERVER_PORT));
         final DatagramSocket datagramSocket = mock(DatagramSocket.class);
         when(datagramSocket.getRemoteSocketAddress()).thenReturn(socketAddress);
+        final List<DatagramPacket> packets = new ArrayList<DatagramPacket>();
+        doAnswer(captureSentPackets(packets)).when(datagramSocket).send(any(DatagramPacket.class));
         UDPTransport transport = new UDPTransport(serverAddress, SERVER_PORT, 0) {
             @Override
             protected DatagramSocket createDatagramSocket() throws SocketException {
@@ -67,10 +70,9 @@ public class UDPTransportTest {
         assertThat(transport.getAddress()).as("transport.address").isEqualTo(socketAddress.getAddress());
         assertThat(transport.getPort()).as("transport.port").isEqualTo(SERVER_PORT);
 
-        ArgumentCaptor<DatagramPacket> packetCaptor = ArgumentCaptor.forClass(DatagramPacket.class);
-        verify(datagramSocket, times(message.getNbPackets())).send(packetCaptor.capture());
+        verify(datagramSocket, times(message.getNbPackets())).send(any(DatagramPacket.class));
         verifyNoMoreInteractions(datagramSocket, socketAddress);
-        verifyPackets(message, socketAddress, SERVER_PORT, packetCaptor);
+        verifyPackets(message, socketAddress, SERVER_PORT, packets);
     }
 
     @Theory
@@ -78,7 +80,8 @@ public class UDPTransportTest {
         // prepare
         final DatagramSocket datagramSocket = mock(DatagramSocket.class);
         InetAddress serverAddress = InetAddress.getLocalHost();
-        doAnswer(simulateReceive(message, serverAddress, SERVER_PORT)).when(datagramSocket).receive(any(DatagramPacket.class));
+        List<DatagramPacket> packets = new ArrayList<DatagramPacket>();
+        doAnswer(simulateReceive(message, serverAddress, SERVER_PORT, packets)).when(datagramSocket).receive(any(DatagramPacket.class));
         UDPTransport transport = new UDPTransport(SERVER_PORT) {
             @Override
             DatagramSocket createDatagramSocket(int serverPort) throws SocketException {
@@ -94,15 +97,14 @@ public class UDPTransportTest {
         assertThat(transport.getAddress()).as("transport.address").isEqualTo(serverAddress);
         assertThat(transport.getPort()).as("transport.port").isEqualTo(SERVER_PORT);
 
-        ArgumentCaptor<DatagramPacket> packetCaptor = ArgumentCaptor.forClass(DatagramPacket.class);
-        verify(datagramSocket, times(message.getNbPackets())).receive(packetCaptor.capture());
+        verify(datagramSocket, times(message.getNbPackets())).receive(any(DatagramPacket.class));
         verifyNoMoreInteractions(datagramSocket);
-        verifyPackets(message, null, SERVER_PORT, packetCaptor);
+        verifyPackets(message, null, SERVER_PORT, packets);
     }
 
-    private void verifyPackets(StringMessage message, InetSocketAddress socketAddress, int serverPort, ArgumentCaptor<DatagramPacket> packetCaptor) {
+    private void verifyPackets(StringMessage message, InetSocketAddress socketAddress, int serverPort, List<DatagramPacket> packets) {
         // first packet
-        DatagramPacket packet1 = packetCaptor.getAllValues().get(0);
+        DatagramPacket packet1 = packets.get(0);
         assertThat(packet1).as("DatagramPacket").isNotNull();
         if (socketAddress != null) {
             assertThat(packet1.getSocketAddress()).as("serverAddress").isEqualTo(socketAddress);
@@ -113,13 +115,24 @@ public class UDPTransportTest {
 
         if (message.getNbPackets() > 1) {
             // second packet
-            DatagramPacket packet2 = packetCaptor.getAllValues().get(1);
+            DatagramPacket packet2 = packets.get(1);
             assertThat(packet2.getLength()).as("packet2.length").isEqualTo(message.value.length());
             assertThat(packet2.getData()).as("packet2.bytes").isEqualTo(message.value.getBytes());
         }
     }
 
-    private Answer<Void> simulateReceive(final StringMessage message, final InetAddress serverAddress, final int serverPort) {
+    private Answer<Object> captureSentPackets(final List<DatagramPacket> packets) {
+        return new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
+                DatagramPacket packet = (DatagramPacket) invocationOnMock.getArguments()[0];
+                addClonedPacket(packets, packet);
+                return null;
+            }
+        };
+    }
+
+    private Answer<Void> simulateReceive(final StringMessage message, final InetAddress serverAddress, final int serverPort, final List<DatagramPacket> packets) {
         return new Answer<Void>() {
             int callNumber = 0;
 
@@ -130,6 +143,7 @@ public class UDPTransportTest {
                 DatagramPacket packet = (DatagramPacket) invocationOnMock.getArguments()[0];
                 packet.setAddress(serverAddress);
                 packet.setPort(serverPort);
+                addClonedPacket(packets, packet);
 
                 byte[] data;
                 if (callNumber == 1) {
@@ -142,6 +156,14 @@ public class UDPTransportTest {
                 return null;
             }
         };
+    }
+
+    private void addClonedPacket(List<DatagramPacket> packets, DatagramPacket packet) {
+        DatagramPacket clonedPacket = new DatagramPacket(packet.getData(), packet.getOffset());
+        clonedPacket.setAddress(packet.getAddress());
+        clonedPacket.setPort(packet.getPort());
+        clonedPacket.setLength(packet.getLength());
+        packets.add(clonedPacket);
     }
 
     public static enum StringMessage {
