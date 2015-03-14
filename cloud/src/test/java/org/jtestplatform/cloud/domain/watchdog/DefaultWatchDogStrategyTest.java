@@ -31,6 +31,9 @@ import static com.google.code.tempusfugit.temporal.Duration.millis;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
+/**
+ * @author Fabien DUMINY (fduminy at jnode dot org)
+ */
 public class DefaultWatchDogStrategyTest {
     private final Duration MAX_ZOMBIE_DURATION = millis(2);
 

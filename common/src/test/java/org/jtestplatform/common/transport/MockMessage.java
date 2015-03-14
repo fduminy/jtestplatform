@@ -27,6 +27,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * @author Fabien DUMINY (fduminy at jnode dot org)
+ */
 public class MockMessage implements Message {
     private static final AtomicInteger NEXT_ID = new AtomicInteger(0);
     static final int PART_COUNT = 4;

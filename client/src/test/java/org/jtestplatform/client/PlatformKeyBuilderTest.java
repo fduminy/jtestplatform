@@ -26,6 +26,9 @@ import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * @author Fabien DUMINY (fduminy at jnode dot org)
+ */
 public class PlatformKeyBuilderTest {
     @Test
     public void test_nullPlatform() {

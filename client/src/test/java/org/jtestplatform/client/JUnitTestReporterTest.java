@@ -54,6 +54,9 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
+/**
+ * @author Fabien DUMINY (fduminy at jnode dot org)
+ */
 @RunWith(Theories.class)
 public class JUnitTestReporterTest {
     public static final Duration DURATION1 = millis(1);

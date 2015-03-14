@@ -29,7 +29,7 @@ import org.jtestplatform.cloud.configuration.Platform;
 
 
 /**
- * @author Fabien DUMINY (fduminy@jnode.org)
+ * @author Fabien DUMINY (fduminy at jnode dot org)
  *
  * @param <D>
  */

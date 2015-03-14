@@ -37,7 +37,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @author Fabien DUMINY (fduminy@jnode.org)
+ * @author Fabien DUMINY (fduminy at jnode dot org)
  */
 public class TestServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(TestServer.class);

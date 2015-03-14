@@ -30,6 +30,9 @@ import org.jtestplatform.server.TestServerCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @author Fabien DUMINY (fduminy at jnode dot org)
+ */
 public class RunTestCommand implements TestServerCommand<RunTest, TestResult> {
     private static final Logger LOGGER = LoggerFactory.getLogger(RunTestCommand.class);
 

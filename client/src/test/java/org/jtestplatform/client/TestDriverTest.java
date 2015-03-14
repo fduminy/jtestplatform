@@ -45,6 +45,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
+/**
+ * @author Fabien DUMINY (fduminy at jnode dot org)
+ */
 public class TestDriverTest {
     @Rule
     public final TemporaryFolder folder = new TemporaryFolder();

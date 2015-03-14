@@ -27,6 +27,9 @@ import org.jtestplatform.common.message.TestResult;
 
 /**
  * Interface used to report the result of a test run.
+ *
+ * @author Fabien DUMINY (fduminy at jnode dot org)
+ *
  */
 public interface TestReporter {
     void report(Platform platform, TestResult testResult, Duration testDuration) throws Exception;

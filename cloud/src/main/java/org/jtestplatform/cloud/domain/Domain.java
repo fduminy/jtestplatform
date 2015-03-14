@@ -24,8 +24,8 @@ package org.jtestplatform.cloud.domain;
 
 /**
  * Interface with a domain.
- * 
- * @author Fabien DUMINY (fduminy@jnode.org)
+ *
+ * @author Fabien DUMINY (fduminy at jnode dot org)
  *
  */
 public interface Domain {

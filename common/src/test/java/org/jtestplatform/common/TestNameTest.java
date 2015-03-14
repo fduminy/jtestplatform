@@ -27,6 +27,9 @@ import org.junit.runner.RunWith;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * @author Fabien DUMINY (fduminy at jnode dot org)
+ */
 @RunWith(Theories.class)
 public class TestNameTest {
     public static enum TestNameData {

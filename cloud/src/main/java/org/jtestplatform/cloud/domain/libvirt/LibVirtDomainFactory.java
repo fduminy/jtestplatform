@@ -53,8 +53,8 @@ import static java.lang.Integer.MAX_VALUE;
 
 /**
  * Implementation of {@link DomainFactory} for <a href="http://libvirt.org/">libvirt</a>.
- * 
- * @author Fabien DUMINY (fduminy@jnode.org)
+ *
+ * @author Fabien DUMINY (fduminy at jnode dot org)
  *
  */
 public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {

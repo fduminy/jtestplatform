@@ -35,7 +35,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * That utility class is used to watch a list of {@link Domain} and 
  * check regularly that they are alive.
- * @author Fabien DUMINY (fduminy@jnode.org)
+ * @author Fabien DUMINY (fduminy at jnode dot org)
  *
  */
 public class WatchDog {

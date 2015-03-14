@@ -30,7 +30,7 @@ import java.util.Set;
 
 /**
  *
- * @author Fabien DUMINY (fduminy@jnode.org)
+ * @author Fabien DUMINY (fduminy at jnode dot org)
  *
  */
 public class GetTestFrameworksCommand implements TestServerCommand<GetTestFrameworks, TestFrameworks> {

@@ -28,6 +28,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.jtestplatform.server.TestedClass.methodLevel1;
 import static org.jtestplatform.server.TestedClass.methodLevel2;
 
+/**
+ * @author Fabien DUMINY (fduminy at jnode dot org)
+ */
 public class ServerUtilsTest {
     @Test
     public void testPrintStackTrace_nullClass() {
@@ -36,7 +39,7 @@ public class ServerUtilsTest {
         String actualValue = ServerUtils.printStackTrace(e, (String) null);
 
         assertThat(actualValue).isEqualTo("java.lang.Exception: message\n" +
-                "\tat org.jtestplatform.server.ServerUtilsTest.testPrintStackTrace_nullClass(ServerUtilsTest.java:34)");
+                "\tat org.jtestplatform.server.ServerUtilsTest.testPrintStackTrace_nullClass(ServerUtilsTest.java:39)");
     }
 
     @Test
@@ -46,7 +49,7 @@ public class ServerUtilsTest {
         String actualValue = ServerUtils.printStackTrace(e, "unknownClass");
 
         assertThat(actualValue).isEqualTo("java.lang.Exception: message\n" +
-                "\tat org.jtestplatform.server.ServerUtilsTest.testPrintStackTrace_classNotFound(ServerUtilsTest.java:44)");
+                "\tat org.jtestplatform.server.ServerUtilsTest.testPrintStackTrace_classNotFound(ServerUtilsTest.java:49)");
     }
 
     @Test
@@ -56,7 +59,7 @@ public class ServerUtilsTest {
         String actualValue = ServerUtils.printStackTrace(e, TestedClass.class.getName());
 
         assertThat(actualValue).isEqualTo("java.lang.Exception: message\n" +
-                "\tat org.jtestplatform.server.TestedClass.methodLevel1(TestedClass.java:29)");
+                "\tat org.jtestplatform.server.TestedClass.methodLevel1(TestedClass.java:32)");
     }
 
     @Test
@@ -66,8 +69,8 @@ public class ServerUtilsTest {
         String actualValue = ServerUtils.printStackTrace(e, TestedClass.class.getName());
 
         assertThat(actualValue).isEqualTo("java.lang.Exception: message\n" +
-                "\tat org.jtestplatform.server.TestedClass.methodLevel1(TestedClass.java:29)\n" +
-                "\tat org.jtestplatform.server.TestedClass.methodLevel2(TestedClass.java:33)");
+                "\tat org.jtestplatform.server.TestedClass.methodLevel1(TestedClass.java:32)\n" +
+                "\tat org.jtestplatform.server.TestedClass.methodLevel2(TestedClass.java:36)");
     }
 
     @Test
@@ -77,7 +80,7 @@ public class ServerUtilsTest {
         String actualValue = ServerUtils.printStackTrace(e, TestedClass.class.getName(), "methodLevel1");
 
         assertThat(actualValue).isEqualTo("java.lang.Exception: message\n" +
-                "\tat org.jtestplatform.server.TestedClass.methodLevel1(TestedClass.java:29)");
+                "\tat org.jtestplatform.server.TestedClass.methodLevel1(TestedClass.java:32)");
     }
 
     @Test
@@ -87,7 +90,7 @@ public class ServerUtilsTest {
         String actualValue = ServerUtils.printStackTrace(e, InnerTestedClass.class.getName(), "methodLevel1");
 
         assertThat(actualValue).isEqualTo("java.lang.Exception: message\n" +
-                "\tat org.jtestplatform.server.TestedClass.methodLevel1(TestedClass.java:29)\n" +
-                "\tat org.jtestplatform.server.TestedClass$InnerTestedClass.methodLevel1(TestedClass.java:38)");
+                "\tat org.jtestplatform.server.TestedClass.methodLevel1(TestedClass.java:32)\n" +
+                "\tat org.jtestplatform.server.TestedClass$InnerTestedClass.methodLevel1(TestedClass.java:41)");
     }
 }

@@ -47,6 +47,9 @@ import static org.jtestplatform.client.Utils.PLATFORM2;
 import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.*;
 
+/**
+ * @author Fabien DUMINY (fduminy at jnode dot org)
+ */
 public class RequestConsumerTest {
     @Test
     public void testCreateTransportHelper() throws Exception {

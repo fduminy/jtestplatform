@@ -28,7 +28,7 @@ import org.jtestplatform.common.transport.Transport;
 import org.jtestplatform.common.transport.TransportException;
 
 /**
- * @author Fabien DUMINY (fduminy@jnode.org)
+ * @author Fabien DUMINY (fduminy at jnode dot org)
  *
  */
 public class RunTest implements Message {

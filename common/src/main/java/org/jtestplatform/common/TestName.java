@@ -21,6 +21,9 @@
  */
 package org.jtestplatform.common;
 
+/**
+ * @author Fabien DUMINY (fduminy at jnode dot org)
+ */
 public class TestName {
     private static final char SEPARATOR = '#';
 

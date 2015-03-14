@@ -42,6 +42,9 @@ import static java.util.concurrent.TimeUnit.SECONDS;
  * Consumer of {@link org.jtestplatform.client.Request}s provided by a {@link java.util.concurrent.BlockingQueue}.
  * Each consumed request is sent for execution through a {@link org.jtestplatform.common.transport.Transport} provided by a
  * {@link org.jtestplatform.cloud.TransportProvider}. The result is sent to a {@link org.jtestplatform.client.TestReporter}.
+ *
+ * @author Fabien DUMINY (fduminy at jnode dot org)
+ *
  */
 public class RequestConsumer {
     private static final Logger LOGGER = LoggerFactory.getLogger(RequestConsumer.class);

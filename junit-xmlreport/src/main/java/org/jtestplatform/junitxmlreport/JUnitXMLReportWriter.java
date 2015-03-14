@@ -25,6 +25,9 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import java.io.OutputStream;
 
+/**
+ * @author Fabien DUMINY (fduminy at jnode dot org)
+ */
 public class JUnitXMLReportWriter {
     /**
      * Writes a JUnit XML report.

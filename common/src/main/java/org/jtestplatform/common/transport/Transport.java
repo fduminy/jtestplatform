@@ -25,7 +25,7 @@ import java.io.Closeable;
 
 
 /**
- * @author Fabien DUMINY (fduminy@jnode.org)
+ * @author Fabien DUMINY (fduminy at jnode dot org)
  *
  */
 public interface Transport extends Closeable {

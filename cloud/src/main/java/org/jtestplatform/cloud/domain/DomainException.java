@@ -25,7 +25,7 @@
 package org.jtestplatform.cloud.domain;
 
 /**
- * @author Fabien DUMINY (fduminy@jnode.org)
+ * @author Fabien DUMINY (fduminy at jnode dot org)
  *
  */
 @SuppressWarnings("serial")

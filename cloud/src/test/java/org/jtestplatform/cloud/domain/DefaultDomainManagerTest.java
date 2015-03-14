@@ -47,7 +47,7 @@ import static org.jtestplatform.cloud.domain.Utils.FixedState.ALWAYS_ALIVE;
 import static org.junit.Assert.assertNotNull;
 
 /**
- * @author Fabien DUMINY (fduminy@jnode.org)
+ * @author Fabien DUMINY (fduminy at jnode dot org)
  *
  */
 public class DefaultDomainManagerTest {

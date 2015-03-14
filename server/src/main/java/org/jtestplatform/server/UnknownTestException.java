@@ -22,7 +22,7 @@
 package org.jtestplatform.server;
 
 /**
- * @author Fabien DUMINY (fduminy@jnode.org)
+ * @author Fabien DUMINY (fduminy at jnode dot org)
  *
  */
 public class UnknownTestException extends Exception {

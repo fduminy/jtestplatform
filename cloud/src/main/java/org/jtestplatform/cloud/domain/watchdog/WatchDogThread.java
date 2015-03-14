@@ -23,6 +23,9 @@ package org.jtestplatform.cloud.domain.watchdog;
 
 import com.google.code.tempusfugit.temporal.Sleeper;
 
+/**
+ * @author Fabien DUMINY (fduminy at jnode dot org)
+ */
 class WatchDogThread extends Thread {
     private final WatchDog watchDog;
     private final Sleeper sleeper;

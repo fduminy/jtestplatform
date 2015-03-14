@@ -43,7 +43,7 @@ import java.util.*;
 import static org.jtestplatform.server.ServerUtils.printStackTrace;
 
 /**
- * @author Fabien DUMINY (fduminy@jnode.org)
+ * @author Fabien DUMINY (fduminy at jnode dot org)
  *
  */
 public class JUnitTestFramework implements TestFramework {

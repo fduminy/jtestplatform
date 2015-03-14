@@ -24,7 +24,7 @@ package org.jtestplatform.common.transport;
 import org.jtestplatform.common.message.ErrorMessage;
 
 /**
- * @author Fabien DUMINY (fduminy@jnode.org)
+ * @author Fabien DUMINY (fduminy at jnode dot org)
  *
  */
 @SuppressWarnings("serial")

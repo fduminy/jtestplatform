@@ -33,6 +33,9 @@ import static com.google.code.tempusfugit.temporal.WaitFor.waitOrTimeout;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
+/**
+ * @author Fabien DUMINY (fduminy at jnode dot org)
+ */
 @RunWith(Theories.class)
 public class WatchDogThreadTest {
     @Theory

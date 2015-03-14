@@ -34,7 +34,7 @@ import java.util.Hashtable;
 import java.util.Map;
 
 /**
- * @author Fabien DUMINY (fduminy@jnode.org)
+ * @author Fabien DUMINY (fduminy at jnode dot org)
  *
  */
 class ConnectManager {

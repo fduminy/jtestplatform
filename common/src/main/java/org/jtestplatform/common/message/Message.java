@@ -25,6 +25,9 @@ package org.jtestplatform.common.message;
 import org.jtestplatform.common.transport.Transport;
 import org.jtestplatform.common.transport.TransportException;
 
+/**
+ * @author Fabien DUMINY (fduminy at jnode dot org)
+ */
 public interface Message {
     void sendWith(Transport t) throws TransportException;
     void receiveFrom(Transport t) throws TransportException;

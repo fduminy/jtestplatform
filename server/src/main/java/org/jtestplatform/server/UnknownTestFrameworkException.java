@@ -21,6 +21,9 @@
  */
 package org.jtestplatform.server;
 
+/**
+ * @author Fabien DUMINY (fduminy at jnode dot org)
+ */
 public class UnknownTestFrameworkException extends Exception {
     public UnknownTestFrameworkException(String framework) {
         super("Unknown test framework : " + framework);

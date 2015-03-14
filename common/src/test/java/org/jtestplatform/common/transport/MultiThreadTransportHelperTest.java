@@ -37,7 +37,7 @@ import static org.jtestplatform.common.transport.TransportHelperSpy.NB_THREADS;
 
 
 /**
- * @author Fabien DUMINY (fduminy@jnode.org)
+ * @author Fabien DUMINY (fduminy at jnode dot org)
  */
 @RunWith(Enclosed.class)
 public class MultiThreadTransportHelperTest {

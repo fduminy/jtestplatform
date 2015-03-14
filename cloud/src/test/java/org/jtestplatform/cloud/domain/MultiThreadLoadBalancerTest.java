@@ -45,7 +45,7 @@ import static org.jtestplatform.common.transport.Utils.verifyEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
- * @author Fabien DUMINY (fduminy@jnode.org)
+ * @author Fabien DUMINY (fduminy at jnode dot org)
  */
 @RunWith(Enclosed.class)
 public class MultiThreadLoadBalancerTest {

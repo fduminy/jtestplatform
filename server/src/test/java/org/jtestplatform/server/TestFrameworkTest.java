@@ -36,7 +36,7 @@ import static org.junit.Assert.*;
 
 
 /**
- * @author Fabien DUMINY (fduminy@jnode.org)
+ * @author Fabien DUMINY (fduminy at jnode dot org)
  *
  */
 abstract public class TestFrameworkTest<T extends TestFramework> {

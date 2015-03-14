@@ -34,6 +34,9 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * @author Fabien DUMINY (fduminy at jnode dot org)
+ */
 public class Utils {
     static final Platform PLATFORM1 = createPlatform("Athlon", 32, 2);
     static final Platform PLATFORM2 = createPlatform("Pentium", 32, 1);

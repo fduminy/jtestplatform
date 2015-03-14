@@ -26,6 +26,9 @@ import org.jtestplatform.cloud.configuration.Platform;
 
 import java.util.List;
 
+/**
+ * @author Fabien DUMINY (fduminy at jnode dot org)
+ */
 public interface DomainManager extends TransportProvider {
     List<Platform> getPlatforms();
 

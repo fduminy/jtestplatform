@@ -47,7 +47,7 @@ import static org.mockito.Mockito.*;
 
 
 /**
- * @author Fabien DUMINY (fduminy@jnode.org)
+ * @author Fabien DUMINY (fduminy at jnode dot org)
  *
  */
 @RunWith(Theories.class)

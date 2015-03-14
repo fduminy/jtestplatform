@@ -38,6 +38,9 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
  * A {@linkplain org.jtestplatform.client.TestReporter} generating a report in JUnit format.
+ *
+ * @author Fabien DUMINY (fduminy at jnode dot org)
+ *
  */
 public class JUnitTestReporter implements TestReporter {
     static final String PLATFORM_PROPERTY_PREFIX = "platform.";

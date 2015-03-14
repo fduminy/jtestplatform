@@ -21,6 +21,9 @@
  */
 package org.jtestplatform.cloud.domain;
 
+/**
+ * @author Fabien DUMINY (fduminy at jnode dot org)
+ */
 public class ConfigurationException extends DomainException {
     public ConfigurationException(String message) {
         super(message);

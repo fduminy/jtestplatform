@@ -56,7 +56,7 @@ import static com.google.code.tempusfugit.temporal.Duration.millis;
 import static com.google.code.tempusfugit.temporal.Duration.seconds;
 
 /**
- * @author Fabien DUMINY (fduminy@jnode.org)
+ * @author Fabien DUMINY (fduminy at jnode dot org)
  */
 public class DefaultDomainManager implements DomainManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultDomainManager.class);

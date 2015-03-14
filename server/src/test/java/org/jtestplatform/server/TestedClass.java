@@ -23,6 +23,9 @@ package org.jtestplatform.server;
 
 /**
  * The source code of this class shouldn't be reformatted because stacktrace (especially line numbers) are used in tests.
+ *
+ * @author Fabien DUMINY (fduminy at jnode dot org)
+ *
  */
 class TestedClass {
     static Exception methodLevel1() {

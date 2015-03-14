@@ -25,6 +25,9 @@ import org.jtestplatform.cloud.configuration.Platform;
 
 /**
  * Builder generating a String key from a {@link org.jtestplatform.cloud.configuration.Platform} instance.
+ *
+ * @author Fabien DUMINY (fduminy at jnode dot org)
+ *
  */
 public class PlatformKeyBuilder {
     public String buildKey(Platform platform) {

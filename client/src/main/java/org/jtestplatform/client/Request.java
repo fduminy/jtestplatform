@@ -25,6 +25,9 @@ import org.jtestplatform.cloud.configuration.Platform;
 
 /**
  * Parameters for a request to run a test.
+ *
+ * @author Fabien DUMINY (fduminy at jnode dot org)
+ *
  */
 public class Request {
     static final Request END = new Request(null, "", "") {

@@ -30,7 +30,7 @@ import org.jtestplatform.cloud.configuration.Platform;
 import java.util.List;
 
 /**
- * @author Fabien DUMINY (fduminy@jnode.org)
+ * @author Fabien DUMINY (fduminy at jnode dot org)
  *
  */
 class DomainManagerDelegate {

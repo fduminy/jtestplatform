@@ -35,6 +35,9 @@ import static org.apache.commons.lang3.StringUtils.strip;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+/**
+ * @author Fabien DUMINY (fduminy at jnode dot org)
+ */
 public class JUnitXMLReportWriterTest {
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 

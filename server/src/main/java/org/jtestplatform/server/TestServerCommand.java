@@ -24,6 +24,9 @@ package org.jtestplatform.server;
 import org.jtestplatform.common.message.Message;
 
 
+/**
+ * @author Fabien DUMINY (fduminy at jnode dot org)
+ */
 public interface TestServerCommand<T extends Message, R extends Message> {
     R execute(T message) throws Exception;
 }

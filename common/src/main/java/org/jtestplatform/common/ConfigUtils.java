@@ -24,6 +24,9 @@ package org.jtestplatform.common;
 import java.io.File;
 import java.util.Properties;
 
+/**
+ * @author Fabien DUMINY (fduminy at jnode dot org)
+ */
 public final class ConfigUtils {
     private ConfigUtils() {
     }

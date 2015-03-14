@@ -35,6 +35,9 @@ import org.mockito.ArgumentCaptor;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
+/**
+ * @author Fabien DUMINY (fduminy at jnode dot org)
+ */
 @RunWith(Theories.class)
 public class TestServerTest {
     @Test

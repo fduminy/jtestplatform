@@ -38,7 +38,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Test a client and a server using {@link org.jtestplatform.common.transport.UDPTransport}.
  *
- * @author Fabien DUMINY (fduminy@jnode.org)
+ * @author Fabien DUMINY (fduminy at jnode dot org)
  */
 public class UDPClientServerTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(UDPClientServerTest.class);

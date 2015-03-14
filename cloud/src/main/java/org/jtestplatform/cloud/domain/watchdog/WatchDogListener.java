@@ -27,7 +27,7 @@ package org.jtestplatform.cloud.domain.watchdog;
 import org.jtestplatform.cloud.domain.Domain;
 
 /**
- * @author Fabien DUMINY (fduminy@jnode.org)
+ * @author Fabien DUMINY (fduminy at jnode dot org)
  *
  */
 public interface WatchDogListener {

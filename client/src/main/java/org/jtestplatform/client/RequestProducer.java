@@ -40,6 +40,9 @@ import java.util.concurrent.BlockingQueue;
 /**
  * Producer of {@link org.jtestplatform.client.Request}s from a {@link org.jtestplatform.cloud.domain.DomainManager}.
  * Each produced request is added to a {@link java.util.concurrent.BlockingQueue}, which could be used by consumers.
+ *
+ * @author Fabien DUMINY (fduminy at jnode dot org)
+ *
  */
 public class RequestProducer {
     private static final Logger LOGGER = LoggerFactory.getLogger(RequestProducer.class);

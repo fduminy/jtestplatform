@@ -27,6 +27,9 @@ import static org.jtestplatform.common.transport.Utils.verifyEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
+/**
+ * @author Fabien DUMINY (fduminy at jnode dot org)
+ */
 abstract class TransportHelperSpy extends TransportHelper {
     static final int NB_THREADS = 100;
     static final int NB_REPEATS = 10;

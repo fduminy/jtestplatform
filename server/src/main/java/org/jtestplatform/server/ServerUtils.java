@@ -24,6 +24,9 @@ package org.jtestplatform.server;
 import org.jtestplatform.common.TestName;
 import org.jtestplatform.common.message.TestResult;
 
+/**
+ * @author Fabien DUMINY (fduminy at jnode dot org)
+ */
 public class ServerUtils {
     public static String printStackTrace(Throwable throwable, TestResult testResult) {
         final String test = testResult.getTest();

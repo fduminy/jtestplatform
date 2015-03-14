@@ -48,6 +48,9 @@ import static org.jtestplatform.client.Utils.*;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.*;
 
+/**
+ * @author Fabien DUMINY (fduminy at jnode dot org)
+ */
 @RunWith(Theories.class)
 public class RequestProducerTest {
     @Test

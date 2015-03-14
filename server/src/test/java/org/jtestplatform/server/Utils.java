@@ -29,7 +29,7 @@ import org.jtestplatform.common.TestName;
 import java.util.Collection;
 
 /**
- * @author Fabien DUMINY (fduminy@jnode.org)
+ * @author Fabien DUMINY (fduminy at jnode dot org)
  *
  */
 final class Utils {

@@ -23,6 +23,9 @@ package org.jtestplatform.common.transport;
 
 import java.util.Collection;
 
+/**
+ * @author Fabien DUMINY (fduminy at jnode dot org)
+ */
 public class Utils {
     public static String verifyEquals(String method, String valueName, long expectedValue, long actualValue) {
         if (expectedValue != actualValue) {

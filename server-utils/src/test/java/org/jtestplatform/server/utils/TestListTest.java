@@ -28,7 +28,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 /**
- * @author Fabien DUMINY (fduminy@jnode.org)
+ * @author Fabien DUMINY (fduminy at jnode dot org)
  *
  */
 public class TestListTest {

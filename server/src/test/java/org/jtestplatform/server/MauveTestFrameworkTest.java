@@ -25,7 +25,7 @@ import gnu.testlet.TestHarness;
 import gnu.testlet.Testlet;
 
 /**
- * @author Fabien DUMINY (fduminy@jnode.org)
+ * @author Fabien DUMINY (fduminy at jnode dot org)
  */
 public class MauveTestFrameworkTest extends TestFrameworkTest<MauveTestFramework> {
     public MauveTestFrameworkTest() throws Exception {

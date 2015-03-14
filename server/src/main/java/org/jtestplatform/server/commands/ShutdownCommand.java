@@ -26,6 +26,9 @@ import org.jtestplatform.common.message.Shutdown;
 import org.jtestplatform.server.TestServer;
 import org.jtestplatform.server.TestServerCommand;
 
+/**
+ * @author Fabien DUMINY (fduminy at jnode dot org)
+ */
 public class ShutdownCommand implements TestServerCommand<Shutdown, Message> {
     private final TestServer testServer;
 

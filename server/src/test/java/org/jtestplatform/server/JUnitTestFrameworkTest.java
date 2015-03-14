@@ -33,7 +33,7 @@ import java.util.Collection;
 import static org.jtestplatform.server.ServerUtils.printStackTrace;
 
 /**
- * @author Fabien DUMINY (fduminy@jnode.org)
+ * @author Fabien DUMINY (fduminy at jnode dot org)
  */
 public class JUnitTestFrameworkTest extends TestFrameworkTest<JUnitTestFramework> {
     private static final AssertionError FAILURE = new AssertionError("a failure");

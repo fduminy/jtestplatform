@@ -37,6 +37,9 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.concurrent.*;
 
+/**
+ * @author Fabien DUMINY (fduminy at jnode dot org)
+ */
 public class TestDriver {
     private static final Logger LOGGER = LoggerFactory.getLogger(TestDriver.class);
     protected final Clock clock;

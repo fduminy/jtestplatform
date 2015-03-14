@@ -44,8 +44,8 @@ import static com.google.code.tempusfugit.temporal.Timeout.timeout;
 
 /**
  * Implementation for a {@link org.jtestplatform.cloud.domain.Domain} based on <a href="http://www.libvirt.org/">libvirt</a>.
- * 
- * @author Fabien DUMINY (fduminy@jnode.org)
+ *
+ * @author Fabien DUMINY (fduminy at jnode dot org)
  *
  */
 class LibVirtDomain implements Domain {
