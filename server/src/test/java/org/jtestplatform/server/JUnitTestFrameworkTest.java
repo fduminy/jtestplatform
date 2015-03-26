@@ -70,7 +70,7 @@ public class JUnitTestFrameworkTest extends TestFrameworkTest<JUnitTestFramework
     public static class ParameterizedTestClass {
         @Parameterized.Parameters
         public static Collection<Object[]> data() {
-            return Arrays.asList(new Object[][]{{1L}, {1L}});
+            return Arrays.asList(new Object[][]{{1L}});
         }
 
         private long param;
