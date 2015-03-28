@@ -74,12 +74,16 @@ abstract public class TestFrameworkTest<T extends TestFramework> {
     @Test
     public void testGetTestsForClass() {
         for (Class<?> testClass : data.getTestClasses()) {
-            String[] expectedTests = data.getExpectedTests(testClass).toArray(new String[0]);
-            String[] tests = testFramework.getTests(testClass).toArray(new String[0]);
-            Arrays.sort(expectedTests);
-            Arrays.sort(tests);
+            String[] expectedTests = sort(data.getExpectedTests(testClass));
+            String[] tests = sort(testFramework.getTests(testClass));
             assertArrayEquals("invalid test list for class " + testClass.getName(), expectedTests, tests);
         }
+    }
+
+    public static String[] sort(Collection<String> values) {
+        String[] valuesArray = values.toArray(new String[values.size()]);
+        Arrays.sort(valuesArray);
+        return valuesArray;
     }
 
     @Test
@@ -94,19 +98,9 @@ abstract public class TestFrameworkTest<T extends TestFramework> {
         for (String aTest : testFramework.getTests()) {
             TestFailure failure = data.getTestFailure(aTest);
             if (!data.isIgnored(aTest) && (failure == null)) {
-                // prepare
                 TestResult testResult = createTestResult(aTest);
-
-                // test
                 testFramework.runTest(testResult);
-
-                // verify
-                assertThat(testResult.getFailureType()).as("failureType").isNull();
-                assertThat(testResult.getFailureContent()).as("failureContent").isNull();
-                assertThat(testResult.getFailureMessage()).as("failureMessage").isNull();
-                assertThat(testResult.isSuccess()).as("success").isTrue();
-                assertThat(testResult.isError()).as("error").isFalse();
-                assertThat(testResult.isIgnored()).as("ignored").isFalse();
+                verifyTest(aTest, testResult, null, true, false, false);
             }
         }
     }
@@ -116,21 +110,9 @@ abstract public class TestFrameworkTest<T extends TestFramework> {
         for (String aTest : testFramework.getTests()) {
             TestFailure failure = data.getTestFailure(aTest);
             if ((failure != null) && !failure.error) {
-                // prepare
                 TestResult testResult = createTestResult(aTest);
-
-                // test
                 testFramework.runTest(testResult);
-
-                // verify
-                assertThat(testResult.getFailureType()).as("failureType").isEqualTo(failure.failureType);
-                assertThat(testResult.getFailureContent()).as("failureContent").isEqualTo(failure.failureContent);
-                assertThat(testResult.getFailureMessage()).as("failureMessage").isEqualTo(failure.failureMessage);
-                assertThat(testResult.isSuccess()).as("success").isFalse();
-                assertThat(testResult.isError()).as("error").isFalse();
-                assertThat(testResult.isIgnored()).as("ignored").isFalse();
-                assertThat(testResult.getSystemOut()).as("systemOut").isEqualTo(SYSTEM_OUT + '\n');
-                assertThat(testResult.getSystemErr()).as("systemErr").isEqualTo(SYSTEM_ERR + '\n');
+                verifyTest(aTest, testResult, failure, false, false, false);
             }
         }
     }
@@ -140,21 +122,9 @@ abstract public class TestFrameworkTest<T extends TestFramework> {
         for (String aTest : testFramework.getTests()) {
             TestFailure failure = data.getTestFailure(aTest);
             if ((failure != null) && failure.error) {
-                // prepare
                 TestResult testResult = createTestResult(aTest);
-
-                // test
                 testFramework.runTest(testResult);
-
-                // verify
-                assertThat(testResult.getFailureType()).as(aTest + ": failureType").isEqualTo(failure.failureType);
-                assertThat(testResult.getFailureContent()).as(aTest + ": failureContent").isEqualTo(failure.failureContent);
-                assertThat(testResult.getFailureMessage()).as(aTest + ": failureMessage").isEqualTo(failure.failureMessage);
-                assertThat(testResult.isSuccess()).as(aTest + ": success").isFalse();
-                assertThat(testResult.isError()).as(aTest + ": error").isTrue();
-                assertThat(testResult.isIgnored()).as(aTest + ": ignored").isFalse();
-                assertThat(testResult.getSystemOut()).as(aTest + ": systemOut").isEqualTo(SYSTEM_OUT + '\n');
-                assertThat(testResult.getSystemErr()).as(aTest + ": systemErr").isEqualTo(SYSTEM_ERR + '\n');
+                verifyTest(aTest, testResult, failure, false, true, false);
             }
         }
     }
@@ -163,21 +133,22 @@ abstract public class TestFrameworkTest<T extends TestFramework> {
     public void testRunIgnoredTest() throws UnknownTestException {
         for (String aTest : testFramework.getTests()) {
             if (data.isIgnored(aTest)) {
-                // prepare
                 TestResult testResult = createTestResult(aTest);
-
-                // test
                 testFramework.runTest(testResult);
-
-                // verify
-                assertThat(testResult.getFailureType()).as("failureType").isNull();
-                assertThat(testResult.getFailureContent()).as("failureContent").isNull();
-                assertThat(testResult.getFailureMessage()).as("failureMessage").isNull();
-                assertThat(testResult.isSuccess()).as("success").isFalse();
-                assertThat(testResult.isError()).as("error").isFalse();
-                assertThat(testResult.isIgnored()).as("ignored").isTrue();
+                verifyTest(aTest, testResult, null, false, false, true);
             }
         }
+    }
+
+    protected final void verifyTest(String aTest, TestResult actualResult, TestFailure expectFailure, boolean expectSuccess, boolean expectError, boolean expectIgnored) {
+        assertThat(actualResult.getFailureType()).as(aTest + ": failureType").isEqualTo((expectFailure == null) ? null : expectFailure.failureType);
+        assertThat(actualResult.getFailureContent()).as(aTest + ": failureContent").isEqualTo((expectFailure == null) ? null : expectFailure.failureContent);
+        assertThat(actualResult.getFailureMessage()).as(aTest + ": failureMessage").isEqualTo((expectFailure == null) ? null : expectFailure.failureMessage);
+        assertThat(actualResult.isSuccess()).as(aTest + ": success").isEqualTo(expectSuccess);
+        assertThat(actualResult.isError()).as(aTest + ": error").isEqualTo(expectError);
+        assertThat(actualResult.isIgnored()).as(aTest + ": ignored").isEqualTo(expectIgnored);
+        assertThat(actualResult.getSystemOut()).as(aTest + ": systemOut").isEqualTo((expectSuccess || expectIgnored) ? null : (SYSTEM_OUT + '\n'));
+        assertThat(actualResult.getSystemErr()).as(aTest + ": systemErr").isEqualTo((expectSuccess || expectIgnored) ? null : (SYSTEM_ERR + '\n'));
     }
 
     @Test(expected=UnknownTestException.class)
