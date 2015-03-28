@@ -52,6 +52,9 @@ import static org.mockito.Mockito.*;
  */
 @RunWith(Theories.class)
 public class TransportHelperTest {
+    public static final String SYSTEM_OUT = "system out";
+    public static final String SYSTEM_ERR = "system err";
+
     @Rule
     public final ExpectedException thrown = ExpectedException.none();
 
@@ -360,11 +363,14 @@ public class TransportHelperTest {
                 assertThat(((TestResult) actualMessage).isSuccess()).as("success").isFalse();
             }
         },
-        TESTRESULT_FAILURE(TestResult.class, true, "framework", "test", FALSE, "failureType", "failureContent", "failureMessage", FALSE) {
+        TESTRESULT_FAILURE(TestResult.class, true, "framework", "test", FALSE, "failureType", "failureContent",
+                "failureMessage", FALSE, SYSTEM_OUT, SYSTEM_ERR) {
             @Override
             Message createMessage() {
                 TestResult testResult = (TestResult) TESTRESULT_SUCCESS.createMessage();
                 testResult.setFailure(expectedParts[3], expectedParts[4], expectedParts[5], false);
+                testResult.setSystemOut(SYSTEM_OUT);
+                testResult.setSystemErr(SYSTEM_ERR);
                 return testResult;
             }
 
@@ -372,13 +378,18 @@ public class TransportHelperTest {
             void verifyMessage(Message actualMessage) {
                 super.verifyMessage(actualMessage);
                 assertThat(((TestResult) actualMessage).isSuccess()).as("success").isFalse();
+                assertThat(((TestResult) actualMessage).getSystemOut()).as("systemOut").isEqualTo(SYSTEM_OUT);
+                assertThat(((TestResult) actualMessage).getSystemErr()).as("systemErr").isEqualTo(SYSTEM_ERR);
             }
         },
-        TESTRESULT_ERROR(TestResult.class, true, "framework", "test", FALSE, "errorType", "errorContent", "errorMessage", TRUE) {
+        TESTRESULT_ERROR(TestResult.class, true, "framework", "test", FALSE, "errorType", "errorContent",
+                "errorMessage", TRUE, SYSTEM_OUT, SYSTEM_ERR) {
             @Override
             Message createMessage() {
                 TestResult testResult = (TestResult) TESTRESULT_SUCCESS.createMessage();
                 testResult.setFailure(expectedParts[3], expectedParts[4], expectedParts[5], true);
+                testResult.setSystemOut(SYSTEM_OUT);
+                testResult.setSystemErr(SYSTEM_ERR);
                 return testResult;
             }
 
@@ -386,6 +397,8 @@ public class TransportHelperTest {
             void verifyMessage(Message actualMessage) {
                 super.verifyMessage(actualMessage);
                 assertThat(((TestResult) actualMessage).isSuccess()).as("success").isFalse();
+                assertThat(((TestResult) actualMessage).getSystemOut()).as("systemOut").isEqualTo(SYSTEM_OUT);
+                assertThat(((TestResult) actualMessage).getSystemErr()).as("systemErr").isEqualTo(SYSTEM_ERR);
             }
         },
         GETTESTFRAMEWORKS(GetTestFrameworks.class) {

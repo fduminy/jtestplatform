@@ -92,6 +92,8 @@ public class JUnitTestReporter implements TestReporter {
                 testCase.setSkipped("");
                 stats.nbSkipped++;
             } else if (!testResult.isSuccess()) {
+                testCase.getSystemOut().add(testResult.getSystemOut());
+                testCase.getSystemErr().add(testResult.getSystemErr());
                 if (testResult.isError()) {
                     Error error = new Error();
                     error.setType(testResult.getFailureType());

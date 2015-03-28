@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.util.*;
+import java.util.concurrent.Callable;
 
 import static org.jtestplatform.server.ServerUtils.printStackTrace;
 
@@ -97,18 +98,32 @@ public class MauveTestFramework implements TestFramework {
      * @throws UnknownTestException
      */
     @Override
-    public void runTest(TestResult testResult) throws UnknownTestException {
+    public void runTest(final TestResult testResult) throws UnknownTestException {
         if (!getTests().contains(testResult.getTest())) {
             throw new UnknownTestException(testResult.getTest());
         }
 
-        JTSMauve m = new JTSMauve();
+        final JTSMauve m = new JTSMauve();
+        ForwardingSystemOutputStreams streams = new ForwardingSystemOutputStreams();
+        StringBuilder out = new StringBuilder();
+        StringBuilder err = new StringBuilder();
         try {
-            m.runTest(testResult.getTest());
+            streams.forwardOutputStreams(new Callable<Void>() {
+                @Override
+                public Void call() throws Exception {
+                    m.runTest(testResult.getTest());
+                    return null;
+                }
+            }, out, err);
+
             if ((m.testPassed != null) && !m.testPassed) {
+                testResult.setSystemOut(out.toString());
+                testResult.setSystemErr(err.toString());
                 testResult.setFailure(AssertionError.class.getName(), m.debugLog.toString(), null, false);
             }
         } catch (Exception e) {
+            testResult.setSystemOut(out.toString());
+            testResult.setSystemErr(err.toString());
             testResult.setFailure(e.getClass().getName(), printStackTrace(e, testResult), e.getMessage(), true);
         }
     }

@@ -30,6 +30,8 @@ import org.junit.runners.Parameterized;
 import java.util.Arrays;
 import java.util.Collection;
 
+import static org.jtestplatform.common.transport.TransportHelperTest.SYSTEM_ERR;
+import static org.jtestplatform.common.transport.TransportHelperTest.SYSTEM_OUT;
 import static org.jtestplatform.server.ServerUtils.printStackTrace;
 
 /**
@@ -85,11 +87,15 @@ public class JUnitTestFrameworkTest extends TestFrameworkTest<JUnitTestFramework
 
         @Test
         public void aFailingTest() {
+            System.out.println(SYSTEM_OUT);
+            System.err.println(SYSTEM_ERR);
             throw FAILURE;
         }
 
         @Test
         public void aTestThrowingAnError() {
+            System.out.println(SYSTEM_OUT);
+            System.err.println(SYSTEM_ERR);
             throw ERROR;
         }
     }
@@ -107,11 +113,15 @@ public class JUnitTestFrameworkTest extends TestFrameworkTest<JUnitTestFramework
 
         @Test
         public void aFailingTest() {
+            System.out.println(SYSTEM_OUT);
+            System.err.println(SYSTEM_ERR);
             throw FAILURE;
         }
 
         @Test
         public void aTestThrowingAnError() {
+            System.out.println(SYSTEM_OUT);
+            System.err.println(SYSTEM_ERR);
             throw ERROR;
         }
     }
@@ -121,10 +131,14 @@ public class JUnitTestFrameworkTest extends TestFrameworkTest<JUnitTestFramework
         }
 
         public void testThatFails() {
+            System.out.println(SYSTEM_OUT);
+            System.err.println(SYSTEM_ERR);
             throw FAILURE;
         }
 
         public void testThatThrowsAnError() {
+            System.out.println(SYSTEM_OUT);
+            System.err.println(SYSTEM_ERR);
             throw ERROR;
         }
     }

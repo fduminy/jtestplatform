@@ -24,6 +24,9 @@ package org.jtestplatform.server;
 import gnu.testlet.TestHarness;
 import gnu.testlet.Testlet;
 
+import static org.jtestplatform.common.transport.TransportHelperTest.SYSTEM_ERR;
+import static org.jtestplatform.common.transport.TransportHelperTest.SYSTEM_OUT;
+
 /**
  * @author Fabien DUMINY (fduminy at jnode dot org)
  */
@@ -54,6 +57,8 @@ public class MauveTestFrameworkTest extends TestFrameworkTest<MauveTestFramework
 
         @Override
         public void test(TestHarness harness) {
+            System.out.println(SYSTEM_OUT);
+            System.err.println(SYSTEM_ERR);
             harness.check(true, false); // will fail
         }
     }
@@ -62,6 +67,8 @@ public class MauveTestFrameworkTest extends TestFrameworkTest<MauveTestFramework
 
         @Override
         public void test(TestHarness harness) {
+            System.out.println(SYSTEM_OUT);
+            System.err.println(SYSTEM_ERR);
             throw ERROR;
         }
     }

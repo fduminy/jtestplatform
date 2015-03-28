@@ -34,11 +34,10 @@ import org.junit.runner.Request;
 import org.junit.runner.Result;
 import org.junit.runner.manipulation.Filter;
 import org.junit.runners.model.FrameworkMethod;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.Callable;
 
 import static org.jtestplatform.server.ServerUtils.printStackTrace;
 
@@ -47,8 +46,6 @@ import static org.jtestplatform.server.ServerUtils.printStackTrace;
  *
  */
 public class JUnitTestFramework implements TestFramework {
-    private static final Logger LOGGER = LoggerFactory.getLogger(JUnitTestFramework.class);
-
     private final Map<String, TestData> tests = new HashMap<String, TestData>();
 
     /**
@@ -95,9 +92,9 @@ public class JUnitTestFramework implements TestFramework {
         }
 
         final TestData t = tests.get(testResult.getTest());
-        JUnitCore core = new JUnitCore();
+        final JUnitCore core = new JUnitCore();
 
-        Request request = Request.aClass(t.getTestClass()).filterWith(new Filter() {
+        final Request request = Request.aClass(t.getTestClass()).filterWith(new Filter() {
             @Override
             public boolean shouldRun(Description description) {
                 String wantedClass = t.getTestClass().getName();
@@ -114,7 +111,6 @@ public class JUnitTestFramework implements TestFramework {
                     }
                 }
 
-                LOGGER.debug("{} match={}", LOGGER.isDebugEnabled() ? JUnitTestFramework.this.toString(description) : null, match);
                 return match;
             }
 
@@ -135,13 +131,32 @@ public class JUnitTestFramework implements TestFramework {
             }
         });
 
-        Result result = core.run(request);
-        if (result.getIgnoreCount() > 0) {
-            testResult.setIgnored();
-        } else if (result.getFailureCount() != 0) {
-            Throwable failure = result.getFailures().get(0).getException();
-            boolean error = !(failure instanceof AssertionError);
-            testResult.setFailure(failure.getClass().getName(), printStackTrace(failure, testResult), failure.getMessage(), error);
+        ForwardingSystemOutputStreams streams = new ForwardingSystemOutputStreams();
+        StringBuilder out = new StringBuilder();
+        StringBuilder err = new StringBuilder();
+        try {
+            Result result = streams.forwardOutputStreams(new Callable<Result>() {
+                @Override
+                public Result call() {
+                    return core.run(request);
+                }
+            }, out, err);
+
+            if (result.getIgnoreCount() > 0) {
+                testResult.setIgnored();
+            } else if (result.getFailureCount() != 0) {
+                Throwable failure = result.getFailures().get(0).getException();
+                boolean error = !(failure instanceof AssertionError);
+                testResult.setFailure(failure.getClass().getName(), printStackTrace(failure, testResult), failure.getMessage(), error);
+                if (out.length() > 0) {
+                    testResult.setSystemOut(out.toString());
+                }
+                if (err.length() > 0) {
+                    testResult.setSystemErr(err.toString());
+                }
+            }
+        } catch (Exception e) {
+            testResult.setFailure(e.getClass().getName(), printStackTrace(e, testResult), e.getMessage(), true);
         }
     }
 
@@ -167,10 +182,6 @@ public class JUnitTestFramework implements TestFramework {
 
         if (junit.framework.TestCase.class.isAssignableFrom(testClass)) {
             for (Method method : testClass.getMethods()) {
-                if (method.getName().startsWith("test")) {
-                    LOGGER.debug("class={} method={}", testClass.getName(), method.getName());
-                }
-
                 if (method.getName().startsWith("test") && (method.getParameterTypes().length == 0)) {
                     methods.add(method.getName());
                 }
@@ -204,11 +215,5 @@ public class JUnitTestFramework implements TestFramework {
         public String getTestMethod() {
             return testMethod;
         }
-    }
-
-    private String toString(Description description) {
-        return "Description[className=" + description.getClassName()
-        + " methodName=" + description.getMethodName()
-        + " displayName=" + description.getDisplayName() + ']';
     }
 }

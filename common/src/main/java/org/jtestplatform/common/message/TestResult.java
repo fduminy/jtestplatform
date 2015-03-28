@@ -41,6 +41,8 @@ public class TestResult implements Message {
     private String failureType;
     private String failureContent;
     private String failureMessage;
+    private String systemOut;
+    private String systemErr;
 
     public TestResult() {
         // nothing
@@ -51,9 +53,6 @@ public class TestResult implements Message {
         this.test = test;
     }
 
-    /**
-     * @return the framework
-     */
     public String getFramework() {
         return framework;
     }
@@ -78,10 +77,22 @@ public class TestResult implements Message {
         return error;
     }
 
-    /**
-     * Get the success of the test.
-     * @return The success of the test.
-     */
+    public String getSystemOut() {
+        return systemOut;
+    }
+
+    public String getSystemErr() {
+        return systemErr;
+    }
+
+    public void setSystemErr(String systemErr) {
+        this.systemErr = systemErr;
+    }
+
+    public void setSystemOut(String systemOut) {
+        this.systemOut = systemOut;
+    }
+
     public boolean isSuccess() {
         return !ignored && (failureType == null);
     }
@@ -100,6 +111,8 @@ public class TestResult implements Message {
                 transport.send(failureContent);
                 transport.send(failureMessage);
                 sendBoolean(transport, error);
+                transport.send(systemOut);
+                transport.send(systemErr);
             }
         }
     }
@@ -118,6 +131,8 @@ public class TestResult implements Message {
                 failureContent = transport.receive();
                 failureMessage = transport.receive();
                 error = receiveBoolean(transport);
+                systemOut = transport.receive();
+                systemErr = transport.receive();
             }
         }
     }

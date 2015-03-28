@@ -11,11 +11,19 @@
         <testcase classname="org.jtestplatform.server.MauveTestFrameworkTest$MauveTestClass" time="0.001"/>
         <testcase classname="org.jtestplatform.server.MauveTestFrameworkTest$MauveFailingTestClass" time="0.002">
             <failure type="java.lang.AssertionError">got true but expected false</failure>
+            <system-out>system out
+            </system-out>
+            <system-err>system err
+            </system-err>
         </testcase>
         <testcase classname="org.jtestplatform.server.MauveTestFrameworkTest$MauveTestClassWithError" time="0.003">
             <error message="an unexpected error" type="java.lang.NullPointerException">java.lang.NullPointerException: an unexpected error
-                at org.jtestplatform.server.TestFrameworkTest.&lt;clinit&gt;(TestFrameworkTest.java:43)
+                at org.jtestplatform.server.TestFrameworkTest.&lt;clinit&gt;(TestFrameworkTest.java:45)
             </error>
+            <system-out>system out
+            </system-out>
+            <system-err>system err
+            </system-err>
         </testcase>
     </testsuite>
     <testsuite package="phenom_64bits_4cores" skipped="1" time="0.085" errors="3" failures="3" tests="10" name="phenom_64bits_4cores.junit">
@@ -28,13 +36,21 @@
         </properties>
         <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$JUnit3TestClassTest" time="0.004" name="testThatThrowsAnError">
             <error message="an unexpected error" type="java.lang.NullPointerException">java.lang.NullPointerException: an unexpected error
-                at org.jtestplatform.server.TestFrameworkTest.&lt;clinit&gt;(TestFrameworkTest.java:43)
+                at org.jtestplatform.server.TestFrameworkTest.&lt;clinit&gt;(TestFrameworkTest.java:45)
             </error>
+            <system-out>system out
+            </system-out>
+            <system-err>system err
+            </system-err>
         </testcase>
         <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$ParameterizedTestClass" time="0.005" name="aTestThrowingAnError">
             <error message="an unexpected error" type="java.lang.NullPointerException">java.lang.NullPointerException: an unexpected error
-                at org.jtestplatform.server.TestFrameworkTest.&lt;clinit&gt;(TestFrameworkTest.java:43)
+                at org.jtestplatform.server.TestFrameworkTest.&lt;clinit&gt;(TestFrameworkTest.java:45)
             </error>
+            <system-out>system out
+            </system-out>
+            <system-err>system err
+            </system-err>
         </testcase>
         <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$TestClass" time="0.006" name="aPassingTest"/>
         <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$TestClass" time="0.007" name="anIgnoredTest">
@@ -42,25 +58,41 @@
         </testcase>
         <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$ParameterizedTestClass" time="0.008" name="aFailingTest">
             <failure message="a failure" type="java.lang.AssertionError">java.lang.AssertionError: a failure
-                at org.jtestplatform.server.JUnitTestFrameworkTest.&lt;clinit&gt;(JUnitTestFrameworkTest.java:39)
+                at org.jtestplatform.server.JUnitTestFrameworkTest.&lt;clinit&gt;(JUnitTestFrameworkTest.java:41)
             </failure>
+            <system-out>system out
+            </system-out>
+            <system-err>system err
+            </system-err>
         </testcase>
         <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$JUnit3TestClassTest" time="0.009" name="testThatPasses"/>
         <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$ParameterizedTestClass" time="0.01" name="aPassingTest"/>
         <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$TestClass" time="0.011" name="aFailingTest">
             <failure message="a failure" type="java.lang.AssertionError">java.lang.AssertionError: a failure
-                at org.jtestplatform.server.JUnitTestFrameworkTest.&lt;clinit&gt;(JUnitTestFrameworkTest.java:39)
+                at org.jtestplatform.server.JUnitTestFrameworkTest.&lt;clinit&gt;(JUnitTestFrameworkTest.java:41)
             </failure>
+            <system-out>system out
+            </system-out>
+            <system-err>system err
+            </system-err>
         </testcase>
         <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$JUnit3TestClassTest" time="0.012" name="testThatFails">
             <failure message="a failure" type="java.lang.AssertionError">java.lang.AssertionError: a failure
-                at org.jtestplatform.server.JUnitTestFrameworkTest.&lt;clinit&gt;(JUnitTestFrameworkTest.java:39)
+                at org.jtestplatform.server.JUnitTestFrameworkTest.&lt;clinit&gt;(JUnitTestFrameworkTest.java:41)
             </failure>
+            <system-out>system out
+            </system-out>
+            <system-err>system err
+            </system-err>
         </testcase>
         <testcase classname="org.jtestplatform.server.JUnitTestFrameworkTest$TestClass" time="0.013" name="aTestThrowingAnError">
             <error message="an unexpected error" type="java.lang.NullPointerException">java.lang.NullPointerException: an unexpected error
-                at org.jtestplatform.server.TestFrameworkTest.&lt;clinit&gt;(TestFrameworkTest.java:43)
+                at org.jtestplatform.server.TestFrameworkTest.&lt;clinit&gt;(TestFrameworkTest.java:45)
             </error>
+            <system-out>system out
+            </system-out>
+            <system-err>system err
+            </system-err>
         </testcase>
     </testsuite>
 </testsuites>

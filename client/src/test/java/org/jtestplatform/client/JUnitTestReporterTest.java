@@ -50,6 +50,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.jtestplatform.client.JUnitTestReporter.PLATFORM_PROPERTY_PREFIX;
 import static org.jtestplatform.client.JUnitTestReporterTest.TestedClass.Method.method1;
 import static org.jtestplatform.client.JUnitTestReporterTest.TestedClass.Method.method2;
+import static org.jtestplatform.common.transport.TransportHelperTest.SYSTEM_ERR;
+import static org.jtestplatform.common.transport.TransportHelperTest.SYSTEM_OUT;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
@@ -259,6 +261,8 @@ public class JUnitTestReporterTest {
         private final String failureMessage;
         private final boolean ignored;
         private final boolean error;
+        private final String systemOut;
+        private final String systemErr;
 
         private TestReport(Testcase testCase, Duration testDuration) throws ClassNotFoundException {
             this.test = TestName.create(testCase.getClassname(), testCase.getName()).toString();
@@ -273,6 +277,8 @@ public class JUnitTestReporterTest {
                 this.failureMessage = (failure == null) ? null : failure.getMessage();
                 this.error = false;
                 this.ignored = false;
+                this.systemOut = StringUtils.join(testCase.getSystemOut().toArray(), '\n');
+                this.systemErr = StringUtils.join(testCase.getSystemErr().toArray(), '\n');
             } else if (!errors.isEmpty()) {
                 Error error = errors.get(0);
                 this.failureType = error.getType();
@@ -280,12 +286,16 @@ public class JUnitTestReporterTest {
                 this.failureMessage = error.getMessage();
                 this.error = true;
                 this.ignored = false;
+                this.systemOut = StringUtils.join(testCase.getSystemOut().toArray(), '\n');
+                this.systemErr = StringUtils.join(testCase.getSystemErr().toArray(), '\n');
             } else {
                 this.failureType = null;
                 this.failureContent = null;
                 this.failureMessage = null;
                 this.error = false;
                 this.ignored = (testCase.getSkipped() != null);
+                this.systemOut = null;
+                this.systemErr = null;
             }
         }
 
@@ -298,6 +308,8 @@ public class JUnitTestReporterTest {
             this.failureMessage = testResult.getFailureMessage();
             this.error = testResult.isError();
             this.ignored = testResult.isIgnored();
+            this.systemOut = testResult.getSystemOut();
+            this.systemErr = testResult.getSystemErr();
         }
 
         @Override
@@ -307,22 +319,33 @@ public class JUnitTestReporterTest {
 
             TestReport that = (TestReport) o;
 
-            if (error != that.error) return false;
             if (ignored != that.ignored) return false;
+            if (error != that.error) return false;
+            if (test != null ? !test.equals(that.test) : that.test != null) return false;
+            if (testDuration != null ? !testDuration.equals(that.testDuration) : that.testDuration != null)
+                return false;
+            if (failureType != null ? !failureType.equals(that.failureType) : that.failureType != null) return false;
             if (failureContent != null ? !failureContent.equals(that.failureContent) : that.failureContent != null)
                 return false;
             if (failureMessage != null ? !failureMessage.equals(that.failureMessage) : that.failureMessage != null)
                 return false;
-            if (failureType != null ? !failureType.equals(that.failureType) : that.failureType != null) return false;
-            if (!test.equals(that.test)) return false;
-            if (!testDuration.equals(that.testDuration)) return false;
+            if (systemOut != null ? !systemOut.equals(that.systemOut) : that.systemOut != null) return false;
+            return !(systemErr != null ? !systemErr.equals(that.systemErr) : that.systemErr != null);
 
-            return true;
         }
 
         @Override
         public int hashCode() {
-            return 0;
+            int result = test != null ? test.hashCode() : 0;
+            result = 31 * result + (testDuration != null ? testDuration.hashCode() : 0);
+            result = 31 * result + (failureType != null ? failureType.hashCode() : 0);
+            result = 31 * result + (failureContent != null ? failureContent.hashCode() : 0);
+            result = 31 * result + (failureMessage != null ? failureMessage.hashCode() : 0);
+            result = 31 * result + (ignored ? 1 : 0);
+            result = 31 * result + (error ? 1 : 0);
+            result = 31 * result + (systemOut != null ? systemOut.hashCode() : 0);
+            result = 31 * result + (systemErr != null ? systemErr.hashCode() : 0);
+            return result;
         }
 
         @Override
@@ -332,6 +355,8 @@ public class JUnitTestReporterTest {
                     ", failureType='" + failureType + '\'' +
                     ", failureContent='" + failureContent + '\'' +
                     ", failureMessage='" + failureMessage + '\'' +
+                    ", systemOut='" + systemOut + '\'' +
+                    ", systemErr='" + systemErr + '\'' +
                     ", error=" + error +
                     ", ignored=" + ignored;
         }
@@ -346,6 +371,8 @@ public class JUnitTestReporterTest {
                 int id = method.ordinal();
                 AssertionError failure = new AssertionError("failureMessage" + id);
                 testResult.setFailure(failure.getClass().getName(), "failureContent" + id, failure.getMessage(), false);
+                testResult.setSystemOut(SYSTEM_OUT);
+                testResult.setSystemErr(SYSTEM_ERR);
                 return testResult;
             }
         },
@@ -364,6 +391,8 @@ public class JUnitTestReporterTest {
                 int id = method.ordinal();
                 Exception error = new Exception("errorMessage" + id);
                 testResult.setFailure(error.getClass().getName(), "errorContent" + id, error.getMessage(), true);
+                testResult.setSystemOut(SYSTEM_OUT);
+                testResult.setSystemErr(SYSTEM_ERR);
                 return testResult;
             }
         };

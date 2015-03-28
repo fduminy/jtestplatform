@@ -29,6 +29,8 @@ import org.junit.Test;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.jtestplatform.common.transport.TransportHelperTest.SYSTEM_ERR;
+import static org.jtestplatform.common.transport.TransportHelperTest.SYSTEM_OUT;
 import static org.jtestplatform.server.ServerUtils.printStackTrace;
 import static org.jtestplatform.server.TestFrameworkTest.TestResultType.*;
 import static org.jtestplatform.server.Utils.contains;
@@ -127,6 +129,8 @@ abstract public class TestFrameworkTest<T extends TestFramework> {
                 assertThat(testResult.isSuccess()).as("success").isFalse();
                 assertThat(testResult.isError()).as("error").isFalse();
                 assertThat(testResult.isIgnored()).as("ignored").isFalse();
+                assertThat(testResult.getSystemOut()).as("systemOut").isEqualTo(SYSTEM_OUT + '\n');
+                assertThat(testResult.getSystemErr()).as("systemErr").isEqualTo(SYSTEM_ERR + '\n');
             }
         }
     }
@@ -143,12 +147,14 @@ abstract public class TestFrameworkTest<T extends TestFramework> {
                 testFramework.runTest(testResult);
 
                 // verify
-                assertThat(testResult.getFailureType()).as("failureType").isEqualTo(failure.failureType);
-                assertThat(testResult.getFailureContent()).as("failureContent").isEqualTo(failure.failureContent);
-                assertThat(testResult.getFailureMessage()).as("failureMessage").isEqualTo(failure.failureMessage);
-                assertThat(testResult.isSuccess()).as("success").isFalse();
-                assertThat(testResult.isError()).as("error").isTrue();
-                assertThat(testResult.isIgnored()).as("ignored").isFalse();
+                assertThat(testResult.getFailureType()).as(aTest + ": failureType").isEqualTo(failure.failureType);
+                assertThat(testResult.getFailureContent()).as(aTest + ": failureContent").isEqualTo(failure.failureContent);
+                assertThat(testResult.getFailureMessage()).as(aTest + ": failureMessage").isEqualTo(failure.failureMessage);
+                assertThat(testResult.isSuccess()).as(aTest + ": success").isFalse();
+                assertThat(testResult.isError()).as(aTest + ": error").isTrue();
+                assertThat(testResult.isIgnored()).as(aTest + ": ignored").isFalse();
+                assertThat(testResult.getSystemOut()).as(aTest + ": systemOut").isEqualTo(SYSTEM_OUT + '\n');
+                assertThat(testResult.getSystemErr()).as(aTest + ": systemErr").isEqualTo(SYSTEM_ERR + '\n');
             }
         }
     }
