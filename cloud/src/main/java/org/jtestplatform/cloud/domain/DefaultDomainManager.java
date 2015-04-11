@@ -91,7 +91,7 @@ public class DefaultDomainManager implements DomainManager {
     private WatchDog createWatchDog() {
         WatchDogStrategy strategy = new DefaultWatchDogStrategy(MAX_ZOMBIE_DURATION);
         Sleeper sleeper = new ThreadSleep(millis(config.getWatchDogPollInterval()));
-        WatchDog watchDog = new WatchDog(sleeper, strategy, RealClock.now());
+        WatchDog watchDog = new WatchDog(sleeper, strategy, RealClock.today());
         watchDog.addWatchDogListener(new WatchDogListener() {
             @Override
             public void domainDied(Domain domain) {

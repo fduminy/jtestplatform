@@ -24,7 +24,7 @@
  */
 package org.jtestplatform.cloud.domain;
 
-import com.google.code.tempusfugit.temporal.Conditions;
+import com.google.code.tempusfugit.condition.Conditions;
 import org.junit.Test;
 import org.junit.experimental.theories.DataPoint;
 import org.junit.experimental.theories.Theories;

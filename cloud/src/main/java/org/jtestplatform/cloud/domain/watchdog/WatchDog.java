@@ -24,6 +24,7 @@ package org.jtestplatform.cloud.domain.watchdog;
 import com.google.code.tempusfugit.temporal.Clock;
 import com.google.code.tempusfugit.temporal.Sleeper;
 import com.google.code.tempusfugit.temporal.StopWatch;
+import com.google.code.tempusfugit.temporal.Timer;
 import org.jtestplatform.cloud.domain.Domain;
 import org.jtestplatform.cloud.domain.DomainException;
 import org.slf4j.Logger;
@@ -168,7 +169,7 @@ public class WatchDog {
         StopWatch stopWatch = zombieStartTime.get(domain);
         if (stopWatch == null) {
             // the domain was alive at previous verification
-            stopWatch = StopWatch.start(clock);
+            stopWatch = new Timer(clock);
             zombieStartTime.put(domain, stopWatch);
         }
         return stopWatch;

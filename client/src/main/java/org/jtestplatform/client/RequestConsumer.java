@@ -24,6 +24,7 @@ package org.jtestplatform.client;
 import com.google.code.tempusfugit.temporal.Clock;
 import com.google.code.tempusfugit.temporal.Duration;
 import com.google.code.tempusfugit.temporal.StopWatch;
+import com.google.code.tempusfugit.temporal.Timer;
 import org.jtestplatform.cloud.TransportProvider;
 import org.jtestplatform.cloud.configuration.Platform;
 import org.jtestplatform.common.message.RunTest;
@@ -71,9 +72,10 @@ public class RequestConsumer {
                 Platform platform = request.getPlatform();
                 Transport transport = transportProvider.get(platform);
 
-                StopWatch stopWatch = StopWatch.start(clock);
+                StopWatch stopWatch = new Timer(clock);
                 TestResult testResult = runTest(transportHelper, request, transport);
-                Duration testDuration = stopWatch.markAndGetTotalElapsedTime();
+                stopWatch.lap();
+                Duration testDuration = stopWatch.elapsedTime();
 
                 reporter.report(platform, testResult, testDuration);
             }

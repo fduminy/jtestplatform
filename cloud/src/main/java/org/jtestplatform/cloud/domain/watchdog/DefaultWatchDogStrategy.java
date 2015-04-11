@@ -49,7 +49,8 @@ public class DefaultWatchDogStrategy implements WatchDogStrategy {
      */
     @Override
     public boolean domainDead(Domain domain, StopWatch stopWatch) {
-        boolean isReallyDead = stopWatch.markAndGetTotalElapsedTime().greaterThan(maxZombieDuration);
+        stopWatch.lap();
+        boolean isReallyDead = stopWatch.elapsedTime().greaterThan(maxZombieDuration);
         
         if (!isReallyDead) {
             try {

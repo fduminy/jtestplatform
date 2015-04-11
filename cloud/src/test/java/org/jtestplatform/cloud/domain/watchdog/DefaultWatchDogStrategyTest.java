@@ -24,6 +24,7 @@ package org.jtestplatform.cloud.domain.watchdog;
 import com.google.code.tempusfugit.temporal.Duration;
 import com.google.code.tempusfugit.temporal.MovableClock;
 import com.google.code.tempusfugit.temporal.StopWatch;
+import com.google.code.tempusfugit.temporal.Timer;
 import org.jtestplatform.cloud.domain.Domain;
 import org.junit.Test;
 
@@ -61,7 +62,7 @@ public class DefaultWatchDogStrategyTest {
         DefaultWatchDogStrategy strategy = new DefaultWatchDogStrategy(MAX_ZOMBIE_DURATION);
         Domain domain = mock(Domain.class);
         MovableClock clock = new MovableClock();
-        StopWatch stopWatch = StopWatch.start(clock);
+        StopWatch stopWatch = new Timer(clock);
         clock.incrementBy(timeIncrement);
 
         boolean actuallyDead = strategy.domainDead(domain, stopWatch);

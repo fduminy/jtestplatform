@@ -27,7 +27,7 @@ import org.mockito.Mockito;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import static com.google.code.tempusfugit.temporal.Conditions.is;
+import static com.google.code.tempusfugit.condition.Conditions.is;
 import static com.google.code.tempusfugit.temporal.Duration.minutes;
 import static com.google.code.tempusfugit.temporal.Timeout.timeout;
 import static com.google.code.tempusfugit.temporal.WaitFor.waitOrTimeout;

@@ -42,7 +42,7 @@ import org.mockito.stubbing.Answer;
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
-import static com.google.code.tempusfugit.temporal.Conditions.isAlive;
+import static com.google.code.tempusfugit.condition.Conditions.isAlive;
 import static com.google.code.tempusfugit.temporal.Duration.seconds;
 import static com.google.code.tempusfugit.temporal.WaitFor.waitOrTimeout;
 import static org.assertj.core.api.Assertions.assertThat;

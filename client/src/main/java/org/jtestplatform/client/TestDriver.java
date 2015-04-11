@@ -45,7 +45,7 @@ public class TestDriver {
     protected final Clock clock;
 
     public TestDriver() {
-        this(RealClock.now());
+        this(RealClock.today());
     }
 
     public TestDriver(Clock clock) {
