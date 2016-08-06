@@ -1,19 +1,19 @@
 /**
  * JTestPlatform is a client/server framework for testing any JVM
  * implementation.
- *
+ * <p>
  * Copyright (C) 2008-2015  Fabien DUMINY (fduminy at jnode dot org)
- *
+ * <p>
  * JTestPlatform is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3
  * of the License, or (at your option) any later version.
- *
+ * <p>
  * JTestPlatform is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
@@ -35,7 +35,6 @@ import static org.jtestplatform.server.ServerUtils.printStackTrace;
 import static org.jtestplatform.server.TestFrameworkTest.TestResultType.*;
 import static org.jtestplatform.server.Utils.contains;
 import static org.junit.Assert.*;
-
 
 /**
  * @author Fabien DUMINY (fduminy at jnode dot org)
@@ -140,18 +139,24 @@ abstract public class TestFrameworkTest<T extends TestFramework> {
         }
     }
 
-    protected final void verifyTest(String aTest, TestResult actualResult, TestFailure expectFailure, boolean expectSuccess, boolean expectError, boolean expectIgnored) {
-        assertThat(actualResult.getFailureType()).as(aTest + ": failureType").isEqualTo((expectFailure == null) ? null : expectFailure.failureType);
-        assertThat(actualResult.getFailureContent()).as(aTest + ": failureContent").isEqualTo((expectFailure == null) ? null : expectFailure.failureContent);
-        assertThat(actualResult.getFailureMessage()).as(aTest + ": failureMessage").isEqualTo((expectFailure == null) ? null : expectFailure.failureMessage);
+    protected final void verifyTest(String aTest, TestResult actualResult, TestFailure expectFailure,
+                                    boolean expectSuccess, boolean expectError, boolean expectIgnored) {
+        assertThat(actualResult.getFailureType()).as(aTest + ": failureType")
+                                                 .isEqualTo((expectFailure == null) ? null : expectFailure.failureType);
+        assertThat(actualResult.getFailureContent()).as(aTest + ": failureContent").isEqualTo(
+            (expectFailure == null) ? null : expectFailure.failureContent);
+        assertThat(actualResult.getFailureMessage()).as(aTest + ": failureMessage").isEqualTo(
+            (expectFailure == null) ? null : expectFailure.failureMessage);
         assertThat(actualResult.isSuccess()).as(aTest + ": success").isEqualTo(expectSuccess);
         assertThat(actualResult.isError()).as(aTest + ": error").isEqualTo(expectError);
         assertThat(actualResult.isIgnored()).as(aTest + ": ignored").isEqualTo(expectIgnored);
-        assertThat(actualResult.getSystemOut()).as(aTest + ": systemOut").isEqualTo((expectSuccess || expectIgnored) ? null : (SYSTEM_OUT + '\n'));
-        assertThat(actualResult.getSystemErr()).as(aTest + ": systemErr").isEqualTo((expectSuccess || expectIgnored) ? null : (SYSTEM_ERR + '\n'));
+        assertThat(actualResult.getSystemOut()).as(aTest + ": systemOut").isEqualTo(
+            (expectSuccess || expectIgnored) ? null : (SYSTEM_OUT + '\n'));
+        assertThat(actualResult.getSystemErr()).as(aTest + ": systemErr").isEqualTo(
+            (expectSuccess || expectIgnored) ? null : (SYSTEM_ERR + '\n'));
     }
 
-    @Test(expected=UnknownTestException.class)
+    @Test(expected = UnknownTestException.class)
     public void testRunUnknownTest() throws UnknownTestException {
         testFramework.runTest(createTestResult("AnUnknownTest"));
     }
@@ -169,7 +174,8 @@ abstract public class TestFrameworkTest<T extends TestFramework> {
     }
 
     protected final void addFailingTest(Class<?> testClass, String method,
-                                        String failureType, String failureContent, String failureMessage) throws Exception {
+                                        String failureType, String failureContent, String failureMessage)
+        throws Exception {
         addTest(testClass, FAILURE, method, failureType, failureContent, failureMessage);
     }
 
@@ -227,15 +233,15 @@ abstract public class TestFrameworkTest<T extends TestFramework> {
             testsForClass.add(testName);
 
             switch (resultType) {
-                case IGNORED:
-                    ignoredTests.add(testName);
-                    break;
-                case SUCCESS:
-                    testFailures.put(testName, null);
-                    break;
-                default:
-                    boolean error = resultType == TestResultType.ERROR;
-                    testFailures.put(testName, new TestFailure(error, failureType, failureContent, failureMessage));
+            case IGNORED:
+                ignoredTests.add(testName);
+                break;
+            case SUCCESS:
+                testFailures.put(testName, null);
+                break;
+            default:
+                boolean error = resultType == TestResultType.ERROR;
+                testFailures.put(testName, new TestFailure(error, failureType, failureContent, failureMessage));
             }
 
             Assert.assertThat(framework.getTests(), contains(testClass, method));

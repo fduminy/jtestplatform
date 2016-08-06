@@ -1,19 +1,19 @@
 /**
  * JTestPlatform is a client/server framework for testing any JVM
  * implementation.
- *
+ * <p>
  * Copyright (C) 2008-2015  Fabien DUMINY (fduminy at jnode dot org)
- *
+ * <p>
  * JTestPlatform is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3
  * of the License, or (at your option) any later version.
- *
+ * <p>
  * JTestPlatform is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
@@ -128,7 +128,8 @@ public class RequestConsumerTest {
         TestResult testResult1 = testResult(request1);
         TestResult testResult2 = testResult(request2);
         List<TestResult> expectedMessages = Arrays.asList(testResult1, testResult2);
-        assertThat(receivedMessages).usingElementComparator(new TestResultComparator()).as("testResults").containsOnlyOnce(expectedMessages.toArray(new TestResult[0]));
+        assertThat(receivedMessages).usingElementComparator(new TestResultComparator()).as("testResults")
+                                    .containsOnlyOnce(expectedMessages.toArray(new TestResult[0]));
         assertThat(requests).as("requests").isEmpty();
         verify(transportProvider, times(1)).get(refEq(PLATFORM1));
         verify(transportProvider, times(1)).get(refEq(PLATFORM2));
@@ -217,7 +218,7 @@ public class RequestConsumerTest {
 
             RunTest otherRequest = (RunTest) o;
             return otherRequest.getFramework().equals(request.getFramework()) &&
-                    otherRequest.getTest().equals(request.getTest());
+                   otherRequest.getTest().equals(request.getTest());
         }
 
         @Override

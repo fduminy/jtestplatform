@@ -1,26 +1,26 @@
 /**
  * JTestPlatform is a client/server framework for testing any JVM
  * implementation.
- *
+ * <p>
  * Copyright (C) 2008-2015  Fabien DUMINY (fduminy at jnode dot org)
- *
+ * <p>
  * JTestPlatform is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3
  * of the License, or (at your option) any later version.
- *
+ * <p>
  * JTestPlatform is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
  * USA.
  */
 /**
- * 
+ *
  */
 package org.jtestplatform.cloud.domain;
 
@@ -58,9 +58,9 @@ public class LoadBalancerTest {
     @DataPoint
     public static final String[] NO_ELEMENTS = {};
     @DataPoint
-    public static final String[] ONE_ELEMENT = {"1"};
+    public static final String[] ONE_ELEMENT = { "1" };
     @DataPoint
-    public static final String[] TWO_ELEMENTS = {"1", "2"};
+    public static final String[] TWO_ELEMENTS = { "1", "2" };
 
     @Test
     public void testConstructor_default() {
@@ -147,15 +147,15 @@ public class LoadBalancerTest {
         String lastElement = "lastElement";
         List<String> elements = Arrays.asList(firstElement, "2", lastElement);
         LoadBalancer<String> loadBalancer = new LoadBalancer<String>(elements);
-        
+
         // get all elements except the last one
         for (int i = 0; i < elements.size() - 1; i++) {
             loadBalancer.getNext();
         }
-        
+
         // remove the last element
         boolean removed = loadBalancer.remove(lastElement);
-        
+
         // check we get the first element instead of the last element
         assertThat(removed).isTrue();
         assertThat(loadBalancer.getNext()).isEqualTo(firstElement);
@@ -168,13 +168,13 @@ public class LoadBalancerTest {
         String thirdElement = "thirdElement";
         List<String> elements = Arrays.asList(firstElement, secondElement, thirdElement);
         LoadBalancer<String> loadBalancer = new LoadBalancer<String>(elements);
-        
+
         // get the first element
         loadBalancer.getNext();
-        
+
         // remove the second element
         boolean removed = loadBalancer.remove(secondElement);
-        
+
         // check we get the third element instead of the second element
         assertThat(removed).isTrue();
         assertThat(loadBalancer.getNext()).isEqualTo(thirdElement);

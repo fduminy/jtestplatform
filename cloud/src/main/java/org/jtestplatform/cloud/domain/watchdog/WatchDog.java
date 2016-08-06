@@ -1,19 +1,19 @@
 /**
  * JTestPlatform is a client/server framework for testing any JVM
  * implementation.
- *
+ * <p>
  * Copyright (C) 2008-2015  Fabien DUMINY (fduminy at jnode dot org)
- *
+ * <p>
  * JTestPlatform is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3
  * of the License, or (at your option) any later version.
- *
+ * <p>
  * JTestPlatform is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
@@ -41,12 +41,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class WatchDog {
     private static final Logger LOGGER = LoggerFactory.getLogger(WatchDog.class);
-    
+
     /**
      * The list of running {@link Domain}s.
      */
     private final Collection<Domain> runningDomains = new Vector<Domain>();
-    
+
     /**
      * Indicate the time at which a {@link Domain} has started to be a zombie.
      */
@@ -61,7 +61,7 @@ public class WatchDog {
      * The strategy to use when a domain is dead. 
      */
     final WatchDogStrategy strategy;
-    
+
     private final Collection<WatchDogListener> listeners = new Vector<WatchDogListener>();
 
     private WatchDogThread watchDogThread;
@@ -180,7 +180,7 @@ public class WatchDog {
         List<Domain> domainList = new ArrayList<Domain>(runningDomains);
 
         List<Domain> deadDomains = new ArrayList<Domain>();
-        
+
         for (Domain domain : domainList) {
             if (domainIsAlive(domain)) {
                 zombieStartTime.remove(domain);

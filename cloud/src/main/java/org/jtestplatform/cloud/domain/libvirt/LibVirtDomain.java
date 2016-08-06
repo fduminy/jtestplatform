@@ -1,26 +1,26 @@
 /**
  * JTestPlatform is a client/server framework for testing any JVM
  * implementation.
- *
+ * <p>
  * Copyright (C) 2008-2015  Fabien DUMINY (fduminy at jnode dot org)
- *
+ * <p>
  * JTestPlatform is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3
  * of the License, or (at your option) any later version.
- *
+ * <p>
  * JTestPlatform is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
  * USA.
  */
 /**
- * 
+ *
  */
 package org.jtestplatform.cloud.domain.libvirt;
 
@@ -49,7 +49,7 @@ import static com.google.code.tempusfugit.temporal.Timeout.timeout;
  *
  */
 class LibVirtDomain implements Domain {
-    
+
     /**
      * Configuration of machine to run with libvirt.
      */
@@ -57,11 +57,11 @@ class LibVirtDomain implements Domain {
 
     private final LibVirtDomainFactory factory;
     private final Connection connection;
-    
+
     private org.libvirt.Domain domain;
-    
+
     private String ipAddress;
-    
+
     /**
      *
      * @param config The configuration of the machine to run with libvirt.
@@ -70,44 +70,44 @@ class LibVirtDomain implements Domain {
      * @throws DomainException
      */
     LibVirtDomain(DomainConfig config, LibVirtDomainFactory factory, Connection connection) throws DomainException {
-        this.config = config;        
+        this.config = config;
         this.factory = factory;
         this.connection = connection;
-        
+
         if (ConfigUtils.isBlank(connection.getUri())) {
             throw new DomainException("connection's URI not specified");
         }
     }
-        
+
     /**
      * {@inheritDoc}
-     * @throws DomainException 
+     * @throws DomainException
      */
     @Override
     public synchronized String start() throws DomainException {
         return factory.execute(connection, new ConnectManager.Command<String>() {
             @Override
             public String execute(Connect connect) throws Exception {
-            factory.ensureNetworkExist(connect);
-                            
-            if (!isAlive()) {
-                ipAddress = null;
-                if (domain != null) {
-                    domain.free();
-                }
-                domain = factory.defineDomain(connect, config);
+                factory.ensureNetworkExist(connect);
+
                 if (!isAlive()) {
-                    ipAddress = factory.start(domain);
+                    ipAddress = null;
+                    if (domain != null) {
+                        domain.free();
+                    }
+                    domain = factory.defineDomain(connect, config);
+                    if (!isAlive()) {
+                        ipAddress = factory.start(domain);
+                    }
                 }
+                return ipAddress;
             }
-        return ipAddress;
-    }
         });
     }
 
     /**
      * {@inheritDoc}
-     * @throws DomainException 
+     * @throws DomainException
      */
     @Override
     public synchronized void stop() throws DomainException {
@@ -146,19 +146,19 @@ class LibVirtDomain implements Domain {
     @Override
     public boolean isAlive() throws DomainException {
         boolean isRunning = false;
-        
+
         if (domain != null) {
             try {
                 DomainState state = domain.getInfo().state;
                 isRunning = DomainState.VIR_DOMAIN_RUNNING.equals(state);
-            } catch(LibvirtException e) {
+            } catch (LibvirtException e) {
                 throw new DomainException(e);
             }
         }
-        
+
         return isRunning;
     }
-    
+
     public String getIPAddress() {
         return ipAddress;
     }

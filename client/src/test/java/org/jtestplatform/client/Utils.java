@@ -1,19 +1,19 @@
 /**
  * JTestPlatform is a client/server framework for testing any JVM
  * implementation.
- *
+ * <p>
  * Copyright (C) 2008-2015  Fabien DUMINY (fduminy at jnode dot org)
- *
+ * <p>
  * JTestPlatform is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3
  * of the License, or (at your option) any later version.
- *
+ * <p>
  * JTestPlatform is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
@@ -154,31 +154,31 @@ public class Utils {
 
             Message result;
             switch (state) {
-                case GET_FRAMEWORKS:
-                    state = STATE.INIT;
-                    result = new TestFrameworks(FRAMEWORKS);
-                    break;
-                case GET_TESTS:
-                    state = STATE.INIT;
-                    if (FRAMEWORK1.equals(framework)) {
-                        result = new FrameworkTests(FRAMEWORK1_TESTS);
-                    } else if (FRAMEWORK2.equals(framework)) {
-                        result = new FrameworkTests(FRAMEWORK2_TESTS);
-                    } else {
-                        throw new IllegalStateException("unknown framework: " + framework);
-                    }
-                    break;
-                case RUN_TEST:
-                    state = STATE.INIT;
-                    result = new TestResult(framework, test);
-                    testResults.add((TestResult) result);
-                    break;
-                case INIT:
-                default:
-                    throw new IllegalStateException("illegal state: " + state);
+            case GET_FRAMEWORKS:
+                state = STATE.INIT;
+                result = new TestFrameworks(FRAMEWORKS);
+                break;
+            case GET_TESTS:
+                state = STATE.INIT;
+                if (FRAMEWORK1.equals(framework)) {
+                    result = new FrameworkTests(FRAMEWORK1_TESTS);
+                } else if (FRAMEWORK2.equals(framework)) {
+                    result = new FrameworkTests(FRAMEWORK2_TESTS);
+                } else {
+                    throw new IllegalStateException("unknown framework: " + framework);
+                }
+                break;
+            case RUN_TEST:
+                state = STATE.INIT;
+                result = new TestResult(framework, test);
+                testResults.add((TestResult) result);
+                break;
+            case INIT:
+            default:
+                throw new IllegalStateException("illegal state: " + state);
             }
             LOGGER.info("END receive(transport): state={} RETURN {}({})", state, result.getClass().getSimpleName(),
-                    toString(result));
+                        toString(result));
             return result;
         }
 

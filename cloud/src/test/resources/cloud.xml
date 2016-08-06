@@ -26,13 +26,13 @@
     <platforms>
         <platform cpu="phenom" nbCores="4" wordSize="64" memory="524288"/>
     </platforms>
-    
+
     <domains max="2">
         <factories>
             <factory type="libvirt">
                 <connections>
                     <connection uri="qemu:///system"/>
-	            </connections>
+                </connections>
             </factory>
         </factories>
     </domains>

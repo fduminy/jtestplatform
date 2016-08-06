@@ -1,26 +1,26 @@
 /**
  * JTestPlatform is a client/server framework for testing any JVM
  * implementation.
- *
+ * <p>
  * Copyright (C) 2008-2015  Fabien DUMINY (fduminy at jnode dot org)
- *
+ * <p>
  * JTestPlatform is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3
  * of the License, or (at your option) any later version.
- *
+ * <p>
  * JTestPlatform is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
  * USA.
  */
 /**
- * 
+ *
  */
 package org.jtestplatform.cloud.domain.libvirt;
 
@@ -67,7 +67,7 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
 
     static {
         try {
-            Connect.setErrorCallback(new VirErrorCallback() {           
+            Connect.setErrorCallback(new VirErrorCallback() {
                 @Override
                 public void errorCallback(Pointer pointer, virError error) {
                     LOGGER.error("pointer={} error={}", pointer, error);
@@ -77,7 +77,7 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
             LOGGER.error("failed to initialize error callback", e);
         }
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -98,18 +98,20 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
             }
         });
     }
-    
+
     /**
      * {@inheritDoc}
      */
     public LibVirtDomain createDomain(DomainConfig config, Connection connection) throws DomainException {
         if (!support(config.getPlatform(), connection)) {
-            throw new DomainException("Unsupported platform :\n" + config.getPlatform() + "\n. You should call support(Platform, Connection) before.");
+            throw new DomainException("Unsupported platform :\n" + config.getPlatform()
+                                      + "\n. You should call support(Platform, Connection) before.");
         }
-        return new LibVirtDomain(config, this, connection); 
+        return new LibVirtDomain(config, this, connection);
     }
 
-    final <T> T execute(org.jtestplatform.cloud.configuration.Connection connection, ConnectManager.Command<T> command) throws DomainException {
+    final <T> T execute(org.jtestplatform.cloud.configuration.Connection connection, ConnectManager.Command<T> command)
+        throws DomainException {
         return connectManager.execute(connection, command);
     }
 
@@ -118,12 +120,12 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
         Network network = null;
         try {
             domain.create();
-            
+
             String macAddress = getMacAddress(domain);
             if (macAddress == null) {
                 throw new DomainException("unable to get mac address");
             }
-            
+
             network = domain.getConnect().networkLookupByName(NETWORK_NAME);
             ipAddress = LibVirtModelFacade.getIPAddress(network, macAddress);
             if (ipAddress == null) {
@@ -140,16 +142,16 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
                 try {
                     network.free();
                 } catch (LibvirtException e) {
-                    LOGGER.error("failed to free network", e);        
+                    LOGGER.error("failed to free network", e);
                 }
             }
         }
-        
+
         return ipAddress;
     }
 
     void stop(final Domain domain, Timeout timeout, Sleeper sleeper)
-            throws LibvirtException, TimeoutException, InterruptedException, DomainException {
+        throws LibvirtException, TimeoutException, InterruptedException, DomainException {
         domain.destroy();
 
         waitOrTimeout(new Condition() {
@@ -166,16 +168,16 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
 
         domain.undefine();
     }
-    
+
     void ensureNetworkExist(Connect connect) throws LibvirtException, DomainException {
         //TODO create our own network
 
         String wantedNetworkXML = LibVirtModelFacade.generateNetwork(NETWORK_NAME);
-            
+
         // synchronize because multiple threads might check/destroy/create the network concurrently
-        synchronized ((connect.getHostName() + "_ensureNetworkExist").intern()) {   
+        synchronized ((connect.getHostName() + "_ensureNetworkExist").intern()) {
             Network network = null;
-            
+
             try {
                 network = networkLookupByName(connect, NETWORK_NAME);
                 if (network != null) {
@@ -185,13 +187,13 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
                         network.destroy();
                         //network.undefine();
                         LOGGER.debug("destroyed network '{}'", NETWORK_NAME);
-                        network = null; 
+                        network = null;
                     }
                 }
-                
+
                 if (network == null) {
                     network = connect.networkCreateXML(wantedNetworkXML);
-                    LOGGER.debug("created network '{}'", NETWORK_NAME);            
+                    LOGGER.debug("created network '{}'", NETWORK_NAME);
                 }
             } finally {
                 if (network != null) {
@@ -200,26 +202,27 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
             }
         }
     }
-    
+
     private static Network networkLookupByName(Connect connect, String networkName) throws LibvirtException {
         Network network = null;
-        if (Arrays.asList(connect.listDefinedNetworks()).contains(networkName) || Arrays.asList(connect.listNetworks()).contains(networkName)) {
-            network = connect.networkLookupByName(networkName);        
-        }        
+        if (Arrays.asList(connect.listDefinedNetworks()).contains(networkName) || Arrays.asList(connect.listNetworks())
+                                                                                        .contains(networkName)) {
+            network = connect.networkLookupByName(networkName);
+        }
         return network;
     }
-    
+
     Domain defineDomain(Connect connect, DomainConfig config) throws DomainException {
         try {
             synchronized ((connect.getHostName() + "_defineDomain").intern()) {
                 List<Domain> domains = listAllDomains(connect);
-                
+
                 if (ConfigUtils.isBlank(config.getDomainName())) {
                     // automatically define the domain name
                     // it must be unique for the connection
                     config.setDomainName(findUniqueDomainName(domains));
                 }
-                
+
                 String macAddress = findUniqueMacAddress(domains);
                 String xml = LibVirtModelFacade.generateDomain(config, macAddress, NETWORK_NAME);
                 return connect.domainDefineXML(xml);
@@ -238,7 +241,7 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
      * @throws LibvirtException
      * @throws DomainException
      */
-    private String findUniqueDomainName(List<Domain> domains) throws LibvirtException, DomainException {        
+    private String findUniqueDomainName(List<Domain> domains) throws LibvirtException, DomainException {
         List<String> domainNames = new ArrayList<String>(domains.size());
         for (Domain domain : domains) {
             domainNames.add(domain.getName());
@@ -250,27 +253,28 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
     /**
      * Automatically define the mac address. It must be unique for the connection.
      * @throws LibvirtException
-     * @throws DomainException 
+     * @throws DomainException
      */
     private String findUniqueMacAddress(List<Domain> domains) throws LibvirtException, DomainException {
-        List<String> macAddresses = new ArrayList<String>();        
+        List<String> macAddresses = new ArrayList<String>();
         for (Domain domain : domains) {
             String addr = getMacAddress(domain);
             if (addr != null) {
                 macAddresses.add(addr);
             }
         }
-        
+
         String prefix = LibVirtModelFacade.BASE_MAC_ADDRESS;
-        
-        return findUniqueValue(macAddresses, "mac address", prefix, LibVirtModelFacade.MIN_SUBNET_IP_ADDRESS, LibVirtModelFacade.MAX_SUBNET_IP_ADDRESS, 2);
+
+        return findUniqueValue(macAddresses, "mac address", prefix, LibVirtModelFacade.MIN_SUBNET_IP_ADDRESS,
+                               LibVirtModelFacade.MAX_SUBNET_IP_ADDRESS, 2);
     }
-    
+
     private String getMacAddress(Domain domain) throws LibvirtException {
         String macAddress = null;
-        
+
         String xml = domain.getXMLDesc(0);
-        
+
         //TODO it's bad, we should use an xml parser. create and add it in the libvirt-model project.
         String begin = "<mac address='";
         int idx = xml.indexOf(begin);
@@ -281,18 +285,19 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
                 macAddress = xml.substring(idx, idx2);
             }
         }
-        
+
         return macAddress;
     }
 
     /**
      * Find a unique value that is not yet in the given list of values.
      */
-    private String findUniqueValue(List<String> values, String valueName, String valuePrefix, int valueIndex, int maxValueIndex, int hexadecimalSize) throws DomainException {
+    private String findUniqueValue(List<String> values, String valueName, String valuePrefix, int valueIndex,
+                                   int maxValueIndex, int hexadecimalSize) throws DomainException {
         String value = null;
         for (; valueIndex <= maxValueIndex; valueIndex++) {
             String indexStr = LibVirtModelFacade.toHexString(valueIndex, hexadecimalSize);
-            
+
             value = valuePrefix + indexStr;
             if (!values.contains(value)) {
                 break;
@@ -302,26 +307,26 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
         if ((valueIndex > maxValueIndex) || (value == null)) {
             throw new DomainException("unable to find a unique " + valueName);
         }
-        
+
         LOGGER.debug("found a unique {} : {}", valueName, value);
         return value;
     }
-    
+
     private List<Domain> listAllDomains(Connect connect) throws LibvirtException {
         List<Domain> domains = new ArrayList<Domain>();
-    
+
         // get defined but inactive domains
         for (String name : connect.listDefinedDomains()) {
             if (name != null) {
                 domains.add(connect.domainLookupByName(name));
             }
         }
-        
+
         // get active domains
         for (int id : connect.listDomains()) {
             domains.add(connect.domainLookupByID(id));
         }
-        
+
         return domains;
     }
 }

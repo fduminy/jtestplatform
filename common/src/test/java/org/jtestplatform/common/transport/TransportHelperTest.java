@@ -1,19 +1,19 @@
 /**
  * JTestPlatform is a client/server framework for testing any JVM
  * implementation.
- *
+ * <p>
  * Copyright (C) 2008-2015  Fabien DUMINY (fduminy at jnode dot org)
- *
+ * <p>
  * JTestPlatform is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3
  * of the License, or (at your option) any later version.
- *
+ * <p>
  * JTestPlatform is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
@@ -44,7 +44,6 @@ import static org.jtestplatform.common.transport.TransportHelper.FALSE;
 import static org.jtestplatform.common.transport.TransportHelper.TRUE;
 import static org.junit.Assume.assumeFalse;
 import static org.mockito.Mockito.*;
-
 
 /**
  * @author Fabien DUMINY (fduminy at jnode dot org)
@@ -83,7 +82,8 @@ public class TransportHelperTest {
             }
 
             @Override
-            Message createMessage(Class<? extends Message> clazz) throws InstantiationException, IllegalAccessException {
+            Message createMessage(Class<? extends Message> clazz)
+                throws InstantiationException, IllegalAccessException {
                 return answerMessage;
             }
         };
@@ -167,7 +167,8 @@ public class TransportHelperTest {
         when(transport.receive()).thenReturn(ErrorMessage.class.getName(), expectedErrorMessage);
         TransportHelper helper = new TransportHelper() {
             @Override
-            Message createMessage(Class<? extends Message> clazz) throws InstantiationException, IllegalAccessException {
+            Message createMessage(Class<? extends Message> clazz)
+                throws InstantiationException, IllegalAccessException {
                 Message message = spy(super.createMessage(clazz));
                 messageWrapper.setValue(message);
                 return message;
@@ -205,7 +206,8 @@ public class TransportHelperTest {
         Collections.sort(actualClasses, CLASS_COMPARATOR);
 
         Reflections reflections = new Reflections(Message.class.getPackage().getName());
-        List<Class<? extends Message>> expectedClasses = new ArrayList<Class<? extends Message>>(reflections.getSubTypesOf(Message.class));
+        List<Class<? extends Message>> expectedClasses = new ArrayList<Class<? extends Message>>(
+            reflections.getSubTypesOf(Message.class));
         Collections.sort(expectedClasses, CLASS_COMPARATOR);
 
         assertThat(actualClasses).containsExactly(expectedClasses.toArray(new Class[0]));
@@ -338,6 +340,7 @@ public class TransportHelperTest {
             }
         },
         TESTRESULT_SUCCESS(TestResult.class, true, "framework", "test", FALSE, null) { // failureType=null
+
             @Override
             Message createMessage() {
                 return new TestResult(expectedParts[0], expectedParts[1]);
@@ -364,7 +367,7 @@ public class TransportHelperTest {
             }
         },
         TESTRESULT_FAILURE(TestResult.class, true, "framework", "test", FALSE, "failureType", "failureContent",
-                "failureMessage", FALSE, SYSTEM_OUT, SYSTEM_ERR) {
+                           "failureMessage", FALSE, SYSTEM_OUT, SYSTEM_ERR) {
             @Override
             Message createMessage() {
                 TestResult testResult = (TestResult) TESTRESULT_SUCCESS.createMessage();
@@ -383,7 +386,7 @@ public class TransportHelperTest {
             }
         },
         TESTRESULT_ERROR(TestResult.class, true, "framework", "test", FALSE, "errorType", "errorContent",
-                "errorMessage", TRUE, SYSTEM_OUT, SYSTEM_ERR) {
+                         "errorMessage", TRUE, SYSTEM_OUT, SYSTEM_ERR) {
             @Override
             Message createMessage() {
                 TestResult testResult = (TestResult) TESTRESULT_SUCCESS.createMessage();

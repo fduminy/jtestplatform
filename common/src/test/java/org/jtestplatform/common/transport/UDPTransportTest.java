@@ -1,19 +1,19 @@
 /**
  * JTestPlatform is a client/server framework for testing any JVM
  * implementation.
- *
+ * <p>
  * Copyright (C) 2008-2015  Fabien DUMINY (fduminy at jnode dot org)
- *
+ * <p>
  * JTestPlatform is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3
  * of the License, or (at your option) any later version.
- *
+ * <p>
  * JTestPlatform is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
@@ -36,7 +36,6 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.jtestplatform.common.transport.UDPTransport.NULL_SIZE;
 import static org.mockito.Mockito.*;
-
 
 /**
  * @author Fabien DUMINY (fduminy at jnode dot org)
@@ -81,7 +80,8 @@ public class UDPTransportTest {
         final DatagramSocket datagramSocket = mock(DatagramSocket.class);
         InetAddress serverAddress = InetAddress.getLocalHost();
         List<DatagramPacket> packets = new ArrayList<DatagramPacket>();
-        doAnswer(simulateReceive(message, serverAddress, SERVER_PORT, packets)).when(datagramSocket).receive(any(DatagramPacket.class));
+        doAnswer(simulateReceive(message, serverAddress, SERVER_PORT, packets)).when(datagramSocket)
+                                                                               .receive(any(DatagramPacket.class));
         UDPTransport transport = new UDPTransport(SERVER_PORT) {
             @Override
             DatagramSocket createDatagramSocket(int serverPort) throws SocketException {
@@ -102,7 +102,8 @@ public class UDPTransportTest {
         verifyPackets(message, null, SERVER_PORT, packets);
     }
 
-    private void verifyPackets(StringMessage message, InetSocketAddress socketAddress, int serverPort, List<DatagramPacket> packets) {
+    private void verifyPackets(StringMessage message, InetSocketAddress socketAddress, int serverPort,
+                               List<DatagramPacket> packets) {
         // first packet
         DatagramPacket packet1 = packets.get(0);
         assertThat(packet1).as("DatagramPacket").isNotNull();
@@ -132,7 +133,8 @@ public class UDPTransportTest {
         };
     }
 
-    private Answer<Void> simulateReceive(final StringMessage message, final InetAddress serverAddress, final int serverPort, final List<DatagramPacket> packets) {
+    private Answer<Void> simulateReceive(final StringMessage message, final InetAddress serverAddress,
+                                         final int serverPort, final List<DatagramPacket> packets) {
         return new Answer<Void>() {
             int callNumber = 0;
 

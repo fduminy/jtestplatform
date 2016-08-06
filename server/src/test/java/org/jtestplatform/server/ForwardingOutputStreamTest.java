@@ -1,19 +1,19 @@
 /**
  * JTestPlatform is a client/server framework for testing any JVM
  * implementation.
- *
+ * <p>
  * Copyright (C) 2008-2015  Fabien DUMINY (fduminy at jnode dot org)
- *
+ * <p>
  * JTestPlatform is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3
  * of the License, or (at your option) any later version.
- *
+ * <p>
  * JTestPlatform is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
@@ -74,7 +74,8 @@ public class ForwardingOutputStreamTest extends OutputStreamTest<ForwardingOutpu
         testStreamAction(FLUSH, true, true);
     }
 
-    private void testStreamAction(final StreamAction<Void> action, final boolean forward, final boolean unForward) throws IOException {
+    private void testStreamAction(final StreamAction<Void> action, final boolean forward, final boolean unForward)
+        throws IOException {
         final StreamActionTest test = new StreamActionTest(action) {
             OutputStream threadOutput;
 
@@ -139,13 +140,15 @@ public class ForwardingOutputStreamTest extends OutputStreamTest<ForwardingOutpu
             threadStream = outputStream(threadOutput);
         }
 
-        private void testInThread(final ForwardingOutputStream stream, final OutputStream threadOutputStream) throws Exception {
+        private void testInThread(final ForwardingOutputStream stream, final OutputStream threadOutputStream)
+            throws Exception {
             Thread thread = new Thread() {
                 @Override
                 public void run() {
                     try {
                         stream.forward(Thread.currentThread(), threadOutputStream);
-                        action.execute(stream, new WriteParameter(ALTERNATE_BYTES, startIndexInclusive, endIndexExclusive));
+                        action.execute(stream,
+                                       new WriteParameter(ALTERNATE_BYTES, startIndexInclusive, endIndexExclusive));
                         stream.forward(Thread.currentThread(), null);
                         action.execute(stream, new WriteParameter(BYTES, startIndexInclusive, endIndexExclusive));
                     } catch (Exception e) {

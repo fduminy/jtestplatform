@@ -1,19 +1,19 @@
 /**
  * JTestPlatform is a client/server framework for testing any JVM
  * implementation.
- *
+ * <p>
  * Copyright (C) 2008-2015  Fabien DUMINY (fduminy at jnode dot org)
- *
+ * <p>
  * JTestPlatform is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3
  * of the License, or (at your option) any later version.
- *
+ * <p>
  * JTestPlatform is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
@@ -64,7 +64,8 @@ public class InJVMTestDriver<T extends InJVMTransportChannel> extends TestDriver
     }
 
     @Override
-    protected InJVMDomainManager createDomainManager(File cloudConfigFile) throws FileNotFoundException, DomainException {
+    protected InJVMDomainManager createDomainManager(File cloudConfigFile)
+        throws FileNotFoundException, DomainException {
         return new InJVMDomainManager<T>(new FileReader(cloudConfigFile), channelFactory);
     }
 
@@ -72,7 +73,8 @@ public class InJVMTestDriver<T extends InJVMTransportChannel> extends TestDriver
     protected RequestConsumer createRequestConsumer(BlockingQueue<Request> requests) {
         return new RequestConsumer(requests, clock) {
             @Override
-            protected TestResult runTest(TransportHelper transportHelper, Request request, Transport transport) throws TransportException {
+            protected TestResult runTest(TransportHelper transportHelper, Request request, Transport transport)
+                throws TransportException {
                 ((MovableClock) clock).incrementBy(millis(timeCounter.getAndIncrement()));
                 return super.runTest(transportHelper, request, transport);
             }
@@ -83,7 +85,8 @@ public class InJVMTestDriver<T extends InJVMTransportChannel> extends TestDriver
         private final List<InJVMDomain> domains = new ArrayList<InJVMDomain>();
         private final InJVMTransportChannelFactory<T> channelFactory;
 
-        public InJVMDomainManager(Reader configReader, InJVMTransportChannelFactory<T> channelFactory) throws DomainException {
+        public InJVMDomainManager(Reader configReader, InJVMTransportChannelFactory<T> channelFactory)
+            throws DomainException {
             super(configReader);
             Validate.notNull(configReader, "configReader is null");
             Validate.notNull(channelFactory, "channelFactory is null");

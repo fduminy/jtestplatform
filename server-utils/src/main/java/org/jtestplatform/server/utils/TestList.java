@@ -1,26 +1,26 @@
 /**
  * JTestPlatform is a client/server framework for testing any JVM
  * implementation.
- *
+ * <p>
  * Copyright (C) 2008-2015  Fabien DUMINY (fduminy at jnode dot org)
- *
+ * <p>
  * JTestPlatform is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3
  * of the License, or (at your option) any later version.
- *
+ * <p>
  * JTestPlatform is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
  * USA.
  */
 /**
- * 
+ *
  */
 package org.jtestplatform.server.utils;
 
@@ -118,19 +118,20 @@ public class TestList {
         }
     }
 
-    private void collectTests(JarClassLoader jcl, File baseDirectory, TestSource testSource, Collection<TestFramework> frameworks) throws FileNotFoundException {
+    private void collectTests(JarClassLoader jcl, File baseDirectory, TestSource testSource,
+                              Collection<TestFramework> frameworks) throws FileNotFoundException {
         final File directory = testSource.getFile();
         LOGGER.debug("collecting test classes from {}", directory.getAbsolutePath());
 
         File[] files;
         if (directory.isFile() && directory.getName().endsWith(JAR_EXTENSION)) {
-            files = new File[]{directory};
+            files = new File[] { directory };
         } else {
             files = directory.listFiles(new FileFilter() {
                 public boolean accept(File pathname) {
                     return pathname.isDirectory()
-                        || pathname.getName().endsWith(CLASS_EXTENSION)
-                        || pathname.getName().endsWith(JAR_EXTENSION);
+                           || pathname.getName().endsWith(CLASS_EXTENSION)
+                           || pathname.getName().endsWith(JAR_EXTENSION);
                 }
             });
         }
@@ -158,7 +159,7 @@ public class TestList {
     }
 
     private void collectTests(JarClassLoader jcl, List<String> paths,
-            Collection<TestFramework> frameworks, TestSource testSource) {
+                              Collection<TestFramework> frameworks, TestSource testSource) {
         for (String path : paths) {
             path = path.replace(File.separatorChar, '.');
             String className = path.substring(0, path.length() - CLASS_EXTENSION.length());
@@ -195,13 +196,16 @@ public class TestList {
     private static class TestSource {
         private final File file;
         private final String[] includeClassNames;
+
         public TestSource(File file, String[] includeClassNames) {
             this.file = file;
             this.includeClassNames = includeClassNames;
         }
+
         public File getFile() {
             return file;
         }
+
         public String[] getIncludeClassNames() {
             return includeClassNames;
         }

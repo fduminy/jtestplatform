@@ -28,11 +28,11 @@
                   time="103">
             <error message="error-message"
                    type="error-type">error-line1
-error-line2
+                error-line2
             </error>
             <failure message="failure-message"
                      type="failure-type">failure-line1
-failure-line2
+                failure-line2
             </failure>
 
             <system-out>out-line1</system-out>

@@ -1,19 +1,19 @@
 /**
  * JTestPlatform is a client/server framework for testing any JVM
  * implementation.
- *
+ * <p>
  * Copyright (C) 2008-2015  Fabien DUMINY (fduminy at jnode dot org)
- *
+ * <p>
  * JTestPlatform is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3
  * of the License, or (at your option) any later version.
- *
+ * <p>
  * JTestPlatform is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
@@ -55,7 +55,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.jtestplatform.cloud.domain.libvirt.LibVirtDomainFactory.DOMAIN_NAME_PREFIX;
 import static org.junit.Assert.*;
 
-
 /**
  * @author Fabien DUMINY (fduminy at jnode dot org)
  *
@@ -66,7 +65,7 @@ public class LibVirtTest {
     private static final String ERROR_TAG = "ERROR: ";
 
     private Connection connection;
-    
+
     private LibVirtDomainFactory factory;
     private List<Domain> domains;
 
@@ -75,11 +74,11 @@ public class LibVirtTest {
         factory = new LibVirtDomainFactory();
         connection = new Connection();
         connection.setUri("qemu:///system");
-        
+
         // must be a synchronized List since we run multiple threads
         domains = new Vector<Domain>();
     }
-    
+
     @After
     public void tearDown() throws IOException, DomainException {
         boolean error = false;
@@ -102,7 +101,7 @@ public class LibVirtTest {
         public TestStartAndStop(int index) {
             domainId = index;
         }
-        
+
         @Override
         public String call() throws Exception {
             Domain domain = null;
@@ -114,16 +113,17 @@ public class LibVirtTest {
                 LOGGER.debug("domain #{} created", domainId);
                 ip = domain.getIPAddress();
                 assertNull(ip);
-                
+
                 domains.add(domain);
-                
+
                 // start
                 LOGGER.debug("starting domain #{}", domainId);
                 ip = domain.start();
                 assertFalse("domain #" + domainId + "'s ip must not be null, empty or blank", ConfigUtils.isBlank(ip));
 
                 waitOrTimeout(reachable(InetAddress.getByName(ip), seconds(1)), timeout(minutes(1)));
-                assertEquals("domain #" + domainId + " start() must return same ip address as getIpAddress()", ip, domain.getIPAddress());
+                assertEquals("domain #" + domainId + " start() must return same ip address as getIpAddress()", ip,
+                             domain.getIPAddress());
                 return ip;
             } catch (Exception e) {
                 LOGGER.error("error in domain #" + domainId, e);
@@ -197,11 +197,11 @@ public class LibVirtTest {
         Platform platform = new Platform();
         platform.setMemory(32L * 1024L);
         platform.setCdrom(Utils.getCDROM());
-        
+
         DomainConfig cfg = new DomainConfig();
         cfg.setPlatform(platform);
         cfg.setDomainName(null); // null => will be defined automatically
-        
+
         return cfg;
     }
 

@@ -1,26 +1,26 @@
 /**
  * JTestPlatform is a client/server framework for testing any JVM
  * implementation.
- *
+ * <p>
  * Copyright (C) 2008-2015  Fabien DUMINY (fduminy at jnode dot org)
- *
+ * <p>
  * JTestPlatform is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3
  * of the License, or (at your option) any later version.
- *
+ * <p>
  * JTestPlatform is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
  * USA.
  */
 /**
- * 
+ *
  */
 package org.jtestplatform.cloud.domain.libvirt;
 
@@ -45,7 +45,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 
-
 /**
  * @author Fabien DUMINY (fduminy at jnode dot org)
  *
@@ -60,9 +59,9 @@ public class LibVirtModelFacade {
     static final int MIN_SUBNET_IP_ADDRESS = 2;
     static final int MAX_SUBNET_IP_ADDRESS = 254;
 
-    private LibVirtModelFacade() {        
+    private LibVirtModelFacade() {
     }
-    
+
     public static String generateNetwork(String networkName) throws DomainException {
         Network network = new Network();
         network.setName(networkName);
@@ -106,15 +105,15 @@ public class LibVirtModelFacade {
         }
         return writer.toString();
     }
-        
+
     public static String generateDomain(DomainConfig config, String macAddress, String networkName) {
         Platform platform = config.getPlatform(); //TODO use cpu and wordSize properties
         StringBuilder sb = new StringBuilder(4096);
-        
-        sb.append("<domain type='kvm' id='1'>");             
+
+        sb.append("<domain type='kvm' id='1'>");
         sb.append("  <name>").append(config.getDomainName()).append("</name>");
-        sb.append("  <memory>").append(platform.getMemory()).append("</memory>");    
-        sb.append("  <currentMemory>").append(platform.getMemory()).append("</currentMemory>"); 
+        sb.append("  <memory>").append(platform.getMemory()).append("</memory>");
+        sb.append("  <currentMemory>").append(platform.getMemory()).append("</currentMemory>");
         sb.append("  <vcpu>").append(platform.getNbCores()).append("</vcpu>");
         sb.append("  <os>");
         sb.append("    <type arch='x86_64' machine='pc-0.11'>hvm</type>");
@@ -132,7 +131,7 @@ public class LibVirtModelFacade {
         sb.append("  <devices>                                               ");
         sb.append("    <emulator>/usr/bin/kvm</emulator>                     ");
         sb.append("    <disk type='file' device='cdrom'>                     ");
-        sb.append("      <source file='").append(platform.getCdrom()).append("'/>");                                                                                        
+        sb.append("      <source file='").append(platform.getCdrom()).append("'/>");
         sb.append("      <target dev='hdc' bus='ide'/>");
         sb.append("      <readonly/>");
         sb.append("    </disk>");
@@ -142,7 +141,7 @@ public class LibVirtModelFacade {
         sb.append("      <source network='").append(networkName).append("'/>");
         sb.append("      <target dev='vnet0'/>");
         sb.append("    </interface>");
-        
+
         sb.append("    <serial type='pty'>");
         sb.append("      <source path='/dev/pts/7'/>");
         sb.append("      <target port='0'/>");
@@ -166,9 +165,10 @@ public class LibVirtModelFacade {
     public static String toHexString(int valueIndex, int hexadecimalSize) throws DomainException {
         String result = Integer.toHexString(valueIndex);
         if (result.length() > hexadecimalSize) {
-            throw new DomainException("unable convert to hexadecimal with a maximum of " + hexadecimalSize + " characters");
+            throw new DomainException(
+                "unable convert to hexadecimal with a maximum of " + hexadecimalSize + " characters");
         }
-        
+
         if (result.length() < hexadecimalSize) {
             while (result.length() != hexadecimalSize) {
                 result = '0' + result;
@@ -176,11 +176,13 @@ public class LibVirtModelFacade {
         }
         return result;
     }
-    
-    public static String getIPAddress(org.libvirt.Network network, String macAddress) throws IOException, DocumentException, LibvirtException {
+
+    public static String getIPAddress(org.libvirt.Network network, String macAddress)
+        throws IOException, DocumentException, LibvirtException {
         String ipAddress = null;
         // FIXME when STRICT is set to true, the tag 'nat' throws an exception
-        org.libvirt.model.network.Network net = new NetworkDom4jReader().read(new StringReader(network.getXMLDesc(0)), STRICT);
+        org.libvirt.model.network.Network net = new NetworkDom4jReader()
+            .read(new StringReader(network.getXMLDesc(0)), STRICT);
         for (Host host : net.getIp().getDhcp().getHost()) {
             if (macAddress.equals(host.getMac())) {
                 ipAddress = host.getIp();
@@ -190,15 +192,16 @@ public class LibVirtModelFacade {
         return ipAddress;
     }
 
-    public static boolean sameNetwork(String wantedNetworkXML, org.libvirt.Network network) throws LibvirtException, DomainException {
+    public static boolean sameNetwork(String wantedNetworkXML, org.libvirt.Network network)
+        throws LibvirtException, DomainException {
         String actualNetworkXML = network.getXMLDesc(0);
-        org.libvirt.model.network.Network actualNetwork = toNetwork(actualNetworkXML);                
+        org.libvirt.model.network.Network actualNetwork = toNetwork(actualNetworkXML);
         org.libvirt.model.network.Network wantedNetwork = toNetwork(wantedNetworkXML);
         return sameNetwork(wantedNetwork, actualNetwork);
     }
 
     private static boolean sameNetwork(org.libvirt.model.network.Network wantedNetwork,
-            org.libvirt.model.network.Network actualNetwork) {
+                                       org.libvirt.model.network.Network actualNetwork) {
 
         IP wantedIP = wantedNetwork.getIp();
         IP actualIP = actualNetwork.getIp();
@@ -211,8 +214,8 @@ public class LibVirtModelFacade {
             for (Host wantedHost : wantedDHCP.getHost()) {
                 boolean sameHost = false;
                 for (Host actualHost : actualDHCP.getHost()) {
-                    if (wantedHost.getMac().equals(actualHost.getMac()) 
-                            && wantedHost.getIp().equals(actualHost.getIp())) {
+                    if (wantedHost.getMac().equals(actualHost.getMac())
+                        && wantedHost.getIp().equals(actualHost.getIp())) {
                         sameHost = true;
                         break;
                     }
@@ -223,15 +226,15 @@ public class LibVirtModelFacade {
                     break;
                 }
             }
-            
+
             if (sameNetwork) {
                 Range wantedRange = wantedDHCP.getRange();
                 Range actualRange = actualDHCP.getRange();
                 sameNetwork &= wantedRange.getStart().equals(actualRange.getStart());
                 sameNetwork &= wantedRange.getEnd().equals(actualRange.getEnd());
-            }            
+            }
         }
-        
+
         return sameNetwork;
     }
 
@@ -246,35 +249,36 @@ public class LibVirtModelFacade {
         }
     }
 
-    public static boolean support(Platform platform, Connect connect) throws LibvirtException, IOException, DocumentException {
+    public static boolean support(Platform platform, Connect connect)
+        throws LibvirtException, IOException, DocumentException {
         LOGGER.trace("begin support");
-        
+
         boolean support;
         try {
             support = (connect.nodeInfo().memory >= platform.getMemory());
         } catch (LibvirtException lve) {
             // an exception might be thrown if the function is not supported by the hypervisor
             // then, we assume there is enough memory
-            
+
             LOGGER.error("Error while calling nodeInfo()", lve);
             support = true;
         }
-        
+
         if (support) {
             String capabilitiesXML = connect.getCapabilities();
 
             // FIXME when STRICT is set to true the tag 'uuid' throws an exception
             Capabilities capabilities = new CapabilitiesDom4jReader().read(new StringReader(capabilitiesXML), STRICT);
-            
+
             outloop:
             for (Guest guest : capabilities.getGuests()) {
                 Arch arch = guest.getArch();
-                
+
                 boolean supportCPU = arch.getName().equals(platform.getCpu());
-                boolean supportWordSize = (arch.getWordSize() == platform.getWordSize()); 
+                boolean supportWordSize = (arch.getWordSize() == platform.getWordSize());
                 if (supportCPU && supportWordSize) {
                     for (Domain domain : guest.getArch().getDomains()) {
-                        
+
                         boolean supportNbCores = (platform.getNbCores() <= connect.getMaxVcpus(domain.getType()));
                         if (supportNbCores) {
                             support = true;
@@ -284,8 +288,8 @@ public class LibVirtModelFacade {
                 }
             }
         }
-        
-        LOGGER.trace("end support");        
+
+        LOGGER.trace("end support");
         return support;
     }
 }

@@ -1,19 +1,19 @@
 /**
  * JTestPlatform is a client/server framework for testing any JVM
  * implementation.
- *
+ * <p>
  * Copyright (C) 2008-2015  Fabien DUMINY (fduminy at jnode dot org)
- *
+ * <p>
  * JTestPlatform is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3
  * of the License, or (at your option) any later version.
- *
+ * <p>
  * JTestPlatform is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
@@ -101,11 +101,11 @@ public class JUnitTestFramework implements TestFramework {
                 String wantedMethod = t.getTestMethod();
 
                 boolean match = description.getClassName().equals(wantedClass)
-                    && extractRealMethodName(description).equals(wantedMethod);
+                                && extractRealMethodName(description).equals(wantedMethod);
 
                 for (Description d : description.getChildren()) {
                     match |= d.getClassName().equals(wantedClass)
-                        && extractRealMethodName(d).equals(wantedMethod);
+                             && extractRealMethodName(d).equals(wantedMethod);
                     if (match) {
                         break;
                     }
@@ -147,7 +147,8 @@ public class JUnitTestFramework implements TestFramework {
             } else if (result.getFailureCount() != 0) {
                 Throwable failure = result.getFailures().get(0).getException();
                 boolean error = !(failure instanceof AssertionError);
-                testResult.setFailure(failure.getClass().getName(), printStackTrace(failure, testResult), failure.getMessage(), error);
+                testResult.setFailure(failure.getClass().getName(), printStackTrace(failure, testResult),
+                                      failure.getMessage(), error);
                 if (out.length() > 0) {
                     testResult.setSystemOut(out.toString());
                 }

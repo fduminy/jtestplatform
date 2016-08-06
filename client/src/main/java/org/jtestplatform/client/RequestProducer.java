@@ -1,19 +1,19 @@
 /**
  * JTestPlatform is a client/server framework for testing any JVM
  * implementation.
- *
+ * <p>
  * Copyright (C) 2008-2015  Fabien DUMINY (fduminy at jnode dot org)
- *
+ * <p>
  * JTestPlatform is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3
  * of the License, or (at your option) any later version.
- *
+ * <p>
  * JTestPlatform is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
@@ -65,7 +65,8 @@ public class RequestProducer {
                 Transport transport = transportProvider.get(platform);
 
                 //TODO we assume that all frameworks are available on each server. check it ?
-                TestFrameworks testFrameworks = (TestFrameworks) transportHelper.sendRequest(transport, GetTestFrameworks.INSTANCE);
+                TestFrameworks testFrameworks = (TestFrameworks) transportHelper
+                    .sendRequest(transport, GetTestFrameworks.INSTANCE);
 
                 for (String testFramework : testFrameworks.getFrameworks()) {
                     FrameworkTests tests = getFrameworkTests(transportHelper, transport, testFramework);
@@ -85,7 +86,8 @@ public class RequestProducer {
         }
     }
 
-    private FrameworkTests getFrameworkTests(TransportHelper transportHelper, Transport transport, String testFramework) throws TransportException {
+    private FrameworkTests getFrameworkTests(TransportHelper transportHelper, Transport transport, String testFramework)
+        throws TransportException {
         final GetFrameworkTests requestMessage = new GetFrameworkTests(testFramework);
         return (FrameworkTests) transportHelper.sendRequest(transport, requestMessage);
     }

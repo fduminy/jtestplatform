@@ -1,13 +1,14 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<parent>
-		<artifactId>jtestplatform</artifactId>
-		<groupId>jtestplatform</groupId>
-		<version>0.0.1-SNAPSHOT</version>
-	</parent>
-	
-	<modelVersion>4.0.0</modelVersion>
-	<artifactId>jtestplatform-common</artifactId>
-	<name>JTestPlatform Common</name>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <parent>
+        <artifactId>jtestplatform</artifactId>
+        <groupId>jtestplatform</groupId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>jtestplatform-common</artifactId>
+    <name>JTestPlatform Common</name>
     <url>https://github.com/fduminy/jtestplatform</url>
 
     <licenses>
@@ -16,9 +17,9 @@
             <url>http://www.gnu.org/licenses/gpl-3.0.html</url>
         </license>
     </licenses>
-    
+
     <properties>
-       <project.root>${project.parent.basedir}</project.root>
+        <project.root>${project.parent.basedir}</project.root>
     </properties>
 
     <dependencies>
@@ -86,5 +87,5 @@
         <connection>scm:git:git@github.com:fduminy/jtestplatform.git</connection>
         <tag>HEAD</tag>
         <url>https://github.com/fduminy/jtestplatform/tree/master/common</url>
-    </scm>      
+    </scm>
 </project>

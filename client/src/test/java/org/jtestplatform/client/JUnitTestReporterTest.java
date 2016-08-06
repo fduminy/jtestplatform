@@ -1,19 +1,19 @@
 /**
  * JTestPlatform is a client/server framework for testing any JVM
  * implementation.
- *
+ * <p>
  * Copyright (C) 2008-2015  Fabien DUMINY (fduminy at jnode dot org)
- *
+ * <p>
  * JTestPlatform is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3
  * of the License, or (at your option) any later version.
- *
+ * <p>
  * JTestPlatform is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
@@ -116,7 +116,8 @@ public class JUnitTestReporterTest {
         Testsuites suites = reporter.suites;
         assertThat(suites).as("created suites").isNotNull();
         assertThat(suites.getTestsuite()).as("number of suites").hasSize(1);
-        assertTestSuite(reporter, suites, Utils.PLATFORM1, testResult.getFramework(), new TestReport(testResult, DURATION1));
+        assertTestSuite(reporter, suites, Utils.PLATFORM1, testResult.getFramework(),
+                        new TestReport(testResult, DURATION1));
     }
 
     @Theory
@@ -134,8 +135,9 @@ public class JUnitTestReporterTest {
         Testsuites suites = reporter.suites;
         assertThat(suites).as("created suites").isNotNull();
         assertThat(suites.getTestsuite()).as("number of suites").hasSize(1);
-        assertTestSuite(reporter, suites, Utils.PLATFORM1, testResult1.getFramework(), new TestReport(testResult1, DURATION1),
-                new TestReport(testResult2, DURATION2));
+        assertTestSuite(reporter, suites, Utils.PLATFORM1, testResult1.getFramework(),
+                        new TestReport(testResult1, DURATION1),
+                        new TestReport(testResult2, DURATION2));
     }
 
     @Theory
@@ -153,8 +155,10 @@ public class JUnitTestReporterTest {
         Testsuites suites = reporter.suites;
         assertThat(suites).as("created suites").isNotNull();
         assertThat(suites.getTestsuite()).as("number of suites").hasSize(2);
-        assertTestSuite(reporter, suites, Utils.PLATFORM1, testResult1.getFramework(), new TestReport(testResult1, DURATION1));
-        assertTestSuite(reporter, suites, Utils.PLATFORM2, testResult2.getFramework(), new TestReport(testResult2, DURATION2));
+        assertTestSuite(reporter, suites, Utils.PLATFORM1, testResult1.getFramework(),
+                        new TestReport(testResult1, DURATION1));
+        assertTestSuite(reporter, suites, Utils.PLATFORM2, testResult2.getFramework(),
+                        new TestReport(testResult2, DURATION2));
     }
 
     private void assertProperty(List<Property> actualProperties, int index, String propertyName, Object propertyValue) {
@@ -163,7 +167,8 @@ public class JUnitTestReporterTest {
         assertThat(property.getValue()).isEqualTo(String.valueOf(propertyValue));
     }
 
-    private void assertTestSuite(JUnitTestReporter reporter, Testsuites suites, Platform platform, String framework, TestReport... expectedTestReports) throws Exception {
+    private void assertTestSuite(JUnitTestReporter reporter, Testsuites suites, Platform platform, String framework,
+                                 TestReport... expectedTestReports) throws Exception {
         String suitePackageName = new PlatformKeyBuilder().buildKey(platform);
         String suiteName = suitePackageName + '.' + framework;
         Testsuite testSuite = findTestSuite(suites, suiteName);
@@ -197,7 +202,8 @@ public class JUnitTestReporterTest {
         }
 
         assertThat(testSuite.getPackage()).as("suite package name").isEqualTo(suitePackageName);
-        assertThat(testSuite.getProperties().getProperty()).usingFieldByFieldElementComparator().containsExactly(expectedProperties.toArray(new Property[0]));
+        assertThat(testSuite.getProperties().getProperty()).usingFieldByFieldElementComparator().containsExactly(
+            expectedProperties.toArray(new Property[0]));
         assertThat(stringToDuration(reporter, testSuite.getTime())).as("total duration").isEqualTo(totalDuration);
         assertThat(stringToInteger(testSuite.getTests())).as("number of tests").isEqualTo(nbTests);
         assertThat(stringToInteger(testSuite.getErrors())).as("number of errors").isEqualTo(nbErrors);
@@ -351,14 +357,14 @@ public class JUnitTestReporterTest {
         @Override
         public String toString() {
             return "test='" + test + '\'' +
-                    ", testDuration=" + testDuration +
-                    ", failureType='" + failureType + '\'' +
-                    ", failureContent='" + failureContent + '\'' +
-                    ", failureMessage='" + failureMessage + '\'' +
-                    ", systemOut='" + systemOut + '\'' +
-                    ", systemErr='" + systemErr + '\'' +
-                    ", error=" + error +
-                    ", ignored=" + ignored;
+                   ", testDuration=" + testDuration +
+                   ", failureType='" + failureType + '\'' +
+                   ", failureContent='" + failureContent + '\'' +
+                   ", failureMessage='" + failureMessage + '\'' +
+                   ", systemOut='" + systemOut + '\'' +
+                   ", systemErr='" + systemErr + '\'' +
+                   ", error=" + error +
+                   ", ignored=" + ignored;
         }
     }
 
