@@ -96,7 +96,7 @@
               <name>uriTransports</name>
               <association xml.itemsStyle="flat">
                 <type>URITransport</type>
-                <multiplicity>1</multiplicity>
+                <multiplicity>*</multiplicity>
               </association>
             </field>            
          </fields>
