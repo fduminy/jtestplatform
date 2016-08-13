@@ -26,7 +26,6 @@ package org.jtestplatform.cloud.domain.libvirt;
 
 import org.dom4j.DocumentException;
 import org.jtestplatform.cloud.configuration.Platform;
-import org.jtestplatform.cloud.domain.DomainConfig;
 import org.jtestplatform.cloud.domain.DomainException;
 import org.libvirt.Connect;
 import org.libvirt.LibvirtException;
@@ -104,62 +103,6 @@ public class LibVirtModelFacade {
             throw new DomainException(e);
         }
         return writer.toString();
-    }
-
-    public static String generateDomain(DomainConfig config, String macAddress, String networkName) {
-        Platform platform = config.getPlatform(); //TODO use cpu and wordSize properties
-        StringBuilder sb = new StringBuilder(4096);
-
-        sb.append("<domain type='kvm' id='1'>");
-        sb.append("  <name>").append(config.getDomainName()).append("</name>");
-        sb.append("  <memory>").append(platform.getMemory()).append("</memory>");
-        sb.append("  <currentMemory>").append(platform.getMemory()).append("</currentMemory>");
-        sb.append("  <vcpu>").append(platform.getNbCores()).append("</vcpu>");
-        sb.append("  <os>");
-        sb.append("    <type arch='x86_64' machine='pc-0.11'>hvm</type>");
-        sb.append("    <boot dev='cdrom'/>                                   ");
-        sb.append("  </os>                                                   ");
-        sb.append("  <features>                                              ");
-        sb.append("    <acpi/>                                               ");
-        sb.append("    <apic/>                                               ");
-        sb.append("    <pae/>                                                ");
-        sb.append("  </features>                                             ");
-        sb.append("  <clock offset='utc'/>                                   ");
-        sb.append("  <on_poweroff>destroy</on_poweroff>                      ");
-        sb.append("  <on_reboot>restart</on_reboot>                          ");
-        sb.append("  <on_crash>restart</on_crash>                            ");
-        sb.append("  <devices>                                               ");
-        sb.append("    <emulator>/usr/bin/kvm</emulator>                     ");
-        sb.append("    <disk type='file' device='cdrom'>                     ");
-        sb.append("      <source file='").append(platform.getCdrom()).append("'/>");
-        sb.append("      <target dev='hdc' bus='ide'/>");
-        sb.append("      <readonly/>");
-        sb.append("    </disk>");
-
-        sb.append("    <interface type='network'>");
-        sb.append("      <mac address='").append(macAddress).append("'/>");
-        sb.append("      <source network='").append(networkName).append("'/>");
-        sb.append("      <target dev='vnet0'/>");
-        sb.append("    </interface>");
-
-        sb.append("    <serial type='pty'>");
-        sb.append("      <source path='/dev/pts/7'/>");
-        sb.append("      <target port='0'/>");
-        sb.append("    </serial>");
-        sb.append("    <console type='pty' tty='/dev/pts/7'>");
-        sb.append("      <source path='/dev/pts/7'/>");
-        sb.append("      <target port='0'/>");
-        sb.append("    </console>");
-        sb.append("    <input type='mouse' bus='ps2'/>");
-        sb.append("    <graphics type='vnc' port='5900' autoport='yes' keymap='fr'/>");
-        sb.append("    <sound model='es1370'/>");
-        sb.append("    <video>");
-        sb.append("      <model type='cirrus' vram='9216' heads='1'/>");
-        sb.append("    </video>");
-        sb.append("  </devices>");
-        sb.append("</domain>");
-
-        return sb.toString();
     }
 
     public static String toHexString(int valueIndex, int hexadecimalSize) throws DomainException {

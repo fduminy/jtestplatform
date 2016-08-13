@@ -59,6 +59,7 @@ import static java.lang.Integer.MAX_VALUE;
  */
 public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
     private static final Logger LOGGER = LoggerFactory.getLogger(LibVirtDomainFactory.class);
+    private static final DomainXMLBuilder DOMAIN_XML_BUILDER = new DomainXMLBuilder();
 
     private static final String NETWORK_NAME = "default";
     static final String DOMAIN_NAME_PREFIX = "JTestPlatform_";
@@ -224,7 +225,7 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
                 }
 
                 String macAddress = findUniqueMacAddress(domains);
-                String xml = LibVirtModelFacade.generateDomain(config, macAddress, NETWORK_NAME);
+                String xml = DOMAIN_XML_BUILDER.build(config, macAddress, NETWORK_NAME);
                 return connect.domainDefineXML(xml);
             }
         } catch (LibvirtException e) {

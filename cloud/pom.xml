@@ -93,6 +93,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>stringtemplate</artifactId>
+            <version>4.0.2</version>
+        </dependency>
+        <dependency>
             <groupId>jtestplatform</groupId>
             <artifactId>jtestplatform-common</artifactId>
             <version>0.0.1-SNAPSHOT</version>
