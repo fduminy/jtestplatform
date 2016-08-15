@@ -24,6 +24,7 @@
  */
 package org.jtestplatform.cloud.domain.libvirt;
 
+import com.google.code.tempusfugit.temporal.Condition;
 import com.google.code.tempusfugit.temporal.Sleeper;
 import com.google.code.tempusfugit.temporal.ThreadSleep;
 import com.google.code.tempusfugit.temporal.Timeout;
@@ -33,6 +34,7 @@ import org.jtestplatform.cloud.domain.DomainConfig;
 import org.jtestplatform.cloud.domain.DomainException;
 import org.jtestplatform.common.ConfigUtils;
 import org.libvirt.Connect;
+import org.libvirt.DomainInfo;
 import org.libvirt.DomainInfo.DomainState;
 import org.libvirt.LibvirtException;
 
@@ -41,6 +43,7 @@ import java.util.concurrent.TimeoutException;
 import static com.google.code.tempusfugit.temporal.Duration.minutes;
 import static com.google.code.tempusfugit.temporal.Duration.seconds;
 import static com.google.code.tempusfugit.temporal.Timeout.timeout;
+import static com.google.code.tempusfugit.temporal.WaitFor.waitOrTimeout;
 
 /**
  * Implementation for a {@link org.jtestplatform.cloud.domain.Domain} based on <a href="http://www.libvirt.org/">libvirt</a>.
@@ -54,13 +57,16 @@ class LibVirtDomain implements Domain {
      * Configuration of machine to run with libvirt.
      */
     private final DomainConfig config;
+    private final NetworkConfig networkConfig;
 
     private final LibVirtDomainFactory factory;
     private final Connection connection;
 
     private org.libvirt.Domain domain;
 
+    private final IpAddressFinder ipAddressFinder;
     private String ipAddress;
+    private DomainBuilder domainBuilder;
 
     /**
      *
@@ -69,11 +75,16 @@ class LibVirtDomain implements Domain {
      * @param connection The connection giving the underlying engine URI.
      * @throws DomainException
      */
-    LibVirtDomain(DomainConfig config, LibVirtDomainFactory factory, Connection connection) throws DomainException {
+    LibVirtDomain(DomainConfig config, LibVirtDomainFactory factory, Connection connection,
+                  IpAddressFinder ipAddressFinder,
+                  DomainBuilder domainBuilder, NetworkConfig networkConfig) throws DomainException {
         this.config = config;
+        this.networkConfig = networkConfig;
         this.factory = factory;
         this.connection = connection;
+        this.ipAddressFinder = ipAddressFinder;
 
+        this.domainBuilder = domainBuilder;
         if (ConfigUtils.isBlank(connection.getUri())) {
             throw new DomainException("connection's URI not specified");
         }
@@ -84,23 +95,27 @@ class LibVirtDomain implements Domain {
      * @throws DomainException
      */
     @Override
-    public synchronized String start() throws DomainException {
-        return factory.execute(connection, new ConnectManager.Command<String>() {
+    public synchronized void start() throws DomainException {
+        factory.execute(connection, new ConnectManager.Command<Void>() {
             @Override
-            public String execute(Connect connect) throws Exception {
-                factory.ensureNetworkExist(connect);
+            public Void execute(Connect connect) throws Exception {
+                //                factory.ensureNetworkExist(connect);
 
                 if (!isAlive()) {
                     ipAddress = null;
                     if (domain != null) {
                         domain.free();
                     }
-                    domain = factory.defineDomain(connect, config);
+                    domain = domainBuilder.defineDomain(connect, config, networkConfig);
                     if (!isAlive()) {
-                        ipAddress = factory.start(domain);
+                        try {
+                            domain.create();
+                        } catch (LibvirtException e) {
+                            throw new DomainException(e);
+                        }
                     }
                 }
-                return ipAddress;
+                return null;
             }
         });
     }
@@ -115,7 +130,21 @@ class LibVirtDomain implements Domain {
             Timeout timeout = timeout(minutes(1));
             Sleeper sleeper = new ThreadSleep(seconds(1));
             try {
-                factory.stop(domain, timeout, sleeper);
+                domain.destroy();
+
+                waitOrTimeout(new Condition() {
+                    @Override
+                    public boolean isSatisfied() {
+                        try {
+                            DomainInfo info = domain.getInfo();
+                            return (info.state == DomainState.VIR_DOMAIN_SHUTOFF);
+                        } catch (LibvirtException e) {
+                            throw new RuntimeException("Can't get domain information", e);
+                        }
+                    }
+                }, timeout, sleeper);
+
+                domain.undefine();
                 domain.free();
                 closeConnection();
             } catch (LibvirtException e) {

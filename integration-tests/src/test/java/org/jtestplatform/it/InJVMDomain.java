@@ -53,7 +53,7 @@ class InJVMDomain<T extends InJVMTransportChannel> implements Domain {
     }
 
     @Override
-    public String start() throws DomainException {
+    public void start() throws DomainException {
         if (!isAlive()) {
             running.set(true);
             try {
@@ -62,8 +62,6 @@ class InJVMDomain<T extends InJVMTransportChannel> implements Domain {
                 throw new DomainException(e);
             }
         }
-
-        return getIPAddress();
     }
 
     @Override

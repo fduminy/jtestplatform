@@ -1,56 +1,53 @@
 /**
  * JTestPlatform is a client/server framework for testing any JVM
  * implementation.
- *
+ * <p>
  * Copyright (C) 2008-2016  Fabien DUMINY (fduminy at jnode dot org)
- *
+ * <p>
  * JTestPlatform is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3
  * of the License, or (at your option) any later version.
- *
+ * <p>
  * JTestPlatform is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
  * USA.
  */
-package org.jtestplatform.cloud.domain;
+package org.jtestplatform.cloud.domain.libvirt;
+
+import org.jtestplatform.cloud.domain.DomainException;
+import org.libvirt.Domain;
+import org.libvirt.LibvirtException;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static java.lang.Integer.MAX_VALUE;
 
 /**
- * Interface with a domain.
- *
  * @author Fabien DUMINY (fduminy at jnode dot org)
- *
  */
-public interface Domain {
+class UniqueDomainNameFinder extends UniqueValueFinder {
+
+    static final String DOMAIN_NAME_PREFIX = "JTestPlatform_";
 
     /**
-     * Start the VM.
+     * Automatically define the domain name. It must be unique for the connection.
+     * @throws LibvirtException
      * @throws DomainException
      */
-    void start() throws DomainException;
+    String findUniqueDomainName(List<Domain> domains) throws LibvirtException, DomainException {
+        List<String> domainNames = new ArrayList<String>(domains.size());
+        for (Domain domain : domains) {
+            domainNames.add(domain.getName());
+        }
 
-    /**
-     * Stop the VM.
-     * @throws DomainException
-     */
-    void stop() throws DomainException;
-
-    /**
-     * Checks if the VM is alive.
-     * @return true if the VM is alive.
-     * @throws DomainException
-     */
-    boolean isAlive() throws DomainException;
-
-    /**
-     * Get the IP address of the domain.
-     * @return The IP address of the domain.
-     */
-    String getIPAddress();
+        return findUniqueValue(domainNames, "domain name", DOMAIN_NAME_PREFIX, 0, MAX_VALUE, 8);
+    }
 }

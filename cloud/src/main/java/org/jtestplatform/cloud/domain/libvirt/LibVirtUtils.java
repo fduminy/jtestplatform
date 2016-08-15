@@ -1,56 +1,53 @@
 /**
  * JTestPlatform is a client/server framework for testing any JVM
  * implementation.
- *
+ * <p>
  * Copyright (C) 2008-2016  Fabien DUMINY (fduminy at jnode dot org)
- *
+ * <p>
  * JTestPlatform is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3
  * of the License, or (at your option) any later version.
- *
+ * <p>
  * JTestPlatform is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
  * USA.
  */
-package org.jtestplatform.cloud.domain;
+/**
+ *
+ */
+package org.jtestplatform.cloud.domain.libvirt;
+
+import org.jtestplatform.cloud.domain.DomainException;
 
 /**
- * Interface with a domain.
- *
  * @author Fabien DUMINY (fduminy at jnode dot org)
  *
  */
-public interface Domain {
+class LibVirtUtils {
+    static final boolean STRICT = false; // when set to true, some tags throws an exception
 
-    /**
-     * Start the VM.
-     * @throws DomainException
-     */
-    void start() throws DomainException;
+    private LibVirtUtils() {
+    }
 
-    /**
-     * Stop the VM.
-     * @throws DomainException
-     */
-    void stop() throws DomainException;
+    static String toHexString(int valueIndex, int hexadecimalSize) throws DomainException {
+        String result = Integer.toHexString(valueIndex);
+        if (result.length() > hexadecimalSize) {
+            throw new DomainException(
+                "unable convert to hexadecimal with a maximum of " + hexadecimalSize + " characters");
+        }
 
-    /**
-     * Checks if the VM is alive.
-     * @return true if the VM is alive.
-     * @throws DomainException
-     */
-    boolean isAlive() throws DomainException;
-
-    /**
-     * Get the IP address of the domain.
-     * @return The IP address of the domain.
-     */
-    String getIPAddress();
+        if (result.length() < hexadecimalSize) {
+            while (result.length() != hexadecimalSize) {
+                result = '0' + result;
+            }
+        }
+        return result;
+    }
 }
