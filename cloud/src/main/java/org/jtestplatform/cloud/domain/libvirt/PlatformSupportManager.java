@@ -27,7 +27,6 @@ import org.libvirt.Connect;
 import org.libvirt.LibvirtException;
 import org.libvirt.model.capabilities.Arch;
 import org.libvirt.model.capabilities.Capabilities;
-import org.libvirt.model.capabilities.Domain;
 import org.libvirt.model.capabilities.Guest;
 import org.libvirt.model.capabilities.io.dom4j.CapabilitiesDom4jReader;
 import org.slf4j.Logger;
@@ -64,6 +63,7 @@ class PlatformSupportManager {
             // FIXME when STRICT is set to true the tag 'uuid' throws an exception
             Capabilities capabilities = new CapabilitiesDom4jReader().read(new StringReader(capabilitiesXML), STRICT);
 
+            support = false;
             outloop:
             for (Guest guest : capabilities.getGuests()) {
                 Arch arch = guest.getArch();
@@ -71,14 +71,16 @@ class PlatformSupportManager {
                 boolean supportCPU = arch.getName().equals(platform.getCpu());
                 boolean supportWordSize = (arch.getWordSize() == platform.getWordSize());
                 if (supportCPU && supportWordSize) {
-                    for (Domain domain : guest.getArch().getDomains()) {
-
-                        boolean supportNbCores = (platform.getNbCores() <= connect.getMaxVcpus(domain.getType()));
-                        if (supportNbCores) {
-                            support = true;
-                            break outloop;
-                        }
-                    }
+                    support = true;
+                    break;
+                    // FIXME add support for nbCores (using virConnectGetMaxVcpus(virConnectGetType) which doesn't seem accessible from java binding)
+                    //                    for (Domain domain : guest.getArch().getDomains()) {
+                    //                        boolean supportNbCores = (platform.getNbCores() <= connect.getMaxVcpus(domain.getType()));
+                    //                        if (supportNbCores) {
+                    //                            support = true;
+                    //                            break outloop;
+                    //                        }
+                    //                    }
                 }
             }
         }
