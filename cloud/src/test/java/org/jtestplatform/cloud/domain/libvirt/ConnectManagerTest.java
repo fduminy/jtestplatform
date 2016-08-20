@@ -92,9 +92,11 @@ public class ConnectManagerTest {
         thrown.expectMessage(exception.getMessage());
         thrown.expectCause(is(exception));
 
-        manager.execute(connection, command);
-
-        verify(connect).close();
+        try {
+            manager.execute(connection, command);
+        } finally {
+            verify(connect).close();
+        }
     }
 
     @Test
@@ -105,7 +107,5 @@ public class ConnectManagerTest {
         thrown.expectCause(is(exception));
 
         manager.execute(connection, command);
-
-        verify(connect).close();
     }
 }
