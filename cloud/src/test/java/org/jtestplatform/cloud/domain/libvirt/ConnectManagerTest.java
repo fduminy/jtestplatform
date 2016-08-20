@@ -51,7 +51,7 @@ import static org.powermock.api.mockito.PowerMockito.whenNew;
 @PrepareForTest(ConnectManager.class)
 public class ConnectManagerTest {
     @Rule
-    private ExpectedException thrown = ExpectedException.none();
+    public ExpectedException thrown = ExpectedException.none();
 
     @Mock
     private Command<String> command;

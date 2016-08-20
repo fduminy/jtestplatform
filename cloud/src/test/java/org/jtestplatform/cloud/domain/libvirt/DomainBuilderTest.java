@@ -9,13 +9,7 @@ import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
 import org.libvirt.Connect;
 import org.libvirt.Domain;
-import org.libvirt.LibvirtException;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
-
-import java.util.Arrays;
-import java.util.List;
 
 import static org.mockito.Mockito.when;
 
@@ -23,14 +17,11 @@ import static org.mockito.Mockito.when;
  * @author Fabien DUMINY (fduminy at jnode dot org)
  */
 @RunWith(Theories.class)
-public class DomainBuilderTest {
+public class DomainBuilderTest extends AbstractDomainTest {
     private static final String MAC_ADDRESS = "12:34:56:78";
     private static final String NETWORK_NAME = "networkName";
     private static final String DOMAIN_XML = "domainXML";
     private static final String EXPECTED_DOMAIN_NAME = "domain5";
-
-    @Rule
-    public MockitoRule mockitoRule = MockitoJUnit.rule();
 
     @Rule
     public JUnitSoftAssertions soft = new JUnitSoftAssertions();
@@ -44,29 +35,14 @@ public class DomainBuilderTest {
     @Mock
     private Connect connect;
     @Mock
-    private Domain domain1;
-    @Mock
-    private Domain domain2;
-    @Mock
-    private Domain domain3;
-    @Mock
-    private Domain domain4;
-    @Mock
     private Domain expectedDomain;
     @Mock
     private NetworkConfig networkConfig;
 
     private DomainConfig domainConfig;
-    private List<Domain> domains;
 
     @Before
     public void setUp() throws Exception {
-        mockDomain(domain1, 1);
-        mockDomain(domain2, 2);
-        mockDomain(domain3, 3);
-        mockDomain(domain4, 4);
-
-        domains = Arrays.asList(domain1, domain2, domain3, domain4);
         domainConfig = new DomainConfig();
 
         when(connect.listDefinedDomains()).thenReturn(new String[] { "domain1", "domain2" });
@@ -94,11 +70,6 @@ public class DomainBuilderTest {
 
         soft.assertThat(domain).as("domain").isSameAs(expectedDomain);
         soft.assertThat(domainConfig.getDomainName()).as("domainConfig.domainName").isEqualTo(EXPECTED_DOMAIN_NAME);
-    }
-
-    private static void mockDomain(Domain domain, int id) throws LibvirtException {
-        when(domain.getID()).thenReturn(id);
-        when(domain.getName()).thenReturn("domain" + id);
     }
 
 }
