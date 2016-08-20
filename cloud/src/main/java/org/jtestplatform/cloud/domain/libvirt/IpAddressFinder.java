@@ -25,7 +25,6 @@ import org.dom4j.DocumentException;
 import org.jtestplatform.cloud.domain.DomainException;
 import org.libvirt.Domain;
 import org.libvirt.LibvirtException;
-import org.libvirt.Network;
 import org.libvirt.model.network.Host;
 import org.libvirt.model.network.io.dom4j.NetworkDom4jReader;
 import org.slf4j.Logger;
@@ -49,6 +48,7 @@ class IpAddressFinder {
     }
 
     String findIpAddress(Domain domain) throws DomainException {
+/*
         String ipAddress = null;
         Network network = null;
         try {
@@ -79,6 +79,8 @@ class IpAddressFinder {
         }
 
         return ipAddress;
+*/
+        throw new UnsupportedOperationException(""); //FIXME review the algorithm or remove the class
     }
 
     private static String getIPAddress(org.libvirt.Network network, String macAddress)
