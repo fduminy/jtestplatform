@@ -26,14 +26,10 @@ import org.jtestplatform.cloud.domain.DomainConfig;
 import org.jtestplatform.cloud.domain.DomainException;
 import org.junit.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.jtestplatform.cloud.domain.libvirt.DomainXMLBuilder.BEGIN_TAG;
-import static org.jtestplatform.cloud.domain.libvirt.DomainXMLBuilder.END_TAG;
-
 /**
  * @author Fabien DUMINY (fduminy at jnode dot org)
  */
-public class DomainXMLBuilderTest {
+public class DomainXMLBuilderTest extends AbstractXMLBuilderTest {
     @Test
     public void build_domain1() throws DomainException {
         build("domain1", "cdrom1", 12, 34, "12:34", "network1");
@@ -55,11 +51,9 @@ public class DomainXMLBuilderTest {
         config.setDomainName(domainName);
         DomainXMLBuilder builder = new DomainXMLBuilder();
 
-        String actual = builder.build(config, macAddress, networkName);
+        String actualXML = builder.build(config, macAddress, networkName);
 
-        assertThat(actual).isNotNull().isNotEmpty().doesNotContain(Character.toString(BEGIN_TAG))
-                          .doesNotContain(Character.toString(END_TAG));
-        assertThat(actual)
-            .contains(domainName, cdrom, Long.toString(memory), Integer.toString(nbCores), macAddress, networkName);
+        assertXMLContains(actualXML, domainName, cdrom, Long.toString(memory), Integer.toString(nbCores), macAddress,
+                          networkName);
     }
 }
