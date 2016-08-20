@@ -28,8 +28,6 @@ import org.libvirt.LibvirtException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static java.lang.Integer.MAX_VALUE;
-
 /**
  * @author Fabien DUMINY (fduminy at jnode dot org)
  */
@@ -48,6 +46,6 @@ class UniqueDomainNameFinder extends UniqueValueFinder {
             domainNames.add(domain.getName());
         }
 
-        return findUniqueValue(domainNames, "domain name", DOMAIN_NAME_PREFIX, 0, MAX_VALUE, 8);
+        return findUniqueValue(domainNames, "domain name", DOMAIN_NAME_PREFIX, 0, 0xFF, 2);
     }
 }
