@@ -59,6 +59,7 @@ public class DomainXMLBuilderTest {
 
         assertThat(actual).isNotNull().isNotEmpty().doesNotContain(Character.toString(BEGIN_TAG))
                           .doesNotContain(Character.toString(END_TAG));
-        assertThat(actual).contains(macAddress).contains(networkName);
+        assertThat(actual)
+            .contains(domainName, cdrom, Long.toString(memory), Integer.toString(nbCores), macAddress, networkName);
     }
 }
