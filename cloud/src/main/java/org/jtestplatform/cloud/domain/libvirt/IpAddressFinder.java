@@ -23,12 +23,9 @@ package org.jtestplatform.cloud.domain.libvirt;
 
 import org.dom4j.DocumentException;
 import org.jtestplatform.cloud.domain.DomainException;
-import org.libvirt.Domain;
 import org.libvirt.LibvirtException;
 import org.libvirt.model.network.Host;
 import org.libvirt.model.network.io.dom4j.NetworkDom4jReader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -39,15 +36,10 @@ import static org.jtestplatform.cloud.domain.libvirt.LibVirtUtils.STRICT;
  * @author Fabien DUMINY (fduminy at jnode dot org)
  */
 class IpAddressFinder {
-    private static final Logger LOGGER = LoggerFactory.getLogger(UniqueValueFinder.class);
-
-    private final NetworkConfig networkConfig;
-
-    IpAddressFinder(NetworkConfig networkConfig) {
-        this.networkConfig = networkConfig;
+    IpAddressFinder() {
     }
 
-    String findIpAddress(Domain domain) throws DomainException {
+    String findIpAddress(NetworkConfig networkConfig) throws DomainException {
 /*
         String ipAddress = null;
         Network network = null;

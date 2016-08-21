@@ -64,6 +64,6 @@ public class DomainConfig {
 
     @Override
     public int hashCode() {
-        return domainName.hashCode();
+        return (domainName == null) ? 0 : domainName.hashCode();
     }
 }

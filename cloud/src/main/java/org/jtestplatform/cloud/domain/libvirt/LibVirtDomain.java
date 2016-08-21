@@ -62,7 +62,7 @@ class LibVirtDomain implements Domain {
     private final LibVirtDomainFactory factory;
     private final Connection connection;
 
-    private org.libvirt.Domain domain;
+    org.libvirt.Domain domain;
 
     private final IpAddressFinder ipAddressFinder;
     private String ipAddress;
@@ -114,6 +114,7 @@ class LibVirtDomain implements Domain {
                             throw new DomainException(e);
                         }
                     }
+                    ipAddress = ipAddressFinder.findIpAddress(networkConfig);
                 }
                 return null;
             }

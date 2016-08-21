@@ -60,7 +60,7 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
                                                                   MIN_SUBNET_IP_ADDRESS, MAX_SUBNET_IP_ADDRESS);
     private final NetworkXMLBuilder networkXMLBuilder = new NetworkXMLBuilder();
     private final NetworkBuilder networkBuilder = new NetworkBuilder(networkXMLBuilder);
-    private final IpAddressFinder ipAddressFinder = new IpAddressFinder(networkConfig);
+    private final IpAddressFinder ipAddressFinder = new IpAddressFinder();
     private final UniqueMacAddressFinder macAddressFinder = new UniqueMacAddressFinder(networkConfig);
 
     private final DomainXMLBuilder domainXMLBuilder = new DomainXMLBuilder();
