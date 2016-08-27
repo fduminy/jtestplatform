@@ -21,72 +21,70 @@
  */
 package org.jtestplatform.cloud.domain.libvirt;
 
-import org.dom4j.DocumentException;
+import com.google.code.tempusfugit.temporal.Condition;
+import com.google.code.tempusfugit.temporal.Duration;
 import org.jtestplatform.cloud.domain.DomainException;
-import org.libvirt.LibvirtException;
-import org.libvirt.model.network.Host;
-import org.libvirt.model.network.io.dom4j.NetworkDom4jReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.StringReader;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.concurrent.TimeoutException;
 
-import static org.jtestplatform.cloud.domain.libvirt.LibVirtUtils.STRICT;
+import static com.google.code.tempusfugit.temporal.Duration.seconds;
+import static com.google.code.tempusfugit.temporal.Timeout.timeout;
+import static com.google.code.tempusfugit.temporal.WaitFor.waitOrTimeout;
 
 /**
  * @author Fabien DUMINY (fduminy at jnode dot org)
  */
 class IpAddressFinder {
+    private static final Logger LOGGER = LoggerFactory.getLogger(IpAddressFinder.class);
+
     IpAddressFinder() {
     }
 
     String findIpAddress(NetworkConfig networkConfig) throws DomainException {
-/*
-        String ipAddress = null;
-        Network network = null;
-        try {
-            String macAddress = UniqueMacAddressFinder.getMacAddress(domain);
-            if (macAddress == null) {
-                throw new DomainException("unable to get mac address");
-            }
-
-            network = domain.getConnect().networkLookupByName(networkConfig.getNetworkName());
-            ipAddress = getIPAddress(network, macAddress);
-            if (ipAddress == null) {
-                throw new DomainException("unable to get ip address");
-            }
-        } catch (LibvirtException e) {
-            throw new DomainException(e);
-        } catch (IOException e) {
-            throw new DomainException(e);
-        } catch (DocumentException e) {
-            throw new DomainException(e);
-        } finally {
-            if (network != null) {
-                try {
-                    network.free();
-                } catch (LibvirtException e) {
-                    LOGGER.error("failed to free network", e);
-                }
+        for (int i = networkConfig.getMinSubNetIpAddress(); i <= networkConfig.getMaxSubNetIpAddress(); i++) {
+            String ipAddress = networkConfig.getBaseIPAddress() + i;
+            if (ping(ipAddress, seconds(10))) {
+                return ipAddress;
             }
         }
-
-        return ipAddress;
-*/
-        throw new UnsupportedOperationException(""); //FIXME review the algorithm or remove the class
+        return null;
     }
 
-    private static String getIPAddress(org.libvirt.Network network, String macAddress)
-        throws IOException, DocumentException, LibvirtException {
-        String ipAddress = null;
-        // FIXME when STRICT is set to true, the tag 'nat' throws an exception
-        org.libvirt.model.network.Network net = new NetworkDom4jReader()
-            .read(new StringReader(network.getXMLDesc(0)), STRICT);
-        for (Host host : net.getIp().getDhcp().getHost()) {
-            if (macAddress.equals(host.getMac())) {
-                ipAddress = host.getIp();
-                break;
-            }
+    boolean ping(String host, Duration timeout) throws DomainException {
+        try {
+            waitReachableOrTimeout(host, timeout);
+            return true;
+        } catch (TimeoutException e) {
+            LOGGER.error(e.getMessage(), e);
+            return false;
         }
-        return ipAddress;
+    }
+
+    static void waitReachableOrTimeout(String ip, Duration timeout) throws TimeoutException, DomainException {
+        try {
+            waitOrTimeout(reachable(InetAddress.getByName(ip), seconds(1)), timeout(timeout));
+        } catch (InterruptedException e) {
+            throw new DomainException(e.getMessage(), e);
+        } catch (UnknownHostException e) {
+            throw new DomainException(e.getMessage(), e);
+        }
+    }
+
+    private static Condition reachable(final InetAddress address, final Duration timeOut) {
+        return new Condition() {
+            @Override
+            public boolean isSatisfied() {
+                try {
+                    return address.isReachable((int) timeOut.inMillis());
+                } catch (IOException e) {
+                    return false;
+                }
+            }
+        };
     }
 }

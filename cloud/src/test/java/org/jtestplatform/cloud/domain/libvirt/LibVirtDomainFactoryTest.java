@@ -21,8 +21,6 @@
  */
 package org.jtestplatform.cloud.domain.libvirt;
 
-import com.google.code.tempusfugit.temporal.Condition;
-import com.google.code.tempusfugit.temporal.Duration;
 import org.jtestplatform.cloud.configuration.Connection;
 import org.jtestplatform.cloud.configuration.Platform;
 import org.jtestplatform.cloud.domain.Domain;
@@ -39,12 +37,9 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.net.InetAddress;
 
 import static com.google.code.tempusfugit.temporal.Duration.minutes;
-import static com.google.code.tempusfugit.temporal.Duration.seconds;
-import static com.google.code.tempusfugit.temporal.Timeout.timeout;
-import static com.google.code.tempusfugit.temporal.WaitFor.waitOrTimeout;
+import static org.jtestplatform.cloud.domain.libvirt.IpAddressFinder.waitReachableOrTimeout;
 import static org.jtestplatform.cloud.domain.libvirt.UniqueDomainNameFinder.DOMAIN_NAME_PREFIX;
 import static org.junit.Assert.*;
 
@@ -118,7 +113,7 @@ public class LibVirtDomainFactoryTest {
             String ip = domain.getIPAddress();
             assertFalse("domain's ip must not be null, empty or blank", ConfigUtils.isBlank(ip));
 
-            waitOrTimeout(reachable(InetAddress.getByName(ip), seconds(1)), timeout(minutes(1)));
+            waitReachableOrTimeout(ip, minutes(1));
         } catch (Exception e) {
             LOGGER.error("error in domain", e);
         } finally {
@@ -149,18 +144,5 @@ public class LibVirtDomainFactoryTest {
         cfg.setDomainName(null); // null => will be defined automatically
 
         return cfg;
-    }
-
-    private static Condition reachable(final InetAddress address, final Duration timeOut) {
-        return new Condition() {
-            @Override
-            public boolean isSatisfied() {
-                try {
-                    return address.isReachable((int) timeOut.inMillis());
-                } catch (IOException e) {
-                    return false;
-                }
-            }
-        };
     }
 }
