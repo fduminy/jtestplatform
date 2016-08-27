@@ -22,18 +22,20 @@
 package org.jtestplatform.junitxmlreport;
 
 import org.apache.commons.io.IOUtils;
-import org.custommonkey.xmlunit.Diff;
-import org.custommonkey.xmlunit.XMLUnit;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.xml.sax.SAXException;
+import org.xmlunit.builder.DiffBuilder;
+import org.xmlunit.diff.DefaultNodeMatcher;
+import org.xmlunit.diff.Diff;
+import org.xmlunit.diff.ElementSelectors;
 
 import java.io.*;
 
 import static org.apache.commons.lang3.StringUtils.strip;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author Fabien DUMINY (fduminy at jnode dot org)
@@ -56,12 +58,13 @@ public class JUnitXMLReportWriterTest {
     }
 
     public static void compareXML(String expectedXML, String actualXML) throws SAXException, IOException {
-        XMLUnit.setIgnoreWhitespace(true);
-        XMLUnit.setIgnoreAttributeOrder(true);
-        Diff xmlDiff = new Diff(expectedXML, actualXML);
+        Diff xmlDiff = DiffBuilder.compare(expectedXML).withTest(actualXML)
+                                  .withNodeMatcher(new DefaultNodeMatcher(ElementSelectors.byName))
+                                  .ignoreWhitespace().normalizeWhitespace()
+                                  .checkForSimilar()
+                                  .build();
         try {
-            assertTrue("pieces of XML are similar " + xmlDiff, xmlDiff.similar());
-            assertTrue("but are they identical? " + xmlDiff, xmlDiff.identical());
+            assertFalse("pieces of XML are not similar\n" + xmlDiff, xmlDiff.hasDifferences());
         } catch (AssertionError ae) {
             System.out.println("--------------- ActualXML ---------------");
             System.out.println(actualXML);

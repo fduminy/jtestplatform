@@ -34,6 +34,7 @@
         <project.root>${basedir}</project.root>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <libvirt.version>0.5.1</libvirt.version>
+        <xmlunit.version>2.2.1</xmlunit.version>
     </properties>
 
     <repositories>
@@ -132,9 +133,14 @@
                 <version>3.3.2</version>
             </dependency>
             <dependency>
-                <groupId>xmlunit</groupId>
-                <artifactId>xmlunit</artifactId>
-                <version>1.6</version>
+                <groupId>org.xmlunit</groupId>
+                <artifactId>xmlunit-core</artifactId>
+                <version>${xmlunit.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.xmlunit</groupId>
+                <artifactId>xmlunit-matchers</artifactId>
+                <version>${xmlunit.version}</version>
             </dependency>
             <dependency>
                 <groupId>javax.xml.bind</groupId>

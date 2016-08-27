@@ -20,7 +20,7 @@
         <testcase classname="org.jtestplatform.server.MauveTestFrameworkTest$MauveTestClassWithError" time="0.003">
             <error message="an unexpected error" type="java.lang.NullPointerException">java.lang.NullPointerException:
                 an unexpected error
-                at org.jtestplatform.server.TestFrameworkTest.&lt;clinit&gt;(TestFrameworkTest.java:45)
+                at org.jtestplatform.server.TestFrameworkTest.&lt;clinit&gt;(TestFrameworkTest.java:44)
             </error>
             <system-out>system out
             </system-out>
@@ -41,7 +41,7 @@
                   name="testThatThrowsAnError">
             <error message="an unexpected error" type="java.lang.NullPointerException">java.lang.NullPointerException:
                 an unexpected error
-                at org.jtestplatform.server.TestFrameworkTest.&lt;clinit&gt;(TestFrameworkTest.java:45)
+                at org.jtestplatform.server.TestFrameworkTest.&lt;clinit&gt;(TestFrameworkTest.java:44)
             </error>
             <system-out>system out
             </system-out>
@@ -52,7 +52,7 @@
                   name="aTestThrowingAnError">
             <error message="an unexpected error" type="java.lang.NullPointerException">java.lang.NullPointerException:
                 an unexpected error
-                at org.jtestplatform.server.TestFrameworkTest.&lt;clinit&gt;(TestFrameworkTest.java:45)
+                at org.jtestplatform.server.TestFrameworkTest.&lt;clinit&gt;(TestFrameworkTest.java:44)
             </error>
             <system-out>system out
             </system-out>
@@ -103,7 +103,7 @@
                   name="aTestThrowingAnError">
             <error message="an unexpected error" type="java.lang.NullPointerException">java.lang.NullPointerException:
                 an unexpected error
-                at org.jtestplatform.server.TestFrameworkTest.&lt;clinit&gt;(TestFrameworkTest.java:45)
+                at org.jtestplatform.server.TestFrameworkTest.&lt;clinit&gt;(TestFrameworkTest.java:44)
             </error>
             <system-out>system out
             </system-out>

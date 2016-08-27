@@ -49,8 +49,8 @@ import static org.junit.Assert.assertTrue;
  */
 @RunWith(Enclosed.class)
 public class MultiThreadLoadBalancerTest {
-    private static final int NB_THREADS = 100;
-    private static final int NB_REPEATS = 100;
+    private static final int NB_THREADS = 10;
+    private static final int NB_REPEATS = 10;
     private static final int NB_CALLS = NB_REPEATS * NB_THREADS;
 
     public static class ClearMethodTest {
