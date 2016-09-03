@@ -38,6 +38,7 @@ import org.reflections.Reflections;
 
 import java.util.*;
 
+import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.jtestplatform.common.transport.TransportHelper.FALSE;
@@ -258,17 +259,16 @@ public class TransportHelperTest {
         Collection<String> actualValue = TransportHelper.receiveList(transport);
 
         // verify
-        assertThat(actualValue).isEqualTo(Arrays.asList("A"));
+        assertThat(actualValue).containsExactly("A");
     }
 
     @Test
     public void testSendList() throws TransportException {
         // prepare
         Transport transport = mock(Transport.class);
-        Collection<String> actualValue = Arrays.asList("A");
 
         // test
-        TransportHelper.sendList(transport, actualValue);
+        TransportHelper.sendList(transport, singleton("A"));
 
         // verify
         InOrder inOrder = Mockito.inOrder(transport);

@@ -180,7 +180,7 @@ public class MauveTestFramework implements TestFramework {
 
         @Override
         public void debug(String s, boolean b) {
-            debugLog.append(s + ' ' + b);
+            debugLog.append(s).append(' ').append(b);
         }
 
         @Override
@@ -190,7 +190,7 @@ public class MauveTestFramework implements TestFramework {
 
         @Override
         public void debug(Object[] objects, String s) {
-            debugLog.append(objects + " " + s);
+            debugLog.append(Arrays.toString(objects)).append(' ').append(s);
         }
     }
 
