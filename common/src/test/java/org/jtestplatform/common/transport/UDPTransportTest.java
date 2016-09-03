@@ -21,8 +21,10 @@
  */
 package org.jtestplatform.common.transport;
 
+import org.junit.Rule;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -33,8 +35,11 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.lang.Math.min;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.jtestplatform.common.transport.UDPTransport.NULL_SIZE;
+import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.assumeTrue;
 import static org.mockito.Mockito.*;
 
 /**
@@ -46,8 +51,12 @@ public class UDPTransportTest {
 
     private static final int SERVER_PORT = 12345;
 
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
+
     @Theory
     public void testSend(StringMessage message) throws IOException, TransportException {
+        assumeFalse(message.corrupted);
         // prepare
         InetAddress serverAddress = InetAddress.getLocalHost();
         InetSocketAddress socketAddress = spy(new InetSocketAddress(serverAddress, SERVER_PORT));
@@ -75,7 +84,20 @@ public class UDPTransportTest {
     }
 
     @Theory
-    public void testReceive(final StringMessage message) throws IOException, TransportException {
+    public void testReceive(StringMessage message) throws IOException, TransportException {
+        assumeFalse(message.corrupted);
+        testReceiveImpl(message);
+    }
+
+    @Theory
+    public void testReceive_corruptedMessage(StringMessage message) throws IOException, TransportException {
+        assumeTrue(message.corrupted);
+        thrown.expect(TransportException.class);
+        thrown.expectMessage("stream corrupted");
+        testReceiveImpl(message);
+    }
+
+    private void testReceiveImpl(final StringMessage message) throws IOException, TransportException {
         // prepare
         final DatagramSocket datagramSocket = mock(DatagramSocket.class);
         InetAddress serverAddress = InetAddress.getLocalHost();
@@ -149,11 +171,15 @@ public class UDPTransportTest {
 
                 byte[] data;
                 if (callNumber == 1) {
+                    // receive the message size
                     data = message.getSizeAsBytes();
                     System.arraycopy(data, 0, packet.getData(), 0, data.length);
+                    packet.setLength(data.length);
                 } else if (callNumber == 2) {
+                    // receive the message content
                     data = message.value.getBytes();
-                    System.arraycopy(data, 0, packet.getData(), 0, data.length);
+                    packet.setLength(min(data.length, packet.getData().length));
+                    System.arraycopy(data, 0, packet.getData(), 0, packet.getLength());
                 }
                 return null;
             }
@@ -169,8 +195,8 @@ public class UDPTransportTest {
     }
 
     public static enum StringMessage {
-        MESSAGE("a value"),
-        NULL_MESSAGE(null) {
+        MESSAGE("a value", false),
+        NULL_MESSAGE(null, false) {
             @Override
             byte[] getSizeAsBytes() {
                 return toBytes(NULL_SIZE);
@@ -181,7 +207,22 @@ public class UDPTransportTest {
                 return 1;
             }
         },
-        EMPTY_MESSAGE("");
+        EMPTY_MESSAGE("", false),
+        NEGATIVE_MESSAGE_SIZE("", true) {
+            @Override byte[] getSizeAsBytes() {
+                return StringMessage.toBytes(-1);
+            }
+        },
+        MESSAGE_SIZE_TOO_BIG("A", true) {
+            @Override byte[] getSizeAsBytes() {
+                return StringMessage.toBytes(this.value.length() + 1);
+            }
+        },
+        MESSAGE_SIZE_CUT("", true) {
+            @Override byte[] getSizeAsBytes() {
+                return new byte[] { 1 }; // 1 byte instead of 4 bytes for size
+            }
+        };
 /*
        //TODO handle case of a big message
         A_BIG_MESSAGE(createBigMessage());
@@ -196,10 +237,12 @@ public class UDPTransportTest {
         }
 */
 
-        private final String value;
+        protected final String value;
+        private final boolean corrupted;
 
-        StringMessage(String value) {
+        StringMessage(String value, boolean corrupted) {
             this.value = value;
+            this.corrupted = corrupted;
         }
 
         byte[] getSizeAsBytes() {

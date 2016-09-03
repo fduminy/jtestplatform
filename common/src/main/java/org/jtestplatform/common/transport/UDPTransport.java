@@ -25,13 +25,14 @@ import java.io.IOException;
 import java.net.*;
 import java.nio.ByteBuffer;
 
+import static java.lang.String.format;
+
 /**
  * @author Fabien DUMINY (fduminy at jnode dot org)
  *
  */
 public class UDPTransport implements Transport {
     static final int NULL_SIZE = Integer.MIN_VALUE;
-    private static final int MAX_SIZE = Integer.MAX_VALUE;
 
     /**
      *  size of an int in bytes.
@@ -97,10 +98,9 @@ public class UDPTransport implements Transport {
 
             String message = null;
             if (size != NULL_SIZE) {
-                if (size > MAX_SIZE) {
+                if (size < 0) {
                     throw new TransportException(
-                        "stream probably corrupted : received more than "
-                        + MAX_SIZE + " bytes (" + size + ")");
+                        format("stream corrupted : received negative message size (%d)", size));
                 }
 
                 message = receiveString(size);
@@ -152,21 +152,26 @@ public class UDPTransport implements Transport {
         socket.send(packet);
     }
 
-    private int receiveInt() throws IOException {
+    private int receiveInt() throws IOException, TransportException {
         return ByteBuffer.wrap(receiveBytes(INT_SIZE)).getInt();
     }
 
-    private String receiveString(int length) throws IOException {
+    private String receiveString(int length) throws IOException, TransportException {
         return new String(receiveBytes(length));
     }
 
-    private byte[] receiveBytes(int length) throws IOException {
+    private byte[] receiveBytes(int length) throws IOException, TransportException {
         byte[] buffer = new byte[length];
         DatagramPacket packet = getDatagramPacket(buffer);
         socket.receive(packet);
         if (address == null) {
             address = packet.getAddress();
             port = packet.getPort();
+        }
+        if (packet.getLength() < buffer.length) {
+            throw new TransportException(
+                format("stream corrupted : expected %d bytes but only %s bytes were received", buffer.length,
+                       packet.getLength()));
         }
         return buffer;
     }
