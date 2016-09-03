@@ -112,9 +112,10 @@ public class TestAllWithoutLibvirt {
         }
 
         assertThat(xmlReportFile).as("xml report file").isNotNull();
-
-        String actualContent = readFile(xmlReportFile.getAbsolutePath(), true);
-        String expectedContent = readResource(expectedContentResource, true);
-        compareXML(expectedContent, actualContent);
+        if (xmlReportFile != null) {
+            String actualContent = readFile(xmlReportFile.getAbsolutePath(), true);
+            String expectedContent = readResource(expectedContentResource, true);
+            compareXML(expectedContent, actualContent);
+        }
     }
 }

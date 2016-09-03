@@ -131,7 +131,7 @@ public class LibVirtDomainFactoryTest {
                 return name.startsWith(DOMAIN_NAME_PREFIX);
             }
         });
-        return files.length;
+        return (files == null) ? 0 : files.length;
     }
 
     private static DomainConfig createDomainConfig() {

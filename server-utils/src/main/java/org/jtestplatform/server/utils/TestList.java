@@ -135,25 +135,27 @@ public class TestList {
                 }
             });
         }
-        for (File f : files) {
-            if (f.isDirectory()) {
-                collectTests(jcl, baseDirectory, testSource, frameworks);
-            } else {
-                List<String> paths = new ArrayList<String>();
-                if (f.getName().endsWith(JAR_EXTENSION)) {
-                    JarResources jarResources = new JarResources();
-                    jarResources.loadJar(new FileInputStream(f));
-                    for (String path : jarResources.getResources().keySet()) {
-                        if (path.endsWith(CLASS_EXTENSION)) {
-                            paths.add(path);
-                        }
-                    }
+        if (files != null) {
+            for (File f : files) {
+                if (f.isDirectory()) {
+                    collectTests(jcl, baseDirectory, testSource, frameworks);
                 } else {
-                    String path = f.getAbsolutePath();
-                    String baseDir = baseDirectory.getAbsolutePath();
-                    path = path.substring(baseDir.length() + 1);
+                    List<String> paths = new ArrayList<String>();
+                    if (f.getName().endsWith(JAR_EXTENSION)) {
+                        JarResources jarResources = new JarResources();
+                        jarResources.loadJar(new FileInputStream(f));
+                        for (String path : jarResources.getResources().keySet()) {
+                            if (path.endsWith(CLASS_EXTENSION)) {
+                                paths.add(path);
+                            }
+                        }
+                    } else {
+                        String path = f.getAbsolutePath();
+                        String baseDir = baseDirectory.getAbsolutePath();
+                        path = path.substring(baseDir.length() + 1);
+                    }
+                    collectTests(jcl, paths, frameworks, testSource);
                 }
-                collectTests(jcl, paths, frameworks, testSource);
             }
         }
     }

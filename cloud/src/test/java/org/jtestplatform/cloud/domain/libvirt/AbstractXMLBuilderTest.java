@@ -31,6 +31,6 @@ import static org.jtestplatform.cloud.domain.libvirt.DomainXMLBuilder.END_TAG;
 abstract class AbstractXMLBuilderTest {
     static void assertXMLContains(String actualXML, String... values) {
         assertThat(actualXML).isNotNull().isNotEmpty().doesNotContain(Character.toString(BEGIN_TAG))
-                             .doesNotContain(Character.toString(END_TAG)).contains(values);
+                             .doesNotContain(Character.toString(END_TAG)).contains((CharSequence[]) values);
     }
 }
