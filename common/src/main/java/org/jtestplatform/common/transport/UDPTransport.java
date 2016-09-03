@@ -24,8 +24,10 @@ package org.jtestplatform.common.transport;
 import java.io.IOException;
 import java.net.*;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 import static java.lang.String.format;
+import static java.nio.ByteOrder.LITTLE_ENDIAN;
 
 /**
  * @author Fabien DUMINY (fduminy at jnode dot org)
@@ -33,6 +35,7 @@ import static java.lang.String.format;
  */
 public class UDPTransport implements Transport {
     static final int NULL_SIZE = Integer.MIN_VALUE;
+    static final ByteOrder BYTE_ORDER = LITTLE_ENDIAN; // let use x86 CPU byte order
 
     /**
      *  size of an int in bytes.
@@ -138,7 +141,7 @@ public class UDPTransport implements Transport {
     }
 
     private void sendInt(int integer) throws IOException {
-        sendBytes(ByteBuffer.allocate(INT_SIZE).putInt(integer).array());
+        sendBytes(ByteBuffer.allocate(INT_SIZE).order(BYTE_ORDER).putInt(integer).array());
     }
 
     private void sendString(String message) throws IOException {
@@ -153,7 +156,7 @@ public class UDPTransport implements Transport {
     }
 
     private int receiveInt() throws IOException, TransportException {
-        return ByteBuffer.wrap(receiveBytes(INT_SIZE)).getInt();
+        return ByteBuffer.wrap(receiveBytes(INT_SIZE)).order(BYTE_ORDER).getInt();
     }
 
     private String receiveString(int length) throws IOException, TransportException {

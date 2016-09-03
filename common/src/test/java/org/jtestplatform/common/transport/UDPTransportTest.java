@@ -35,12 +35,16 @@ import org.mockito.stubbing.Answer;
 import java.io.IOException;
 import java.net.*;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 
 import static java.lang.Math.min;
 import static java.net.InetAddress.getLocalHost;
+import static java.nio.ByteOrder.BIG_ENDIAN;
+import static java.nio.ByteOrder.LITTLE_ENDIAN;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.jtestplatform.common.transport.UDPTransport.BYTE_ORDER;
 import static org.jtestplatform.common.transport.UDPTransport.NULL_SIZE;
 import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
@@ -220,6 +224,11 @@ public class UDPTransportTest {
             @Override byte[] getSizeAsBytes() {
                 return new byte[] { 1 }; // 1 byte instead of 4 bytes for size
             }
+        },
+        WRONG_BYTE_ORDER("A", true) {
+            @Override byte[] getSizeAsBytes() {
+                return toBytes(value.length(), (BYTE_ORDER == BIG_ENDIAN) ? LITTLE_ENDIAN : BIG_ENDIAN);
+            }
         };
 /*
        //TODO handle case of a big message
@@ -244,7 +253,7 @@ public class UDPTransportTest {
         }
 
         byte[] getSizeAsBytes() {
-            return toBytes(value.length());
+            return toBytes(value.length(), BYTE_ORDER);
         }
 
         int getNbPackets() {
@@ -252,7 +261,11 @@ public class UDPTransportTest {
         }
 
         private static byte[] toBytes(int value) {
-            return ByteBuffer.allocate(4).putInt(value).array();
+            return toBytes(value, BYTE_ORDER);
+        }
+
+        private static byte[] toBytes(int value, ByteOrder byteOrder) {
+            return ByteBuffer.allocate(4).order(byteOrder).putInt(value).array();
         }
     }
 
