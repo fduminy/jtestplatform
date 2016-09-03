@@ -23,7 +23,6 @@ package org.jtestplatform.client;
 
 import com.google.code.tempusfugit.temporal.Clock;
 import com.google.code.tempusfugit.temporal.RealClock;
-import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.jtestplatform.cloud.TransportProvider;
 import org.jtestplatform.cloud.domain.DefaultDomainManager;
@@ -36,6 +35,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.concurrent.*;
+
+import static com.google.common.util.concurrent.MoreExecutors.shutdownAndAwaitTermination;
 
 /**
  * @author Fabien DUMINY (fduminy at jnode dot org)
@@ -105,7 +106,7 @@ public class TestDriver {
 
     private void shutdown(long timeout, TimeUnit unit, ExecutorService... executors) {
         for (ExecutorService executor : executors) {
-            MoreExecutors.shutdownAndAwaitTermination(executor, timeout, unit);
+            shutdownAndAwaitTermination(executor, timeout, unit);
         }
     }
 

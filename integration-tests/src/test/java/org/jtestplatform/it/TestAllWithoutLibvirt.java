@@ -22,8 +22,6 @@
 package org.jtestplatform.it;
 
 import com.google.code.tempusfugit.temporal.MovableClock;
-import org.jtestplatform.client.TestDriverTest;
-import org.jtestplatform.junitxmlreport.JUnitXMLReportWriterTest;
 import org.jtestplatform.server.*;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -35,6 +33,8 @@ import java.io.File;
 import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.jtestplatform.client.TestDriverTest.copyStreamToFile;
+import static org.jtestplatform.junitxmlreport.JUnitXMLReportWriterTest.*;
 import static org.junit.Assert.fail;
 
 /**
@@ -71,7 +71,7 @@ public class TestAllWithoutLibvirt {
     @Test
     public void testAllInJVM_UDPTransport() throws Exception {
         File reportDirectory = folder.getRoot();
-        File cloudConfigFile = TestDriverTest.copyStreamToFile(folder, "/cloud-it.xml");
+        File cloudConfigFile = copyStreamToFile(folder, "/cloud-it.xml");
 
         MovableClock clock = new MovableClock();
         UDPTransportChannelFactory channelFactory = UDPTransportChannelFactory.INSTANCE;
@@ -84,7 +84,7 @@ public class TestAllWithoutLibvirt {
     @Test
     public void testAllInJVM_noNetworkTransport() throws Exception {
         File reportDirectory = folder.getRoot();
-        File cloudConfigFile = TestDriverTest.copyStreamToFile(folder, "/cloud-it.xml");
+        File cloudConfigFile = copyStreamToFile(folder, "/cloud-it.xml");
 
         MovableClock clock = new MovableClock();
         NoNetworkTransportChannelFactory channelFactory = NoNetworkTransportChannelFactory.INSTANCE;
@@ -113,8 +113,8 @@ public class TestAllWithoutLibvirt {
 
         assertThat(xmlReportFile).as("xml report file").isNotNull();
 
-        String actualContent = JUnitXMLReportWriterTest.readFile(xmlReportFile.getAbsolutePath(), true);
-        String expectedContent = JUnitXMLReportWriterTest.readResource(expectedContentResource, true);
-        JUnitXMLReportWriterTest.compareXML(expectedContent, actualContent);
+        String actualContent = readFile(xmlReportFile.getAbsolutePath(), true);
+        String expectedContent = readResource(expectedContentResource, true);
+        compareXML(expectedContent, actualContent);
     }
 }
