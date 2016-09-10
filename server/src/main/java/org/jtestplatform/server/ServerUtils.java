@@ -34,7 +34,6 @@ public class ServerUtils {
         if (index < 0) {
             return printStackTrace(throwable, test);
         } else {
-            // TODO try to avoid allocating 2 sub-strings (using CharSequence instead of String instances)
             return printStackTrace(throwable, test.substring(0, index), test.substring(index + 1));
         }
     }
