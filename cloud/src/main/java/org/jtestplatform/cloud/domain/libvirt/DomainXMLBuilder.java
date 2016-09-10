@@ -49,7 +49,9 @@ class DomainXMLBuilder {
         template.add("config", config);
         template.add("macAddress", macAddress);
         template.add("networkName", networkName);
-        //TODO use cpu and wordSize properties
+        template.add("osArch", ((config.getPlatform() == null) || (config.getPlatform().getWordSize() == 32)) ?
+            "i686" :
+            "x86_64");
 
         return template.render();
     }

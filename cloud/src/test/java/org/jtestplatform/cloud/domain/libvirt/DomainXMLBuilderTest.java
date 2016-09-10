@@ -31,22 +31,24 @@ import org.junit.Test;
  */
 public class DomainXMLBuilderTest extends AbstractXMLBuilderTest {
     @Test
-    public void build_domain1() throws DomainException {
-        build("domain1", "cdrom1", 12, 34, "12:34", "network1");
+    public void build_domain_32bits() throws DomainException {
+        build("domain1", "cdrom1", 12, 34, "12:34", "network1", 32);
     }
 
     @Test
-    public void build_domain2() throws DomainException {
-        build("domain2", "cdrom2", 56, 78, "56:78", "network2");
+    public void build_domain_64bits() throws DomainException {
+        build("domain2", "cdrom2", 56, 78, "56:78", "network2", 64);
     }
 
-    private void build(String domainName, String cdrom, long memory, int nbCores, String macAddress, String networkName)
+    private void build(String domainName, String cdrom, long memory, int nbCores, String macAddress, String networkName,
+                       int wordSize)
         throws DomainException {
         DomainConfig config = new DomainConfig();
         Platform platform = new Platform();
         platform.setMemory(memory);
         platform.setNbCores(nbCores);
         platform.setCdrom(cdrom);
+        platform.setWordSize(wordSize);
         config.setPlatform(platform);
         config.setDomainName(domainName);
         DomainXMLBuilder builder = new DomainXMLBuilder();
@@ -54,6 +56,6 @@ public class DomainXMLBuilderTest extends AbstractXMLBuilderTest {
         String actualXML = builder.build(config, macAddress, networkName);
 
         assertXMLContains(actualXML, domainName, cdrom, Long.toString(memory), Integer.toString(nbCores), macAddress,
-                          networkName);
+                          networkName, (wordSize == 32) ? "i686" : "x86_64");
     }
 }
