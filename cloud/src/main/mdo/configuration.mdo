@@ -64,6 +64,11 @@
               <identifier>true</identifier>
             </field>
             <field xml.attribute="true">
+              <name>disk</name>
+              <type>String</type>
+              <identifier>true</identifier>
+            </field>
+            <field xml.attribute="true">
               <name>cpu</name>
               <type>String</type>
               <identifier>true</identifier>
