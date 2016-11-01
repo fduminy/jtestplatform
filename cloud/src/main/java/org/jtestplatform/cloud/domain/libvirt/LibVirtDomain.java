@@ -102,22 +102,7 @@ class LibVirtDomain implements Domain {
         factory.execute(connection, new Command<Void>() {
             @Override
             public Void execute(Connect connect) throws Exception {
-                //                factory.ensureNetworkExist(connect);
-
-                if (!isAlive()) {
-                    ipAddress = null;
-                    if (domain != null) {
-                        domain.free();
-                    }
-                    domain = domainBuilder.defineDomain(connect, config, networkConfig);
-                    if (!isAlive()) {
-                        try {
-                            domain.create();
-                        } catch (LibvirtException e) {
-                            throw new DomainException(e);
-                        }
-                    }
-                }
+                startDomain(connect);
                 return null;
             }
         });
@@ -130,35 +115,7 @@ class LibVirtDomain implements Domain {
     @Override
     public synchronized void stop() throws DomainException {
         if (isAlive()) {
-            Timeout timeout = timeout(minutes(1));
-            Sleeper sleeper = new ThreadSleep(seconds(1));
-            try {
-                domain.destroy();
-
-                waitOrTimeout(new Condition() {
-                    @Override
-                    public boolean isSatisfied() {
-                        try {
-                            DomainInfo info = domain.getInfo();
-                            return (info.state == VIR_DOMAIN_SHUTOFF);
-                        } catch (LibvirtException e) {
-                            throw new RuntimeException("Can't get domain information", e);
-                        }
-                    }
-                }, timeout, sleeper);
-
-                domain.undefine();
-                domain.free();
-                closeConnection();
-            } catch (LibvirtException e) {
-                throw new DomainException(e);
-            } catch (InterruptedException e) {
-                throw new DomainException(e);
-            } catch (TimeoutException e) {
-                throw new DomainException(e);
-            }
-            domain = null;
-            ipAddress = null;
+            stopDomain();
         }
     }
 
@@ -191,11 +148,66 @@ class LibVirtDomain implements Domain {
         return isRunning;
     }
 
+    @Override
     public String getIPAddress() throws DomainException {
         if ((ipAddress == null) && isAlive()) {
             ipAddress = ipAddressFinder.findIpAddress(networkConfig);
         }
 
         return ipAddress;
+    }
+
+    private void startDomain(Connect connect) throws DomainException, LibvirtException {
+        //        factory.ensureNetworkExist(connect);
+        if (!isAlive()) {
+            ipAddress = null;
+            if (domain != null) {
+                domain.free();
+            }
+            domain = domainBuilder.defineDomain(connect, config, networkConfig);
+            if (!isAlive()) {
+                try {
+                    domain.create();
+                } catch (LibvirtException e) {
+                    throw new DomainException(e);
+                }
+            }
+        }
+    }
+
+    private void stopDomain() throws DomainException {
+        Timeout timeout = timeout(minutes(1));
+        Sleeper sleeper = new ThreadSleep(seconds(1));
+        try {
+            domain.destroy();
+
+            waitOrTimeout(domainStateIs(VIR_DOMAIN_SHUTOFF), timeout, sleeper);
+
+            domain.undefine();
+            domain.free();
+            closeConnection();
+        } catch (LibvirtException e) {
+            throw new DomainException(e);
+        } catch (InterruptedException e) {
+            throw new DomainException(e);
+        } catch (TimeoutException e) {
+            throw new DomainException(e);
+        }
+        domain = null;
+        ipAddress = null;
+    }
+
+    private Condition domainStateIs(final DomainState domainState) {
+        return new Condition() {
+            @Override
+            public boolean isSatisfied() {
+                try {
+                    DomainInfo info = domain.getInfo();
+                    return domainState.equals(info.state);
+                } catch (LibvirtException e) {
+                    throw new RuntimeException("Can't get domain information", e);
+                }
+            }
+        };
     }
 }
