@@ -32,7 +32,7 @@ import org.jtestplatform.cloud.configuration.Connection;
 import org.jtestplatform.cloud.domain.Domain;
 import org.jtestplatform.cloud.domain.DomainConfig;
 import org.jtestplatform.cloud.domain.DomainException;
-import org.jtestplatform.common.ConfigUtils;
+import org.jtestplatform.cloud.domain.libvirt.ConnectManager.Command;
 import org.libvirt.Connect;
 import org.libvirt.DomainInfo;
 import org.libvirt.DomainInfo.DomainState;
@@ -44,6 +44,9 @@ import static com.google.code.tempusfugit.temporal.Duration.minutes;
 import static com.google.code.tempusfugit.temporal.Duration.seconds;
 import static com.google.code.tempusfugit.temporal.Timeout.timeout;
 import static com.google.code.tempusfugit.temporal.WaitFor.waitOrTimeout;
+import static org.jtestplatform.common.ConfigUtils.isBlank;
+import static org.libvirt.DomainInfo.DomainState.VIR_DOMAIN_RUNNING;
+import static org.libvirt.DomainInfo.DomainState.VIR_DOMAIN_SHUTOFF;
 
 /**
  * Implementation for a {@link org.jtestplatform.cloud.domain.Domain} based on <a href="http://www.libvirt.org/">libvirt</a>.
@@ -85,7 +88,7 @@ class LibVirtDomain implements Domain {
         this.ipAddressFinder = ipAddressFinder;
 
         this.domainBuilder = domainBuilder;
-        if (ConfigUtils.isBlank(connection.getUri())) {
+        if (isBlank(connection.getUri())) {
             throw new DomainException("connection's URI not specified");
         }
     }
@@ -96,7 +99,7 @@ class LibVirtDomain implements Domain {
      */
     @Override
     public synchronized void start() throws DomainException {
-        factory.execute(connection, new ConnectManager.Command<Void>() {
+        factory.execute(connection, new Command<Void>() {
             @Override
             public Void execute(Connect connect) throws Exception {
                 //                factory.ensureNetworkExist(connect);
@@ -114,7 +117,6 @@ class LibVirtDomain implements Domain {
                             throw new DomainException(e);
                         }
                     }
-                    ipAddress = ipAddressFinder.findIpAddress(networkConfig);
                 }
                 return null;
             }
@@ -138,7 +140,7 @@ class LibVirtDomain implements Domain {
                     public boolean isSatisfied() {
                         try {
                             DomainInfo info = domain.getInfo();
-                            return (info.state == DomainState.VIR_DOMAIN_SHUTOFF);
+                            return (info.state == VIR_DOMAIN_SHUTOFF);
                         } catch (LibvirtException e) {
                             throw new RuntimeException("Can't get domain information", e);
                         }
@@ -180,7 +182,7 @@ class LibVirtDomain implements Domain {
         if (domain != null) {
             try {
                 DomainState state = domain.getInfo().state;
-                isRunning = DomainState.VIR_DOMAIN_RUNNING.equals(state);
+                isRunning = VIR_DOMAIN_RUNNING.equals(state);
             } catch (LibvirtException e) {
                 throw new DomainException(e);
             }
@@ -189,7 +191,11 @@ class LibVirtDomain implements Domain {
         return isRunning;
     }
 
-    public String getIPAddress() {
+    public String getIPAddress() throws DomainException {
+        if ((ipAddress == null) && isAlive()) {
+            ipAddress = ipAddressFinder.findIpAddress(networkConfig);
+        }
+
         return ipAddress;
     }
 }

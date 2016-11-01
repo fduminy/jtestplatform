@@ -52,5 +52,5 @@ public interface Domain {
      * Get the IP address of the domain.
      * @return The IP address of the domain.
      */
-    String getIPAddress();
+    String getIPAddress() throws DomainException;
 }

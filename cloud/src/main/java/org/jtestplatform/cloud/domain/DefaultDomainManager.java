@@ -197,7 +197,11 @@ public class DefaultDomainManager implements DomainManager {
         }
 
         // TODO ensure that the ip address correspond to a domain with the appropriate platform
-        return domains.getNext().getIPAddress();
+        try {
+            return domains.getNext().getIPAddress();
+        } catch (DomainException e) {
+            throw new TransportException("unable to get domain's IP address", e);
+        }
     }
 
     private void checkValid(Map<String, DomainFactory<? extends Domain>> knownFactories, Configuration config)
