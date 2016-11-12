@@ -42,6 +42,11 @@ class DomainXMLBuilder {
         ST template;
         try {
             template = new ST(readResource("domain_template.xml"), BEGIN_TAG, END_TAG);
+
+            template
+                .add("cdromDrive", renderTemplate(config, config.getPlatform().getCdrom() != null, "domain_cdrom.xml"));
+            template
+                .add("diskDrive", renderTemplate(config, config.getPlatform().getDisk() != null, "domain_disk.xml"));
         } catch (DomainException e) {
             throw new RuntimeException(e);
         }
@@ -54,6 +59,17 @@ class DomainXMLBuilder {
             "x86_64");
 
         return template.render();
+    }
+
+    private String renderTemplate(DomainConfig config, boolean condition, String templateRessource)
+        throws DomainException {
+        String value = "";
+        if (condition) {
+            ST template = new ST(readResource(templateRessource), BEGIN_TAG, END_TAG);
+            template.add("config", config);
+            value = template.render();
+        }
+        return value;
     }
 
     private static String readResource(String template) throws DomainException {

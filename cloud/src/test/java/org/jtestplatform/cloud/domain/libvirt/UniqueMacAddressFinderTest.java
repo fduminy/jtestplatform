@@ -21,6 +21,7 @@
  */
 package org.jtestplatform.cloud.domain.libvirt;
 
+import org.jtestplatform.cloud.configuration.Platform;
 import org.jtestplatform.cloud.domain.DomainConfig;
 import org.jtestplatform.cloud.domain.DomainException;
 import org.junit.Rule;
@@ -74,6 +75,7 @@ public class UniqueMacAddressFinderTest extends AbstractDomainTest {
     private void setUpMacAddresses(int suffix1, int suffix2, int suffix3, int suffix4) throws LibvirtException {
         DomainXMLBuilder builder = new DomainXMLBuilder();
         DomainConfig config = new DomainConfig();
+        config.setPlatform(new Platform());
         when(domain1.getXMLDesc(anyInt())).thenReturn(builder.build(config, BASE_MAC_ADDRESS + "0" + suffix1, ""));
         when(domain2.getXMLDesc(anyInt())).thenReturn(builder.build(config, BASE_MAC_ADDRESS + "0" + suffix2, ""));
         when(domain3.getXMLDesc(anyInt())).thenReturn(builder.build(config, BASE_MAC_ADDRESS + "0" + suffix3, ""));

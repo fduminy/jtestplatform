@@ -1,0 +1,5 @@
+<disk type='file' device='cdrom'>
+    <source file='$config.platform.cdrom$'/>
+    <target dev='hdc' bus='ide'/>
+    <readonly/>
+</disk>

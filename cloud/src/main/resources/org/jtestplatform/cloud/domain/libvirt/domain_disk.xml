@@ -1,0 +1,5 @@
+<disk type='file' device='disk'>
+    <source file='$config.platform.disk$'/>
+    <target dev='sda' bus='scsi'/>
+    <address type='drive' controller='0' bus='0' unit='0'/>
+</disk>

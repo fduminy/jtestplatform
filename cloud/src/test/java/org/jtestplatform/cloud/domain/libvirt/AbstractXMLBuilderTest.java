@@ -33,4 +33,12 @@ abstract class AbstractXMLBuilderTest {
         assertThat(actualXML).isNotNull().isNotEmpty().doesNotContain(Character.toString(BEGIN_TAG))
                              .doesNotContain(Character.toString(END_TAG)).contains((CharSequence[]) values);
     }
+
+    static void assertXMLPart(String actualXML, String xmlPart, String xmlPartValue) {
+        if (xmlPartValue == null) {
+            assertThat(actualXML).doesNotContain(xmlPart);
+        } else {
+            assertThat(actualXML).contains(xmlPart, xmlPartValue);
+        }
+    }
 }

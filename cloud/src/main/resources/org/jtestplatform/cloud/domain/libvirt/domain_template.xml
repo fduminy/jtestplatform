@@ -42,16 +42,8 @@
     <devices>
         <emulator>/usr/bin/kvm</emulator>
 
-        <disk type='file' device='cdrom'>
-            <source file='$config.platform.cdrom$'/>
-            <target dev='hdc' bus='ide'/>
-            <readonly/>
-        </disk>
-        <disk type='file' device='disk'>
-            <source file='$config.platform.disk$'/>
-            <target dev='sda' bus='scsi'/>
-            <address type='drive' controller='0' bus='0' unit='0'/>
-        </disk>
+        $diskDrive$
+        $cdromDrive$
 
         <interface type='network'>
             <mac address='$macAddress$'/>

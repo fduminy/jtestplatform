@@ -25,10 +25,16 @@ import org.jtestplatform.cloud.configuration.Platform;
 import org.jtestplatform.cloud.domain.DomainConfig;
 import org.jtestplatform.cloud.domain.DomainException;
 import org.junit.Test;
+import org.junit.experimental.theories.Theories;
+import org.junit.experimental.theories.Theory;
+import org.junit.runner.RunWith;
+
+import static org.junit.Assume.assumeTrue;
 
 /**
  * @author Fabien DUMINY (fduminy at jnode dot org)
  */
+@RunWith(Theories.class)
 public class DomainXMLBuilderTest extends AbstractXMLBuilderTest {
     @Test
     public void build_domain_32bits() throws DomainException {
@@ -38,6 +44,12 @@ public class DomainXMLBuilderTest extends AbstractXMLBuilderTest {
     @Test
     public void build_domain_64bits() throws DomainException {
         build("domain2", "cdrom2", "disk2", 56, 78, "56:78", "network2", 64);
+    }
+
+    @Theory
+    public void build_domain_nullDrive(boolean nullCdrom, boolean nullDisk) throws DomainException {
+        assumeTrue(nullDisk || nullCdrom);
+        build("domain2", nullCdrom ? null : "cdrom2", nullDisk ? null : "disk2", 56, 78, "56:78", "network2", 64);
     }
 
     private void build(String domainName, String cdrom, String disk, long memory, int nbCores, String macAddress,
@@ -56,8 +68,9 @@ public class DomainXMLBuilderTest extends AbstractXMLBuilderTest {
 
         String actualXML = builder.build(config, macAddress, networkName);
 
-        assertXMLContains(actualXML, domainName, cdrom, disk, Long.toString(memory), Integer.toString(nbCores),
-                          macAddress,
-                          networkName, (wordSize == 32) ? "i686" : "x86_64");
+        assertXMLContains(actualXML, domainName, Long.toString(memory), Integer.toString(nbCores),
+                          macAddress, networkName, (wordSize == 32) ? "i686" : "x86_64");
+        assertXMLPart(actualXML, "device='disk'", disk);
+        assertXMLPart(actualXML, "device='cdrom'", cdrom);
     }
 }

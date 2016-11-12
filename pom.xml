@@ -236,6 +236,8 @@
                         <exclude>**/pom.xml</exclude>
                         <exclude>.gitignore</exclude>
                         <exclude>*.md</exclude>
+                        <exclude>**/domain_disk.xml</exclude>
+                        <exclude>**/domain_cdrom.xml</exclude>
                     </excludes>
                 </configuration>
                 <executions>
