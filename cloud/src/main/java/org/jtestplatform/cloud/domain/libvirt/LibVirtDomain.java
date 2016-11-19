@@ -158,7 +158,6 @@ class LibVirtDomain implements Domain {
     }
 
     private void startDomain(Connect connect) throws DomainException, LibvirtException {
-        //        factory.ensureNetworkExist(connect);
         if (!isAlive()) {
             ipAddress = null;
             if (domain != null) {
