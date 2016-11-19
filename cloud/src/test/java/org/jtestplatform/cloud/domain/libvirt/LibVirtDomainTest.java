@@ -76,7 +76,9 @@ public class LibVirtDomainTest {
         factory = mock(LibVirtDomainFactory.class);
         when(domain.getInfo()).thenReturn(domainInfo);
         when(factory.execute(eq(connection), any(ConnectManager.Command.class))).then(executeCommand());
-        when(domainBuilder.defineDomain(any(Connect.class), eq(domainConfig), eq(networkConfig))).thenReturn(domain);
+        org.jtestplatform.cloud.domain.libvirt.DomainInfo info = new org.jtestplatform.cloud.domain.libvirt.DomainInfo(
+            domain, null);
+        when(domainBuilder.defineDomain(any(Connect.class), eq(domainConfig), eq(networkConfig))).thenReturn(info);
         when(connection.getUri()).thenReturn("http://fakeURI");
     }
 
@@ -100,7 +102,8 @@ public class LibVirtDomainTest {
         LibVirtDomain libVirtDomain = new LibVirtDomain(domainConfig, factory, connection, ipAddressFinder,
                                                         domainBuilder, networkConfig) {
             @Override public synchronized void start() throws DomainException {
-                this.domain = LibVirtDomainTest.this.domain;
+                this.domain = new org.jtestplatform.cloud.domain.libvirt.DomainInfo(LibVirtDomainTest.this.domain,
+                                                                                    null);
             }
 
             @Override public boolean isAlive() throws DomainException {
@@ -124,7 +127,8 @@ public class LibVirtDomainTest {
             LibVirtDomain libVirtDomain = new LibVirtDomain(domainConfig, factory, connection, ipAddressFinder,
                                                             domainBuilder, networkConfig) {
                 @Override public synchronized void start() throws DomainException {
-                    this.domain = LibVirtDomainTest.this.domain;
+                    this.domain = new org.jtestplatform.cloud.domain.libvirt.DomainInfo(LibVirtDomainTest.this.domain,
+                                                                                        null);
                 }
             };
             libVirtDomain.start();

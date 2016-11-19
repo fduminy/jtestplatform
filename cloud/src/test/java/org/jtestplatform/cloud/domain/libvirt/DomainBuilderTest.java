@@ -87,9 +87,14 @@ public class DomainBuilderTest extends AbstractDomainTest {
         }
         DomainBuilder builder = new DomainBuilder(domainXMLBuilder, macAddressFinder, domainNameFinder);
 
-        Domain domain = builder.defineDomain(connect, domainConfig, networkConfig);
+        org.jtestplatform.cloud.domain.libvirt.DomainInfo domainInfo = builder
+            .defineDomain(connect, domainConfig, networkConfig);
 
-        soft.assertThat(domain).as("domain").isSameAs(expectedDomain);
+        soft.assertThat(domainInfo).as("domainInfo").isNotNull();
+        if (domainInfo != null) {
+            soft.assertThat(domainInfo.getDomain()).as("domainInfo.domain").isSameAs(expectedDomain);
+            soft.assertThat(domainInfo.getMacAddress()).as("domainInfo.macAddress").isSameAs(MAC_ADDRESS);
+        }
         soft.assertThat(domainConfig.getDomainName()).as("domainConfig.domainName").isEqualTo(EXPECTED_DOMAIN_NAME);
     }
 

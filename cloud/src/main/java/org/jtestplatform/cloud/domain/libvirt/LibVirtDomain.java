@@ -65,7 +65,7 @@ class LibVirtDomain implements Domain {
     private final LibVirtDomainFactory factory;
     private final Connection connection;
 
-    org.libvirt.Domain domain;
+    org.jtestplatform.cloud.domain.libvirt.DomainInfo domain;
 
     private final IpAddressFinder ipAddressFinder;
     private String ipAddress;
@@ -138,7 +138,7 @@ class LibVirtDomain implements Domain {
 
         if (domain != null) {
             try {
-                DomainState state = domain.getInfo().state;
+                DomainState state = domain.getDomain().getInfo().state;
                 isRunning = VIR_DOMAIN_RUNNING.equals(state);
             } catch (LibvirtException e) {
                 throw new DomainException(e);
@@ -161,12 +161,12 @@ class LibVirtDomain implements Domain {
         if (!isAlive()) {
             ipAddress = null;
             if (domain != null) {
-                domain.free();
+                domain.getDomain().free();
             }
             domain = domainBuilder.defineDomain(connect, config, networkConfig);
             if (!isAlive()) {
                 try {
-                    domain.create();
+                    domain.getDomain().create();
                 } catch (LibvirtException e) {
                     throw new DomainException(e);
                 }
@@ -178,12 +178,12 @@ class LibVirtDomain implements Domain {
         Timeout timeout = timeout(minutes(1));
         Sleeper sleeper = new ThreadSleep(seconds(1));
         try {
-            domain.destroy();
+            domain.getDomain().destroy();
 
             waitOrTimeout(domainStateIs(VIR_DOMAIN_SHUTOFF), timeout, sleeper);
 
-            domain.undefine();
-            domain.free();
+            domain.getDomain().undefine();
+            domain.getDomain().free();
             closeConnection();
         } catch (LibvirtException e) {
             throw new DomainException(e);
@@ -201,7 +201,7 @@ class LibVirtDomain implements Domain {
             @Override
             public boolean isSatisfied() {
                 try {
-                    DomainInfo info = domain.getInfo();
+                    DomainInfo info = domain.getDomain().getInfo();
                     return domainState.equals(info.state);
                 } catch (LibvirtException e) {
                     throw new RuntimeException("Can't get domain information", e);

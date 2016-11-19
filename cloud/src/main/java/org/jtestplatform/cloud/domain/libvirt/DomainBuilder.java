@@ -46,7 +46,7 @@ class DomainBuilder {
         this.domainNameFinder = domainNameFinder;
     }
 
-    Domain defineDomain(Connect connect, DomainConfig config, NetworkConfig networkConfig) throws DomainException {
+    DomainInfo defineDomain(Connect connect, DomainConfig config, NetworkConfig networkConfig) throws DomainException {
         try {
             synchronized ((connect.getHostName() + "_defineDomain").intern()) {
                 List<Domain> domains = listAllDomains(connect);
@@ -59,7 +59,7 @@ class DomainBuilder {
 
                 String macAddress = macAddressFinder.findUniqueMacAddress(domains);
                 String xml = domainXMLBuilder.build(config, macAddress, networkConfig.getNetworkName());
-                return connect.domainDefineXML(xml);
+                return new DomainInfo(connect.domainDefineXML(xml), macAddress);
             }
         } catch (LibvirtException e) {
             throw new DomainException(e);
