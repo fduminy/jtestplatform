@@ -32,7 +32,9 @@ import java.util.ArrayList;
 
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.jtestplatform.cloud.domain.libvirt.LibVirtDomainFactory.BASE_IP_ADDRESS;
 import static org.jtestplatform.cloud.domain.libvirt.UniqueDomainNameFinder.DOMAIN_NAME_PREFIX;
+import static org.jtestplatform.cloud.domain.libvirt.UniqueMacAddressFinderTest.BASE_MAC_ADDRESS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -40,13 +42,15 @@ import static org.mockito.Mockito.when;
  * @author Fabien DUMINY (fduminy at jnode dot org)
  */
 public class UniqueDomainNameFinderTest extends AbstractDomainTest {
+    private static final NetworkConfig CONFIG = new NetworkConfig("test", BASE_MAC_ADDRESS, BASE_IP_ADDRESS, 0, 4);
+
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
     @Test
     public void findUniqueDomainName_contiguousUsedValues() throws Exception {
         setUpDomainNames(0, 1, 2, 3);
-        UniqueDomainNameFinder finder = new UniqueDomainNameFinder();
+        UniqueDomainNameFinder finder = new UniqueDomainNameFinder(CONFIG);
 
         String actual = finder.findUniqueDomainName(domains);
 
@@ -56,7 +60,7 @@ public class UniqueDomainNameFinderTest extends AbstractDomainTest {
     @Test
     public void findUniqueDomainName_nonContiguousUsedValues() throws Exception {
         setUpDomainNames(0, 1, 3, 4);
-        UniqueDomainNameFinder finder = new UniqueDomainNameFinder();
+        UniqueDomainNameFinder finder = new UniqueDomainNameFinder(CONFIG);
 
         String actual = finder.findUniqueDomainName(domains);
 
@@ -65,13 +69,13 @@ public class UniqueDomainNameFinderTest extends AbstractDomainTest {
 
     @Test
     public void findUniqueDomainName_noFreeValues() throws Exception {
-        domains = new ArrayList<Domain>(256);
-        for (short i = 0; i < 256; i++) {
+        domains = new ArrayList<Domain>();
+        for (int i = CONFIG.getMinSubNetIpAddress(); i <= CONFIG.getMaxSubNetIpAddress(); i++) {
             Domain domain = mock(Domain.class);
             when(domain.getName()).thenReturn(formatDomainName(i));
             domains.add(domain);
         }
-        UniqueDomainNameFinder finder = new UniqueDomainNameFinder();
+        UniqueDomainNameFinder finder = new UniqueDomainNameFinder(CONFIG);
         thrown.expect(DomainException.class);
         thrown.expectMessage("unable to find a unique domain name");
 

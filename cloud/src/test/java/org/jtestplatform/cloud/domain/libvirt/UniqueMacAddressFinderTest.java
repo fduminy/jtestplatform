@@ -37,7 +37,7 @@ import static org.mockito.Mockito.when;
  * @author Fabien DUMINY (fduminy at jnode dot org)
  */
 public class UniqueMacAddressFinderTest extends AbstractDomainTest {
-    private static final String BASE_MAC_ADDRESS = "12:34:56:";
+    static final String BASE_MAC_ADDRESS = "12:34:56:";
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();

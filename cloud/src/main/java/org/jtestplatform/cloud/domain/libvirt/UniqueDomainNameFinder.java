@@ -35,6 +35,12 @@ class UniqueDomainNameFinder extends UniqueValueFinder {
 
     static final String DOMAIN_NAME_PREFIX = "JTestPlatform_";
 
+    private final NetworkConfig networkConfig;
+
+    UniqueDomainNameFinder(NetworkConfig networkConfig) {
+        this.networkConfig = networkConfig;
+    }
+
     /**
      * Automatically define the domain name. It must be unique for the connection.
      * @throws LibvirtException
@@ -46,6 +52,7 @@ class UniqueDomainNameFinder extends UniqueValueFinder {
             domainNames.add(domain.getName());
         }
 
-        return findUniqueValue(domainNames, "domain name", DOMAIN_NAME_PREFIX, 0, 0xFF, 2);
+        return findUniqueValue(domainNames, "domain name", DOMAIN_NAME_PREFIX, networkConfig.getMinSubNetIpAddress(),
+                               networkConfig.getMaxSubNetIpAddress(), 2);
     }
 }

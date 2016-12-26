@@ -50,7 +50,7 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
     //private static final String NETWORK_NAME = "jtestplatform-network";
 
     private static final String BASE_MAC_ADDRESS = "54:52:00:77:58:";
-    private static final String BASE_IP_ADDRESS = "192.168.121.";
+    static final String BASE_IP_ADDRESS = "192.168.121.";
     private static final int MIN_SUBNET_IP_ADDRESS = 2;
     private static final int MAX_SUBNET_IP_ADDRESS = 254;
 
@@ -64,7 +64,7 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
     private final UniqueMacAddressFinder macAddressFinder = new UniqueMacAddressFinder(networkConfig);
 
     private final DomainXMLBuilder domainXMLBuilder = new DomainXMLBuilder();
-    private final UniqueDomainNameFinder domainNameFinder = new UniqueDomainNameFinder();
+    private final UniqueDomainNameFinder domainNameFinder = new UniqueDomainNameFinder(networkConfig);
     private final DomainBuilder domainBuilder = new DomainBuilder(domainXMLBuilder, macAddressFinder, domainNameFinder);
     private final PlatformSupportManager supportManager = new PlatformSupportManager();
 
