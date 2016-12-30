@@ -23,9 +23,14 @@ package org.jtestplatform.cloud.domain.libvirt;
 
 import org.jtestplatform.cloud.domain.DomainConfig;
 import org.jtestplatform.cloud.domain.DomainException;
+import org.jtestplatform.cloud.domain.libvirt.DomainCache.Entry;
 import org.jtestplatform.common.ConfigUtils;
 import org.libvirt.Connect;
 import org.libvirt.LibvirtException;
+
+import javax.annotation.Nonnull;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Fabien DUMINY (fduminy at jnode dot org)
@@ -33,6 +38,7 @@ import org.libvirt.LibvirtException;
 class DomainBuilder {
     private final DomainXMLBuilder domainXMLBuilder;
     private final DomainCache domainCache;
+    private final Map<String, Object> locks = new HashMap<String, Object>();
 
     DomainBuilder(DomainXMLBuilder domainXMLBuilder, DomainCache domainCache) {
         this.domainXMLBuilder = domainXMLBuilder;
@@ -41,23 +47,42 @@ class DomainBuilder {
 
     DomainInfo defineDomain(Connect connect, DomainConfig config, NetworkConfig networkConfig) throws DomainException {
         try {
-            synchronized ((connect.getHostName() + "_defineDomain").intern()) {
-                DomainCache.Entry entry;
-                if (ConfigUtils.isBlank(config.getDomainName())) {
-                    // automatically define the domain name
-                    // it must be unique for the connection
-                    entry = domainCache.findFreeEntry(connect);
-                    config.setDomainName(entry.getDomainName());
-                } else {
-                    entry = domainCache.findEntry(connect, config.getDomainName());
-                }
+            Entry entry = getEntry(connect, config);
 
-                String macAddress = entry.getMacAddress();
-                String xml = domainXMLBuilder.build(config, macAddress, networkConfig.getNetworkName());
-                return new DomainInfo(connect.domainDefineXML(xml), macAddress);
-            }
+            config.setDomainName(entry.getDomainName());
+            String macAddress = entry.getMacAddress();
+            String xml = domainXMLBuilder.build(config, macAddress, networkConfig.getNetworkName());
+            return new DomainInfo(connect.domainDefineXML(xml), macAddress);
         } catch (LibvirtException e) {
             throw new DomainException(e);
+        }
+    }
+
+    private Entry getEntry(Connect connect, DomainConfig config) throws LibvirtException {
+        boolean undefinedDomainName = ConfigUtils.isBlank(config.getDomainName());
+        Entry entry;
+        synchronized (getLock(connect.getHostName())) {
+            if (undefinedDomainName) {
+                // automatically define the domain name
+                // it must be unique for the connection
+                entry = domainCache.findFreeEntry(connect);
+            } else {
+                entry = domainCache.findEntry(connect, config.getDomainName());
+            }
+        }
+        return entry;
+    }
+
+    @Nonnull
+    private Object getLock(String hostName) {
+        Object lock;
+        synchronized (locks) {
+            lock = locks.get(hostName);
+            if (lock == null) {
+                lock = new Object();
+                locks.put(hostName, lock);
+            }
+            return lock;
         }
     }
 }
