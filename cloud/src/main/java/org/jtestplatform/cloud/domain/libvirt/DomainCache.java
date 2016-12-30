@@ -55,8 +55,9 @@ class DomainCache {
         try {
             Integer domainId = findFreeDomainId(listAllDomains(connect));
             if (domainId != null) {
-                String uniqueMacAddress = formatValue(networkConfig.getBaseMacAddress(), domainId);
-                entry = new Entry(formatValue(DOMAIN_NAME_PREFIX, domainId), uniqueMacAddress);
+                String macAddress = formatValue(networkConfig.getBaseMacAddress(), domainId);
+                String ipAddress = formatValue(networkConfig.getBaseIPAddress(), domainId);
+                entry = new Entry(formatValue(DOMAIN_NAME_PREFIX, domainId), macAddress, ipAddress);
             }
         } catch (LibvirtException e) {
             LOGGER.error(e.getMessage(), e);
@@ -74,11 +75,17 @@ class DomainCache {
         try {
             for (Domain domain : listAllDomains(connect)) {
                 if (domain.getName().equals(domainName)) {
-                    entry = new Entry(domainName, getMacAddress(domain));
+                    String macAddress = getMacAddress(domain);
+                    int domainId = Integer
+                        .parseInt(macAddress.substring(networkConfig.getBaseMacAddress().length()), 16);
+                    String ipAddress = formatValue(networkConfig.getBaseIPAddress(), domainId);
+                    entry = new Entry(domainName, macAddress, ipAddress);
                     break;
                 }
             }
         } catch (LibvirtException e) {
+            LOGGER.error(e.getMessage(), e);
+        } catch (DomainException e) {
             LOGGER.error(e.getMessage(), e);
         }
 
@@ -88,10 +95,12 @@ class DomainCache {
     static class Entry {
         private final String domainName;
         private final String macAddress;
+        private final String ipAddress;
 
-        Entry(String domainName, String macAddress) {
+        Entry(String domainName, String macAddress, String ipAddress) {
             this.domainName = domainName;
             this.macAddress = macAddress;
+            this.ipAddress = ipAddress;
         }
 
         String getDomainName() {
@@ -100,6 +109,10 @@ class DomainCache {
 
         String getMacAddress() {
             return macAddress;
+        }
+
+        public String getIpAddress() {
+            return ipAddress;
         }
     }
 

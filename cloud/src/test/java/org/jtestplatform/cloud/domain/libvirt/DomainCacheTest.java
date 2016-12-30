@@ -39,7 +39,6 @@ import java.util.Map;
 
 import static java.lang.String.format;
 import static org.jtestplatform.cloud.domain.libvirt.DomainCache.DOMAIN_NAME_PREFIX;
-import static org.jtestplatform.cloud.domain.libvirt.LibVirtDomainFactory.BASE_IP_ADDRESS;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -50,6 +49,7 @@ import static org.mockito.Mockito.when;
 @RunWith(Theories.class)
 public class DomainCacheTest {
     static final String BASE_MAC_ADDRESS = "12:34:56:";
+    static final String BASE_IP_ADDRESS = "101.102.103.";
     private static final NetworkConfig CONFIG = new NetworkConfig("test", BASE_MAC_ADDRESS, BASE_IP_ADDRESS, 0, 4);
 
     @Rule
@@ -117,12 +117,13 @@ public class DomainCacheTest {
 
     private void assertEntry(@Nullable Entry expected, @Nullable Entry actual) {
         if (expected == null) {
-            soft.assertThat(actual).isNull();
+            soft.assertThat(actual).as("entry").isNull();
         } else {
-            soft.assertThat(actual).isNotNull();
+            soft.assertThat(actual).as("entry").isNotNull();
             if (actual != null) {
-                soft.assertThat(actual.getDomainName()).isEqualTo(expected.getDomainName());
-                soft.assertThat(actual.getMacAddress()).isEqualTo(expected.getMacAddress());
+                soft.assertThat(actual.getDomainName()).as("entry.domainName").isEqualTo(expected.getDomainName());
+                soft.assertThat(actual.getMacAddress()).as("entry.maxAddress").isEqualTo(expected.getMacAddress());
+                soft.assertThat(actual.getIpAddress()).as("entry.ipAddress").isEqualTo(expected.getIpAddress());
             }
         }
     }
@@ -141,10 +142,11 @@ public class DomainCacheTest {
         for (int domainId : usedDomainIds) {
             Domain domain = mock(Domain.class);
             String macAddress = formatMacAddress(domainId);
+            String ipAddress = formatIpAddress(domainId);
             when(domain.getXMLDesc(anyInt())).thenReturn("<mac address='" + macAddress + "'/>");
             String domainName = formatDomainName(domainId);
             when(domain.getName()).thenReturn(domainName);
-            domains.put(domain, new Entry(domainName, macAddress));
+            domains.put(domain, new Entry(domainName, macAddress, ipAddress));
         }
         return domains;
     }
@@ -177,7 +179,7 @@ public class DomainCacheTest {
     }
 
     private static Entry expectedEntry(int domainId) {
-        return new Entry(formatDomainName(domainId), formatMacAddress(domainId));
+        return new Entry(formatDomainName(domainId), formatMacAddress(domainId), formatIpAddress(domainId));
     }
 
     static String formatDomainName(int i) {
@@ -186,5 +188,9 @@ public class DomainCacheTest {
 
     static String formatMacAddress(int suffix) {
         return BASE_MAC_ADDRESS + "0" + suffix;
+    }
+
+    static String formatIpAddress(int suffix) {
+        return BASE_IP_ADDRESS + "0" + suffix;
     }
 }

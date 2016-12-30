@@ -29,10 +29,12 @@ import org.libvirt.Domain;
 class DomainInfo {
     private final Domain domain;
     private final String macAddress;
+    private final String ipAddress;
 
-    DomainInfo(Domain domain, String macAddress) {
+    DomainInfo(Domain domain, String macAddress, String ipAddress) {
         this.domain = domain;
         this.macAddress = macAddress;
+        this.ipAddress = ipAddress;
     }
 
     public Domain getDomain() {
@@ -41,5 +43,9 @@ class DomainInfo {
 
     public String getMacAddress() {
         return macAddress;
+    }
+
+    public String getIpAddress() {
+        return ipAddress;
     }
 }

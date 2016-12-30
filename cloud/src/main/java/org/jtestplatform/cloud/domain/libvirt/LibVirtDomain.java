@@ -67,7 +67,6 @@ class LibVirtDomain implements Domain {
 
     org.jtestplatform.cloud.domain.libvirt.DomainInfo domain;
 
-    private final IpAddressFinder ipAddressFinder;
     private String ipAddress;
     private DomainBuilder domainBuilder;
 
@@ -79,13 +78,11 @@ class LibVirtDomain implements Domain {
      * @throws DomainException
      */
     LibVirtDomain(DomainConfig config, LibVirtDomainFactory factory, Connection connection,
-                  IpAddressFinder ipAddressFinder,
                   DomainBuilder domainBuilder, NetworkConfig networkConfig) throws DomainException {
         this.config = config;
         this.networkConfig = networkConfig;
         this.factory = factory;
         this.connection = connection;
-        this.ipAddressFinder = ipAddressFinder;
 
         this.domainBuilder = domainBuilder;
         if (isBlank(connection.getUri())) {
@@ -150,10 +147,6 @@ class LibVirtDomain implements Domain {
 
     @Override
     public String getIPAddress() throws DomainException {
-        if ((ipAddress == null) && isAlive()) {
-            ipAddress = ipAddressFinder.findIpAddress(networkConfig);
-        }
-
         return ipAddress;
     }
 
@@ -171,6 +164,8 @@ class LibVirtDomain implements Domain {
                     throw new DomainException(e);
                 }
             }
+
+            ipAddress = domain.getIpAddress();
         }
     }
 

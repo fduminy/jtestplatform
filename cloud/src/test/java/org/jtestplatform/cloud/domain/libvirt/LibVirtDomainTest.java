@@ -43,6 +43,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.jtestplatform.cloud.domain.libvirt.DomainBuilderTest.IP_ADDRESS;
 import static org.libvirt.DomainInfo.DomainState.VIR_DOMAIN_RUNNING;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -62,7 +63,6 @@ public class LibVirtDomainTest {
     public MockitoRule mockitoRule = MockitoJUnit.rule();
 
     @Mock private Connection connection;
-    @Mock private IpAddressFinder ipAddressFinder;
     @Mock private DomainBuilder domainBuilder;
     @Mock private NetworkConfig networkConfig;
     @Mock private Domain domain;
@@ -77,19 +77,19 @@ public class LibVirtDomainTest {
         when(domain.getInfo()).thenReturn(domainInfo);
         when(factory.execute(eq(connection), any(ConnectManager.Command.class))).then(executeCommand());
         org.jtestplatform.cloud.domain.libvirt.DomainInfo info = new org.jtestplatform.cloud.domain.libvirt.DomainInfo(
-            domain, null);
+            domain, null, IP_ADDRESS);
         when(domainBuilder.defineDomain(any(Connect.class), eq(domainConfig), eq(networkConfig))).thenReturn(info);
         when(connection.getUri()).thenReturn("http://fakeURI");
     }
 
     @Test
     public void start() throws Exception {
-        LibVirtDomain libVirtDomain = new LibVirtDomain(domainConfig, factory, connection, ipAddressFinder,
-                                                        domainBuilder, networkConfig);
+        LibVirtDomain libVirtDomain = new LibVirtDomain(domainConfig, factory, connection, domainBuilder,
+                                                        networkConfig);
 
         libVirtDomain.start();
 
-        InOrder inOrder = inOrder(factory, domainBuilder, domain, ipAddressFinder);
+        InOrder inOrder = inOrder(factory, domainBuilder, domain);
         inOrder.verify(factory).execute(eq(connection), any(ConnectManager.Command.class));
         inOrder.verify(domainBuilder).defineDomain(any(Connect.class), eq(domainConfig), eq(networkConfig));
         inOrder.verify(domain).create();
@@ -99,11 +99,11 @@ public class LibVirtDomainTest {
     @Test
     public void stop() throws Exception {
         domain.getInfo().state = DomainState.VIR_DOMAIN_SHUTOFF;
-        LibVirtDomain libVirtDomain = new LibVirtDomain(domainConfig, factory, connection, ipAddressFinder,
-                                                        domainBuilder, networkConfig) {
+        LibVirtDomain libVirtDomain = new LibVirtDomain(domainConfig, factory, connection, domainBuilder,
+                                                        networkConfig) {
             @Override public synchronized void start() throws DomainException {
                 this.domain = new org.jtestplatform.cloud.domain.libvirt.DomainInfo(LibVirtDomainTest.this.domain,
-                                                                                    null);
+                                                                                    null, null);
             }
 
             @Override public boolean isAlive() throws DomainException {
@@ -124,11 +124,11 @@ public class LibVirtDomainTest {
     @Test
     public void isAlive() throws Exception {
         for (DomainState state : DomainState.values()) {
-            LibVirtDomain libVirtDomain = new LibVirtDomain(domainConfig, factory, connection, ipAddressFinder,
-                                                            domainBuilder, networkConfig) {
+            LibVirtDomain libVirtDomain = new LibVirtDomain(domainConfig, factory, connection, domainBuilder,
+                                                            networkConfig) {
                 @Override public synchronized void start() throws DomainException {
                     this.domain = new org.jtestplatform.cloud.domain.libvirt.DomainInfo(LibVirtDomainTest.this.domain,
-                                                                                        null);
+                                                                                        null, null);
                 }
             };
             libVirtDomain.start();
@@ -140,8 +140,8 @@ public class LibVirtDomainTest {
 
     @Test
     public void getIPAddress_beforeStart() throws Exception {
-        LibVirtDomain libVirtDomain = new LibVirtDomain(domainConfig, factory, connection, ipAddressFinder,
-                                                        domainBuilder, networkConfig);
+        LibVirtDomain libVirtDomain = new LibVirtDomain(domainConfig, factory, connection, domainBuilder,
+                                                        networkConfig);
         assertThat(libVirtDomain.getIPAddress()).as("IPAddress before start").isNull();
     }
 
@@ -155,16 +155,15 @@ public class LibVirtDomainTest {
         getIPAddress_afterStart(VIR_DOMAIN_RUNNING);
     }
 
-    private void getIPAddress_afterStart(DomainState stateAfterStart) throws Exception {
-        when(ipAddressFinder.findIpAddress(eq(networkConfig))).thenReturn("12.34.56.78");
-        LibVirtDomain libVirtDomain = new LibVirtDomain(domainConfig, factory, connection, ipAddressFinder,
-                                                        domainBuilder, networkConfig);
+    private void getIPAddress_afterStart(final DomainState stateAfterStart) throws Exception {
+        LibVirtDomain libVirtDomain = new LibVirtDomain(domainConfig, factory, connection, domainBuilder,
+                                                        networkConfig);
+        domainInfo.state = null;
 
         libVirtDomain.start();
         domainInfo.state = stateAfterStart;
 
-        assertThat(libVirtDomain.getIPAddress()).as("IPAddress after start").isEqualTo(
-            (stateAfterStart == VIR_DOMAIN_RUNNING) ? "12.34.56.78" : null);
+        assertThat(libVirtDomain.getIPAddress()).as("IPAddress after start").isEqualTo(IP_ADDRESS);
     }
 
     private static Answer<Object> executeCommand() {

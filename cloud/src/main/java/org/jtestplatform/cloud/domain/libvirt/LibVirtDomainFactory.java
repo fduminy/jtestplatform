@@ -30,8 +30,10 @@ import org.jtestplatform.cloud.configuration.Platform;
 import org.jtestplatform.cloud.domain.DomainConfig;
 import org.jtestplatform.cloud.domain.DomainException;
 import org.jtestplatform.cloud.domain.DomainFactory;
+import org.jtestplatform.cloud.domain.libvirt.ConnectManager.Command;
 import org.libvirt.Connect;
 import org.libvirt.LibvirtException;
+import org.libvirt.Network;
 import org.libvirt.jna.Libvirt.VirErrorCallback;
 import org.libvirt.jna.virError;
 import org.slf4j.Logger;
@@ -46,26 +48,24 @@ import org.slf4j.LoggerFactory;
 public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
     private static final Logger LOGGER = LoggerFactory.getLogger(LibVirtDomainFactory.class);
 
-    private static final String NETWORK_NAME = "default";
-    //private static final String NETWORK_NAME = "jtestplatform-network";
+    private static final String NETWORK_NAME = "jtestplatform-network";
 
     private static final String BASE_MAC_ADDRESS = "54:52:00:77:58:";
-    static final String BASE_IP_ADDRESS = "192.168.121.";
+    private static final String BASE_IP_ADDRESS = "192.168.121.";
     private static final int MIN_SUBNET_IP_ADDRESS = 2;
     private static final int MAX_SUBNET_IP_ADDRESS = 254;
 
     private final ConnectManager connectManager = new ConnectManager();
 
-    private final NetworkConfig networkConfig = new NetworkConfig(NETWORK_NAME, BASE_MAC_ADDRESS, BASE_IP_ADDRESS,
-                                                                  MIN_SUBNET_IP_ADDRESS, MAX_SUBNET_IP_ADDRESS);
     private final NetworkXMLBuilder networkXMLBuilder = new NetworkXMLBuilder();
     private final NetworkBuilder networkBuilder = new NetworkBuilder(networkXMLBuilder);
-    private final IpAddressFinder ipAddressFinder = new IpAddressFinder();
 
     private final DomainXMLBuilder domainXMLBuilder = new DomainXMLBuilder();
-    private final DomainCache domainCache = new DomainCache(networkConfig);
-    private final DomainBuilder domainBuilder = new DomainBuilder(domainXMLBuilder, domainCache);
     private final PlatformSupportManager supportManager = new PlatformSupportManager();
+
+    private NetworkConfig networkConfig;
+    private DomainCache domainCache;
+    private DomainBuilder domainBuilder;
 
     static {
         try {
@@ -93,7 +93,7 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
      */
     @Override
     public boolean support(final Platform platform, final Connection connection) throws DomainException {
-        return execute(connection, new ConnectManager.Command<Boolean>() {
+        return execute(connection, new Command<Boolean>() {
             @Override
             public Boolean execute(Connect connect) throws Exception {
                 return supportManager.support(platform, connect);
@@ -109,10 +109,32 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
             throw new DomainException("Unsupported platform :\n" + config.getPlatform()
                                       + "\n. You should call support(Platform, Connection) before.");
         }
-        return new LibVirtDomain(config, this, connection, ipAddressFinder, domainBuilder, networkConfig);
+        if (networkConfig == null) {
+            networkConfig = createNetwork(connection);
+            domainCache = new DomainCache(networkConfig);
+            domainBuilder = new DomainBuilder(domainXMLBuilder, domainCache);
+        }
+        return new LibVirtDomain(config, this, connection, domainBuilder, networkConfig);
     }
 
-    final <T> T execute(org.jtestplatform.cloud.configuration.Connection connection, ConnectManager.Command<T> command)
+    private NetworkConfig createNetwork(Connection connection) throws DomainException {
+        final NetworkConfig config = new NetworkConfig(NETWORK_NAME, BASE_MAC_ADDRESS, BASE_IP_ADDRESS,
+                                                       MIN_SUBNET_IP_ADDRESS, MAX_SUBNET_IP_ADDRESS);
+        execute(connection, new Command<Object>() {
+            @Override
+            public Object execute(Connect connect) throws Exception {
+                Network net = networkBuilder.build(connect, config);
+                net.setAutostart(true);
+                if (net.isActive() == 0) {
+                    net.create();
+                }
+                return null;
+            }
+        });
+        return config;
+    }
+
+    final <T> T execute(org.jtestplatform.cloud.configuration.Connection connection, Command<T> command)
         throws DomainException {
         return connectManager.execute(connection, command);
     }

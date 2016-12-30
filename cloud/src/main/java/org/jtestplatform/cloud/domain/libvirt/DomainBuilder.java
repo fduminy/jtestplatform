@@ -54,7 +54,7 @@ class DomainBuilder {
             config.setDomainName(entry.getDomainName());
             String macAddress = entry.getMacAddress();
             String xml = domainXMLBuilder.build(config, macAddress, networkConfig.getNetworkName());
-            return new DomainInfo(connect.domainDefineXML(xml), macAddress);
+            return new DomainInfo(connect.domainDefineXML(xml), macAddress, entry.getIpAddress());
         } catch (LibvirtException e) {
             throw new DomainException(e);
         }

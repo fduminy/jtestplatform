@@ -35,6 +35,7 @@ import org.libvirt.Connect;
 import org.libvirt.Domain;
 import org.mockito.Mock;
 
+import static java.lang.Integer.toHexString;
 import static java.lang.String.format;
 import static org.mockito.Mockito.when;
 
@@ -43,11 +44,13 @@ import static org.mockito.Mockito.when;
  */
 @RunWith(Theories.class)
 public class DomainBuilderTest extends AbstractDomainTest {
-    private static final String MAC_ADDRESS = "12:34:56:78";
+    private static final int DOMAIN_ID = 12;
+    private static final String MAC_ADDRESS = "12:34:56:" + toHexString(DOMAIN_ID);
+    protected static final String IP_ADDRESS = "127.126.125." + Integer.toString(DOMAIN_ID);
     private static final String NETWORK_NAME = "networkName";
     private static final String DOMAIN_XML = "domainXML";
     private static final String EXPECTED_DOMAIN_NAME = "domain5";
-    private static final Entry EXPECTED_ENTRY = new Entry(EXPECTED_DOMAIN_NAME, MAC_ADDRESS);
+    private static final Entry EXPECTED_ENTRY = new Entry(EXPECTED_DOMAIN_NAME, MAC_ADDRESS, IP_ADDRESS);
 
     @Rule
     public JUnitSoftAssertions soft = new JUnitSoftAssertions();
@@ -99,6 +102,7 @@ public class DomainBuilderTest extends AbstractDomainTest {
         if (domainInfo != null) {
             soft.assertThat(domainInfo.getDomain()).as("domainInfo.domain").isSameAs(expectedDomain);
             soft.assertThat(domainInfo.getMacAddress()).as("domainInfo.macAddress").isSameAs(MAC_ADDRESS);
+            soft.assertThat(domainInfo.getIpAddress()).as("domainInfo.ipAddress").isSameAs(IP_ADDRESS);
         }
         soft.assertThat(domainConfig.getDomainName()).as("domainConfig.domainName").isEqualTo(EXPECTED_DOMAIN_NAME);
     }

@@ -58,14 +58,10 @@ class PlatformSupportManager {
         }
 
         if (support) {
-            String capabilitiesXML = connect.getCapabilities();
-
-            // FIXME when STRICT is set to true the tag 'uuid' throws an exception
-            Capabilities capabilities = new CapabilitiesDom4jReader().read(new StringReader(capabilitiesXML), STRICT);
 
             support = false;
             outloop:
-            for (Guest guest : capabilities.getGuests()) {
+            for (Guest guest : getCapabilities(connect).getGuests()) {
                 Arch arch = guest.getArch();
 
                 boolean supportCPU = arch.getName().equals(platform.getCpu());
@@ -87,5 +83,12 @@ class PlatformSupportManager {
 
         LOGGER.trace("end support");
         return support;
+    }
+
+    static Capabilities getCapabilities(Connect connect) throws LibvirtException, IOException, DocumentException {
+        String capabilitiesXML = connect.getCapabilities();
+
+        // FIXME when STRICT is set to true the tag 'uuid' throws an exception
+        return new CapabilitiesDom4jReader().read(new StringReader(capabilitiesXML), STRICT);
     }
 }
