@@ -39,8 +39,8 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 
 import static com.google.code.tempusfugit.temporal.Duration.minutes;
+import static org.jtestplatform.cloud.domain.libvirt.DomainCache.DOMAIN_NAME_PREFIX;
 import static org.jtestplatform.cloud.domain.libvirt.IpAddressFinder.waitReachableOrTimeout;
-import static org.jtestplatform.cloud.domain.libvirt.UniqueDomainNameFinder.DOMAIN_NAME_PREFIX;
 import static org.junit.Assert.*;
 
 /**

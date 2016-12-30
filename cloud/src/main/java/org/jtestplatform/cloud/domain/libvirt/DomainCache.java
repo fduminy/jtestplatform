@@ -30,20 +30,22 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Fabien DUMINY (fduminy at jnode dot org)
  */
 class DomainCache {
     private static final Logger LOGGER = LoggerFactory.getLogger(DomainCache.class);
+    private static final int HEXADECIMAL_SIZE = 2;
+    static final String DOMAIN_NAME_PREFIX = "JTestPlatform_";
 
-    private final UniqueMacAddressFinder macAddressFinder;
-    private final UniqueDomainNameFinder domainNameFinder;
+    private final NetworkConfig networkConfig;
 
     DomainCache(NetworkConfig networkConfig) {
-        this.macAddressFinder = new UniqueMacAddressFinder(networkConfig);
-        this.domainNameFinder = new UniqueDomainNameFinder(networkConfig);
+        this.networkConfig = networkConfig;
     }
 
     @Nullable
@@ -51,9 +53,11 @@ class DomainCache {
         Entry entry = null;
 
         try {
-            List<Domain> domains = listAllDomains(connect);
-            String domainName = domainNameFinder.findUniqueDomainName(domains);
-            entry = new Entry(domainName, macAddressFinder.findUniqueMacAddress(domains));
+            Integer domainId = findFreeDomainId(listAllDomains(connect));
+            if (domainId != null) {
+                String uniqueMacAddress = formatValue(networkConfig.getBaseMacAddress(), domainId);
+                entry = new Entry(formatValue(DOMAIN_NAME_PREFIX, domainId), uniqueMacAddress);
+            }
         } catch (LibvirtException e) {
             LOGGER.error(e.getMessage(), e);
         } catch (DomainException e) {
@@ -70,7 +74,7 @@ class DomainCache {
         try {
             for (Domain domain : listAllDomains(connect)) {
                 if (domain.getName().equals(domainName)) {
-                    entry = new Entry(domainName, UniqueMacAddressFinder.getMacAddress(domain));
+                    entry = new Entry(domainName, getMacAddress(domain));
                     break;
                 }
             }
@@ -115,5 +119,48 @@ class DomainCache {
         }
 
         return domains;
+    }
+
+    @Nullable
+    private Integer findFreeDomainId(List<Domain> domains) throws LibvirtException {
+        Set<Integer> domainIds = new HashSet<Integer>(domains.size());
+        for (Domain domain : domains) {
+            if (domain.getName().startsWith(DOMAIN_NAME_PREFIX)) {
+                domainIds.add(Integer.parseInt(domain.getName().substring(DOMAIN_NAME_PREFIX.length()),
+                                               16)); // parse hexadecimal value
+            }
+        }
+
+        Integer domainId = null;
+        for (int id = networkConfig.getMinSubNetIpAddress(); id <= networkConfig.getMaxSubNetIpAddress(); id++) {
+            if (!domainIds.contains(id)) {
+                domainId = id;
+                break;
+            }
+        }
+        return domainId;
+    }
+
+    private static String getMacAddress(Domain domain) throws LibvirtException {
+        String macAddress = null;
+
+        String xml = domain.getXMLDesc(0);
+
+        //TODO it's bad, we should use an xml parser. create and add it in the libvirt-model project.
+        String begin = "<mac address='";
+        int idx = xml.indexOf(begin);
+        if (idx >= 0) {
+            idx += begin.length();
+            int idx2 = xml.indexOf('\'', idx);
+            if (idx2 >= 0) {
+                macAddress = xml.substring(idx, idx2);
+            }
+        }
+
+        return macAddress;
+    }
+
+    private static String formatValue(String valuePrefix, int valueIndex) throws DomainException {
+        return valuePrefix + LibVirtUtils.toHexString(valueIndex, HEXADECIMAL_SIZE);
     }
 }

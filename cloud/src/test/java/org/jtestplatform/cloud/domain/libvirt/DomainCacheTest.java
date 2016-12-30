@@ -37,9 +37,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.jtestplatform.cloud.domain.libvirt.NetworkBuilderTest.NETWORK_CONFIG;
-import static org.jtestplatform.cloud.domain.libvirt.UniqueDomainNameFinderTest.formatDomainName;
-import static org.jtestplatform.cloud.domain.libvirt.UniqueMacAddressFinderTest.formatMacAddress;
+import static java.lang.String.format;
+import static org.jtestplatform.cloud.domain.libvirt.DomainCache.DOMAIN_NAME_PREFIX;
+import static org.jtestplatform.cloud.domain.libvirt.LibVirtDomainFactory.BASE_IP_ADDRESS;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -49,6 +49,9 @@ import static org.mockito.Mockito.when;
  */
 @RunWith(Theories.class)
 public class DomainCacheTest {
+    static final String BASE_MAC_ADDRESS = "12:34:56:";
+    private static final NetworkConfig CONFIG = new NetworkConfig("test", BASE_MAC_ADDRESS, BASE_IP_ADDRESS, 0, 4);
+
     @Rule
     public JUnitSoftAssertions soft = new JUnitSoftAssertions();
 
@@ -58,12 +61,12 @@ public class DomainCacheTest {
     @Before
     public void setUp() throws LibvirtException {
         connect = mock(Connect.class);
-        domainCache = new DomainCache(NETWORK_CONFIG);
+        domainCache = new DomainCache(CONFIG);
     }
 
     @Theory
     public void findFreeEntry_noEntry(boolean definedDomain) throws Exception {
-        Map<Domain, Entry> domainInfos = mockDomains(NETWORK_CONFIG, NETWORK_CONFIG.size()); // "reserve" all domains
+        Map<Domain, Entry> domainInfos = mockDomains(CONFIG, CONFIG.size()); // "reserve" all domains
         mockConnect(definedDomain, domainInfos);
 
         Entry entry = domainCache.findFreeEntry(connect);
@@ -72,20 +75,28 @@ public class DomainCacheTest {
     }
 
     @Theory
-    public void findFreeEntry(boolean definedDomain) throws Exception {
-        Map<Domain, Entry> domainInfos = mockDomains(NETWORK_CONFIG, 1); // "reserve" one domain
+    public void findFreeEntry_contiguousUsedValues(boolean definedDomain) throws Exception {
+        Map<Domain, Entry> domainInfos = mockDomains(0, 1, 2, 3); // "reserve" one domain
         mockConnect(definedDomain, domainInfos);
-        int domainId = NETWORK_CONFIG.getMinSubNetIpAddress() + 1;
-        Entry expectedEntry = new Entry(formatDomainName(domainId), formatMacAddress(domainId));
 
         Entry entry = domainCache.findFreeEntry(connect);
 
-        assertEntry(expectedEntry, entry);
+        assertEntry(expectedEntry(4), entry);
+    }
+
+    @Theory
+    public void findFreeEntry_nonContiguousUsedValues(boolean definedDomain) throws Exception {
+        Map<Domain, Entry> domainInfos = mockDomains(0, 1, 3, 4); // "reserve" one domain
+        mockConnect(definedDomain, domainInfos);
+
+        Entry entry = domainCache.findFreeEntry(connect);
+
+        assertEntry(expectedEntry(2), entry);
     }
 
     @Theory
     public void findEntry_noEntry(boolean definedDomain) throws Exception {
-        String domainName = formatDomainName(NETWORK_CONFIG.getMinSubNetIpAddress());
+        String domainName = formatDomainName(CONFIG.getMinSubNetIpAddress());
         mockConnect(definedDomain, Collections.<Domain, Entry>emptyMap());
 
         Entry entry = domainCache.findEntry(connect, domainName);
@@ -95,7 +106,7 @@ public class DomainCacheTest {
 
     @Theory
     public void findEntry(boolean definedDomain) throws Exception {
-        Map<Domain, Entry> domainInfos = mockDomains(NETWORK_CONFIG, 1);
+        Map<Domain, Entry> domainInfos = mockDomains(CONFIG, 1);
         Map.Entry<Domain, Entry> domainInfo = domainInfos.entrySet().iterator().next();
         mockConnect(definedDomain, domainInfos);
 
@@ -117,13 +128,21 @@ public class DomainCacheTest {
     }
 
     private Map<Domain, Entry> mockDomains(NetworkConfig networkConfig, int numberOfDomains) throws LibvirtException {
-        Map<Domain, Entry> domains = new HashMap<Domain, Entry>();
+        int[] usedDomainIds = new int[numberOfDomains];
         int firstIndex = networkConfig.getMinSubNetIpAddress();
-        for (int index = firstIndex; index < (firstIndex + numberOfDomains); index++) {
+        for (int index = 0; index < numberOfDomains; index++) {
+            usedDomainIds[index] = firstIndex + index;
+        }
+        return mockDomains(usedDomainIds);
+    }
+
+    private Map<Domain, Entry> mockDomains(int... usedDomainIds) throws LibvirtException {
+        Map<Domain, Entry> domains = new HashMap<Domain, Entry>();
+        for (int domainId : usedDomainIds) {
             Domain domain = mock(Domain.class);
-            String macAddress = formatMacAddress(index);
+            String macAddress = formatMacAddress(domainId);
             when(domain.getXMLDesc(anyInt())).thenReturn("<mac address='" + macAddress + "'/>");
-            String domainName = formatDomainName(index);
+            String domainName = formatDomainName(domainId);
             when(domain.getName()).thenReturn(domainName);
             domains.put(domain, new Entry(domainName, macAddress));
         }
@@ -155,5 +174,17 @@ public class DomainCacheTest {
         }
         when(connect.listDefinedDomains()).thenReturn(domainNames);
         when(connect.listDomains()).thenReturn(domainIds);
+    }
+
+    private static Entry expectedEntry(int domainId) {
+        return new Entry(formatDomainName(domainId), formatMacAddress(domainId));
+    }
+
+    static String formatDomainName(int i) {
+        return format(DOMAIN_NAME_PREFIX + "%02x", i);
+    }
+
+    static String formatMacAddress(int suffix) {
+        return BASE_MAC_ADDRESS + "0" + suffix;
     }
 }
