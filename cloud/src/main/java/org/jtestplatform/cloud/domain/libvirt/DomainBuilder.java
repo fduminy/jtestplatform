@@ -32,6 +32,8 @@ import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.lang.String.format;
+
 /**
  * @author Fabien DUMINY (fduminy at jnode dot org)
  */
@@ -58,7 +60,8 @@ class DomainBuilder {
         }
     }
 
-    private Entry getEntry(Connect connect, DomainConfig config) throws LibvirtException {
+    @Nonnull
+    private Entry getEntry(Connect connect, DomainConfig config) throws LibvirtException, DomainException {
         boolean undefinedDomainName = ConfigUtils.isBlank(config.getDomainName());
         Entry entry;
         synchronized (getLock(connect.getHostName())) {
@@ -66,8 +69,14 @@ class DomainBuilder {
                 // automatically define the domain name
                 // it must be unique for the connection
                 entry = domainCache.findFreeEntry(connect);
+                if (entry == null) {
+                    throw new DomainException("No free Entry found for a new domain");
+                }
             } else {
                 entry = domainCache.findEntry(connect, config.getDomainName());
+                if (entry == null) {
+                    throw new DomainException(format("No Entry found for a domain named %s", config.getDomainName()));
+                }
             }
         }
         return entry;

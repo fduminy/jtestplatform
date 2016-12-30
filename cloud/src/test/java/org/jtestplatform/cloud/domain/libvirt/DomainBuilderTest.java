@@ -23,16 +23,19 @@ package org.jtestplatform.cloud.domain.libvirt;
 
 import org.assertj.core.api.JUnitSoftAssertions;
 import org.jtestplatform.cloud.domain.DomainConfig;
+import org.jtestplatform.cloud.domain.DomainException;
 import org.jtestplatform.cloud.domain.libvirt.DomainCache.Entry;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.libvirt.Connect;
 import org.libvirt.Domain;
 import org.mockito.Mock;
 
+import static java.lang.String.format;
 import static org.mockito.Mockito.when;
 
 /**
@@ -48,6 +51,9 @@ public class DomainBuilderTest extends AbstractDomainTest {
 
     @Rule
     public JUnitSoftAssertions soft = new JUnitSoftAssertions();
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     @Mock
     private DomainXMLBuilder domainXMLBuilder;
@@ -87,8 +93,7 @@ public class DomainBuilderTest extends AbstractDomainTest {
         }
         DomainBuilder builder = new DomainBuilder(domainXMLBuilder, domainCache);
 
-        org.jtestplatform.cloud.domain.libvirt.DomainInfo domainInfo = builder
-            .defineDomain(connect, domainConfig, networkConfig);
+        DomainInfo domainInfo = builder.defineDomain(connect, domainConfig, networkConfig);
 
         soft.assertThat(domainInfo).as("domainInfo").isNotNull();
         if (domainInfo != null) {
@@ -98,4 +103,16 @@ public class DomainBuilderTest extends AbstractDomainTest {
         soft.assertThat(domainConfig.getDomainName()).as("domainConfig.domainName").isEqualTo(EXPECTED_DOMAIN_NAME);
     }
 
+    @Theory
+    public void defineDomain_noEntry(boolean nameWasDefined) throws Exception {
+        if (nameWasDefined) {
+            domainConfig.setDomainName(EXPECTED_DOMAIN_NAME);
+        }
+        thrown.expectMessage(nameWasDefined ?
+                                 format("No Entry found for a domain named %s", EXPECTED_DOMAIN_NAME) :
+                                 "No free Entry found for a new domain");
+        thrown.expect(DomainException.class);
+
+        new DomainBuilder(domainXMLBuilder, domainCache).defineDomain(connect, domainConfig, networkConfig);
+    }
 }
