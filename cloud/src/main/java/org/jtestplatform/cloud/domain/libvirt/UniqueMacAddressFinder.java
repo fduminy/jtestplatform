@@ -57,7 +57,7 @@ class UniqueMacAddressFinder extends UniqueValueFinder {
                                networkConfig.getMaxSubNetIpAddress(), 2);
     }
 
-    private static String getMacAddress(Domain domain) throws LibvirtException {
+    static String getMacAddress(Domain domain) throws LibvirtException {
         String macAddress = null;
 
         String xml = domain.getXMLDesc(0);

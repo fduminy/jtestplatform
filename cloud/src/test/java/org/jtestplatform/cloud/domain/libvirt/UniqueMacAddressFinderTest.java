@@ -76,10 +76,14 @@ public class UniqueMacAddressFinderTest extends AbstractDomainTest {
         DomainXMLBuilder builder = new DomainXMLBuilder();
         DomainConfig config = new DomainConfig();
         config.setPlatform(new Platform());
-        when(domain1.getXMLDesc(anyInt())).thenReturn(builder.build(config, BASE_MAC_ADDRESS + "0" + suffix1, ""));
-        when(domain2.getXMLDesc(anyInt())).thenReturn(builder.build(config, BASE_MAC_ADDRESS + "0" + suffix2, ""));
-        when(domain3.getXMLDesc(anyInt())).thenReturn(builder.build(config, BASE_MAC_ADDRESS + "0" + suffix3, ""));
-        when(domain4.getXMLDesc(anyInt())).thenReturn(builder.build(config, BASE_MAC_ADDRESS + "0" + suffix4, ""));
+        when(domain1.getXMLDesc(anyInt())).thenReturn(builder.build(config, formatMacAddress(suffix1), ""));
+        when(domain2.getXMLDesc(anyInt())).thenReturn(builder.build(config, formatMacAddress(suffix2), ""));
+        when(domain3.getXMLDesc(anyInt())).thenReturn(builder.build(config, formatMacAddress(suffix3), ""));
+        when(domain4.getXMLDesc(anyInt())).thenReturn(builder.build(config, formatMacAddress(suffix4), ""));
+    }
+
+    static String formatMacAddress(int suffix) {
+        return BASE_MAC_ADDRESS + "0" + suffix;
     }
 
 }

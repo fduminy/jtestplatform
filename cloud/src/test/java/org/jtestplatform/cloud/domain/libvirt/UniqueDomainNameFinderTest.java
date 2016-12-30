@@ -89,7 +89,7 @@ public class UniqueDomainNameFinderTest extends AbstractDomainTest {
         when(domain4.getName()).thenReturn(formatDomainName(suffix4));
     }
 
-    private String formatDomainName(int i) {
+    static String formatDomainName(int i) {
         return format(DOMAIN_NAME_PREFIX + "%02x", i);
     }
 }

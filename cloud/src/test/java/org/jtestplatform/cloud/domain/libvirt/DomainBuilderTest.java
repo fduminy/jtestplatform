@@ -23,6 +23,7 @@ package org.jtestplatform.cloud.domain.libvirt;
 
 import org.assertj.core.api.JUnitSoftAssertions;
 import org.jtestplatform.cloud.domain.DomainConfig;
+import org.jtestplatform.cloud.domain.libvirt.DomainCache.Entry;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.experimental.theories.Theories;
@@ -43,6 +44,7 @@ public class DomainBuilderTest extends AbstractDomainTest {
     private static final String NETWORK_NAME = "networkName";
     private static final String DOMAIN_XML = "domainXML";
     private static final String EXPECTED_DOMAIN_NAME = "domain5";
+    private static final Entry EXPECTED_ENTRY = new Entry(EXPECTED_DOMAIN_NAME, MAC_ADDRESS);
 
     @Rule
     public JUnitSoftAssertions soft = new JUnitSoftAssertions();
@@ -50,9 +52,7 @@ public class DomainBuilderTest extends AbstractDomainTest {
     @Mock
     private DomainXMLBuilder domainXMLBuilder;
     @Mock
-    private UniqueMacAddressFinder macAddressFinder;
-    @Mock
-    private UniqueDomainNameFinder domainNameFinder;
+    private DomainCache domainCache;
     @Mock
     private Connect connect;
     @Mock
@@ -72,7 +72,6 @@ public class DomainBuilderTest extends AbstractDomainTest {
         when(connect.listDomains()).thenReturn(new int[] { 3, 4 });
         when(connect.domainLookupByID(3)).thenReturn(domain3);
         when(connect.domainLookupByID(4)).thenReturn(domain4);
-        when(macAddressFinder.findUniqueMacAddress(domains)).thenReturn(MAC_ADDRESS);
         when(networkConfig.getNetworkName()).thenReturn(NETWORK_NAME);
         when(domainXMLBuilder.build(domainConfig, MAC_ADDRESS, NETWORK_NAME)).thenReturn(DOMAIN_XML);
         when(connect.domainDefineXML(DOMAIN_XML)).thenReturn(expectedDomain);
@@ -82,10 +81,11 @@ public class DomainBuilderTest extends AbstractDomainTest {
     public void defineDomain(boolean nameWasDefined) throws Exception {
         if (nameWasDefined) {
             domainConfig.setDomainName(EXPECTED_DOMAIN_NAME);
+            when(domainCache.findEntry(connect, EXPECTED_DOMAIN_NAME)).thenReturn(EXPECTED_ENTRY);
         } else {
-            when(domainNameFinder.findUniqueDomainName(domains)).thenReturn(EXPECTED_DOMAIN_NAME);
+            when(domainCache.findFreeEntry(connect)).thenReturn(EXPECTED_ENTRY);
         }
-        DomainBuilder builder = new DomainBuilder(domainXMLBuilder, macAddressFinder, domainNameFinder);
+        DomainBuilder builder = new DomainBuilder(domainXMLBuilder, domainCache);
 
         org.jtestplatform.cloud.domain.libvirt.DomainInfo domainInfo = builder
             .defineDomain(connect, domainConfig, networkConfig);

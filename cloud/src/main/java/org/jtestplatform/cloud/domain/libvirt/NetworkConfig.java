@@ -59,4 +59,8 @@ class NetworkConfig {
     public int getMaxSubNetIpAddress() {
         return maxSubNetIpAddress;
     }
+
+    public int size() {
+        return maxSubNetIpAddress - minSubNetIpAddress + 1;
+    }
 }

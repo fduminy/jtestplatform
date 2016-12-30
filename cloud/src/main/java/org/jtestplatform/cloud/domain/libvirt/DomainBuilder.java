@@ -25,62 +25,39 @@ import org.jtestplatform.cloud.domain.DomainConfig;
 import org.jtestplatform.cloud.domain.DomainException;
 import org.jtestplatform.common.ConfigUtils;
 import org.libvirt.Connect;
-import org.libvirt.Domain;
 import org.libvirt.LibvirtException;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author Fabien DUMINY (fduminy at jnode dot org)
  */
 class DomainBuilder {
     private final DomainXMLBuilder domainXMLBuilder;
-    private final UniqueMacAddressFinder macAddressFinder;
-    private final UniqueDomainNameFinder domainNameFinder;
+    private final DomainCache domainCache;
 
-    DomainBuilder(DomainXMLBuilder domainXMLBuilder, UniqueMacAddressFinder macAddressFinder,
-                  UniqueDomainNameFinder domainNameFinder) {
+    DomainBuilder(DomainXMLBuilder domainXMLBuilder, DomainCache domainCache) {
         this.domainXMLBuilder = domainXMLBuilder;
-        this.macAddressFinder = macAddressFinder;
-        this.domainNameFinder = domainNameFinder;
+        this.domainCache = domainCache;
     }
 
     DomainInfo defineDomain(Connect connect, DomainConfig config, NetworkConfig networkConfig) throws DomainException {
         try {
             synchronized ((connect.getHostName() + "_defineDomain").intern()) {
-                List<Domain> domains = listAllDomains(connect);
-
+                DomainCache.Entry entry;
                 if (ConfigUtils.isBlank(config.getDomainName())) {
                     // automatically define the domain name
                     // it must be unique for the connection
-                    config.setDomainName(domainNameFinder.findUniqueDomainName(domains));
+                    entry = domainCache.findFreeEntry(connect);
+                    config.setDomainName(entry.getDomainName());
+                } else {
+                    entry = domainCache.findEntry(connect, config.getDomainName());
                 }
 
-                String macAddress = macAddressFinder.findUniqueMacAddress(domains);
+                String macAddress = entry.getMacAddress();
                 String xml = domainXMLBuilder.build(config, macAddress, networkConfig.getNetworkName());
                 return new DomainInfo(connect.domainDefineXML(xml), macAddress);
             }
         } catch (LibvirtException e) {
             throw new DomainException(e);
         }
-    }
-
-    private List<Domain> listAllDomains(Connect connect) throws LibvirtException {
-        List<Domain> domains = new ArrayList<Domain>();
-
-        // get defined but inactive domains
-        for (String name : connect.listDefinedDomains()) {
-            if (name != null) {
-                domains.add(connect.domainLookupByName(name));
-            }
-        }
-
-        // get active domains
-        for (int id : connect.listDomains()) {
-            domains.add(connect.domainLookupByID(id));
-        }
-
-        return domains;
     }
 }

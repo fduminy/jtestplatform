@@ -61,11 +61,10 @@ public class LibVirtDomainFactory implements DomainFactory<LibVirtDomain> {
     private final NetworkXMLBuilder networkXMLBuilder = new NetworkXMLBuilder();
     private final NetworkBuilder networkBuilder = new NetworkBuilder(networkXMLBuilder);
     private final IpAddressFinder ipAddressFinder = new IpAddressFinder();
-    private final UniqueMacAddressFinder macAddressFinder = new UniqueMacAddressFinder(networkConfig);
 
     private final DomainXMLBuilder domainXMLBuilder = new DomainXMLBuilder();
-    private final UniqueDomainNameFinder domainNameFinder = new UniqueDomainNameFinder(networkConfig);
-    private final DomainBuilder domainBuilder = new DomainBuilder(domainXMLBuilder, macAddressFinder, domainNameFinder);
+    private final DomainCache domainCache = new DomainCache(networkConfig);
+    private final DomainBuilder domainBuilder = new DomainBuilder(domainXMLBuilder, domainCache);
     private final PlatformSupportManager supportManager = new PlatformSupportManager();
 
     static {
