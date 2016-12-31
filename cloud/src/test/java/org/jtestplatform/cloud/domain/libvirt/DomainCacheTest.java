@@ -50,7 +50,7 @@ import static org.mockito.Mockito.when;
 public class DomainCacheTest {
     static final String BASE_MAC_ADDRESS = "12:34:56:";
     static final String BASE_IP_ADDRESS = "101.102.103.";
-    private static final NetworkConfig CONFIG = new NetworkConfig("test", BASE_MAC_ADDRESS, BASE_IP_ADDRESS, 0, 4);
+    private static final NetworkConfig CONFIG = new NetworkConfig("test", BASE_MAC_ADDRESS, BASE_IP_ADDRESS, 14, 18);
 
     @Rule
     public JUnitSoftAssertions soft = new JUnitSoftAssertions();
@@ -76,22 +76,22 @@ public class DomainCacheTest {
 
     @Theory
     public void findFreeEntry_contiguousUsedValues(boolean definedDomain) throws Exception {
-        Map<Domain, Entry> domainInfos = mockDomains(0, 1, 2, 3); // "reserve" one domain
+        Map<Domain, Entry> domainInfos = mockDomains(14, 15, 16, 17); // "reserve" one domain
         mockConnect(definedDomain, domainInfos);
 
         Entry entry = domainCache.findFreeEntry(connect);
 
-        assertEntry(expectedEntry(4), entry);
+        assertEntry(expectedEntry(18), entry);
     }
 
     @Theory
     public void findFreeEntry_nonContiguousUsedValues(boolean definedDomain) throws Exception {
-        Map<Domain, Entry> domainInfos = mockDomains(0, 1, 3, 4); // "reserve" one domain
+        Map<Domain, Entry> domainInfos = mockDomains(14, 15, 17, 18); // "reserve" one domain
         mockConnect(definedDomain, domainInfos);
 
         Entry entry = domainCache.findFreeEntry(connect);
 
-        assertEntry(expectedEntry(2), entry);
+        assertEntry(expectedEntry(16), entry);
     }
 
     @Theory
@@ -182,15 +182,15 @@ public class DomainCacheTest {
         return new Entry(formatDomainName(domainId), formatMacAddress(domainId), formatIpAddress(domainId));
     }
 
-    static String formatDomainName(int i) {
-        return format(DOMAIN_NAME_PREFIX + "%02x", i);
+    static String formatDomainName(int domainId) {
+        return format(DOMAIN_NAME_PREFIX + "%d", domainId);
     }
 
-    static String formatMacAddress(int suffix) {
-        return BASE_MAC_ADDRESS + "0" + suffix;
+    static String formatMacAddress(int domainId) {
+        return format(BASE_MAC_ADDRESS + "%02x", domainId);
     }
 
-    static String formatIpAddress(int suffix) {
-        return BASE_IP_ADDRESS + "0" + suffix;
+    static String formatIpAddress(int domainId) {
+        return format(BASE_IP_ADDRESS + "%d", domainId);
     }
 }

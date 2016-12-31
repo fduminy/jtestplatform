@@ -34,12 +34,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static java.lang.String.format;
+
 /**
  * @author Fabien DUMINY (fduminy at jnode dot org)
  */
 class DomainCache {
     private static final Logger LOGGER = LoggerFactory.getLogger(DomainCache.class);
-    private static final int HEXADECIMAL_SIZE = 2;
     static final String DOMAIN_NAME_PREFIX = "JTestPlatform_";
 
     private final NetworkConfig networkConfig;
@@ -55,9 +56,7 @@ class DomainCache {
         try {
             Integer domainId = findFreeDomainId(listAllDomains(connect));
             if (domainId != null) {
-                String macAddress = formatValue(networkConfig.getBaseMacAddress(), domainId);
-                String ipAddress = formatValue(networkConfig.getBaseIPAddress(), domainId);
-                entry = new Entry(formatValue(DOMAIN_NAME_PREFIX, domainId), macAddress, ipAddress);
+                entry = createEntry(domainId);
             }
         } catch (LibvirtException e) {
             LOGGER.error(e.getMessage(), e);
@@ -75,12 +74,11 @@ class DomainCache {
         try {
             for (Domain domain : listAllDomains(connect)) {
                 if (domain.getName().equals(domainName)) {
-                    String macAddress = getMacAddress(domain);
-                    int domainId = Integer
-                        .parseInt(macAddress.substring(networkConfig.getBaseMacAddress().length()), 16);
-                    String ipAddress = formatValue(networkConfig.getBaseIPAddress(), domainId);
-                    entry = new Entry(domainName, macAddress, ipAddress);
-                    break;
+                    Integer domainId = findDomainId(domain);
+                    if (domainId != null) {
+                        entry = createEntry(domainId);
+                        break;
+                    }
                 }
             }
         } catch (LibvirtException e) {
@@ -90,6 +88,15 @@ class DomainCache {
         }
 
         return entry;
+    }
+
+    @Nullable
+    private Integer findDomainId(Domain domain) throws LibvirtException {
+        String macAddress = getMacAddress(domain);
+        if (macAddress == null) {
+            return null;
+        }
+        return Integer.parseInt(macAddress.substring(networkConfig.getBaseMacAddress().length()), 16);
     }
 
     static class Entry {
@@ -139,8 +146,7 @@ class DomainCache {
         Set<Integer> domainIds = new HashSet<Integer>(domains.size());
         for (Domain domain : domains) {
             if (domain.getName().startsWith(DOMAIN_NAME_PREFIX)) {
-                domainIds.add(Integer.parseInt(domain.getName().substring(DOMAIN_NAME_PREFIX.length()),
-                                               16)); // parse hexadecimal value
+                domainIds.add(Integer.parseInt(domain.getName().substring(DOMAIN_NAME_PREFIX.length())));
             }
         }
 
@@ -152,6 +158,12 @@ class DomainCache {
             }
         }
         return domainId;
+    }
+
+    private Entry createEntry(Integer domainId) throws DomainException {
+        String macAddress = formatHexadecimalValue(networkConfig.getBaseMacAddress(), domainId);
+        String ipAddress = formatDecimalValue(networkConfig.getBaseIPAddress(), domainId);
+        return new Entry(formatDecimalValue(DOMAIN_NAME_PREFIX, domainId), macAddress, ipAddress);
     }
 
     private static String getMacAddress(Domain domain) throws LibvirtException {
@@ -173,7 +185,11 @@ class DomainCache {
         return macAddress;
     }
 
-    private static String formatValue(String valuePrefix, int valueIndex) throws DomainException {
-        return valuePrefix + LibVirtUtils.toHexString(valueIndex, HEXADECIMAL_SIZE);
+    private static String formatDecimalValue(String valuePrefix, int domainId) throws DomainException {
+        return format(valuePrefix + "%d", domainId);
+    }
+
+    private static String formatHexadecimalValue(String valuePrefix, int domainId) throws DomainException {
+        return format(valuePrefix + "%02x", domainId);
     }
 }
